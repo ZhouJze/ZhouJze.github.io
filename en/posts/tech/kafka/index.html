@@ -1,0 +1,2510 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Kafka | ZhouJz&#39;s blog</title>
+<meta name="keywords" content="Kafka">
+<meta name="description" content="Kafka基础入门">
+<meta name="author" content="ZhouJze">
+<link rel="canonical" href="https://zhoujze.github.io/en/posts/tech/kafka/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.1d3401cbcdd2f10bdb5198bcf67bd24686c4792045e0991c052459ef4196f5cf.css" integrity="" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/assets/js/highlight.f413e19d0714851f6474e7ee9632408e58ac146fbdbe62747134bea2fa3415e0.js" integrity="sha256-9BPhnQcUhR9kdOfuljJAjlisFG&#43;9vmJ0cTS&#43;ovo0FeA="
+        onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://zhoujze.github.io/img/Q.jpg">
+<link rel="icon" type="image/png" sizes="16x16" href="https://zhoujze.github.io/img/Q.jpg">
+<link rel="icon" type="image/png" sizes="32x32" href="https://zhoujze.github.io/img/Q.jpg">
+<link rel="apple-touch-icon" href="https://zhoujze.github.io/Q.jpg">
+<link rel="mask-icon" href="https://zhoujze.github.io/Q.jpg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.3/dist/jquery.min.js"></script>
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = ""; 
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<meta property="og:title" content="Kafka" />
+<meta property="og:description" content="Kafka基础入门" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://zhoujze.github.io/en/posts/tech/kafka/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2023-09-17T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-09-17T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Kafka"/>
+<meta name="twitter:description" content="Kafka基础入门"/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+
+        {
+          "@type": "ListItem",
+          "position":  1 ,
+          "name": "📚文章",
+          "item": "https://zhoujze.github.io/en/posts/"
+        },
+
+        {
+          "@type": "ListItem",
+          "position":  2 ,
+          "name": "👨🏻‍💻 技术",
+          "item": "https://zhoujze.github.io/en/posts/tech/"
+        }, 
+    {
+      "@type": "ListItem",
+      "position":  3 ,
+      "name": "Kafka",
+      "item": "https://zhoujze.github.io/en/posts/tech/kafka/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Kafka",
+  "name": "Kafka",
+  "description": "Kafka基础入门",
+  "keywords": [
+    "Kafka"
+  ],
+  "articleBody": "Kafka Kafka: ZooKeeper协调的分布式消息系统\n基于Scala语言编写的高性能、多分区、多副本 Kafka高性能的原因：页缓存、顺序IO、零拷贝 具有以下特性：\n消息中间件: 系统解耦、冗余存储、流量消峰、异步通信等 存储系统: 通过消息持久化和多副本机制实现消息落盘 流处理: 为流式处理框架提供可靠的数据来源和库 Kafka组成: 若干个Producer、Consumer、Broker和ZooKeeper集群\nProducer(生产者): 生产并发送消息到Broker(推送) Consumer(消费者): 从Broker订阅并消费消息(拉取) Broker(服务代理节点): 将从Producer收到的消息进行落盘 ZooKeeper集群：管理Kafka集群的元数据 // Broker可看成单个独立的Kafka服务实例, 多个Broker组成个Kafka集群\n如: Kafka集群构成\n基础概念 主题(Topic): Kafka中消息归类单位\nTopic并不实际存在(仅逻辑上的概念) Topic可细分为多个Partition, 但Partition仅属于单个Topic 功能: Producer将消息发送到特定Topic, Consumer订阅Topic消费消息 分区(Partition): 组成Topic的单位(实际存储消息)\nPartition在存储层面可视为: 可被追加的日志文件 同一Topic下的不同Partition包含的消息是不同的 Partition可跨Broker(Topic可跨Broker) 偏移量(Offset): 消息追加到Partition时分配的标志位\nOffset是消息在Partition中的唯一标识(保证Partition内的有序性) Offset不支持跨Partition(Topic无序) 如: 消息追加写入Partition\n消息在发送到Broker之前, 都会先根据Partition规则分配到具体的Partition Topic的Partition应避免都属于单个文件(避免机器的I/O成为性能瓶颈) Partition中2个特殊的Offset:\nHW(High Watermark): Consumer能拉取到消息的最大Offset LEO(Log End Offset): Partition下条消息写入的Offset // ISR中最小的LEO为该Partition的HW(最慢的follower)\n如: Partition中的特殊Offset\n副本(Replica): Partition的冗余\n功能: Kafka通过多副本机制提高容灾能力 副本之间分为：leader(主副本)、follower(从副本) 副本间仅存在一主多从关系, 且可实现自动故障转移 Producer和Consumer只能和leader进行交互(follower仅进行消息同步) 如: Kafka的多副本交互\n副本相关名词:\nAR(Assigned Replicas): 所有副本(包括leader) ISR(In-Sync Replicas): 与leader保持同步的副本(包括leader) OSR(Out-of-Synce Replicas): 与leader同步滞后过多的副本(数据不同步) // 默认仅ISR中的副本才有资格选举为leader, 且负责动态管理ISR和OSR中的follower\n延迟任务 时间轮(TimeingWheel): 以固定时间粒度为单位管理和调度事件的数据结构\n时间跨度(tickMs): 时间轮构成的基本单位, 个数固定 表盘指针(currentTime): 指向当前所处的时间粒度 时间轮对于插入/删除操作的时间复杂度为O(1) 定时器(SystemTimer): Kafka中各类延迟操作的触发\n本质: 基于时间轮机制和数组构成的环形队列 定时任务项(TimerTaskEntry): 封装真正的定时/延迟任务(Task) 定时任务列表(TimerTaskList): 存放时间粒度下所有TimerTaskEntry的双向链表 如: 定时器构成结构\n当添加TimerTaskEntry时, 会根据过期时间和currentTime算出应插入的TimerTaskList 当计算结果超出总tickMs时, 会复用之前的TimerTaskList TimerTaskList中都有个哑元节点方便操作(不存储数据) 层级时间轮(Hierarchical TimeingWheel): 分层处理不同tickMs的多级时间轮的组合结构\n本质: 通过划分每个时间轮处理的时间范围, 以保证时间轮的高性能 升级: 当TimerTaskEntry的过期时间超出本层的时间范围时, 将交由上层时间轮 降级: 当TimerTaskEntry在高层时间轮中过期时, 会将其减少已过的时间并重新提交到层级时间轮 TimerTask仅能由最底层的时间轮负责执行处理, 高层的时间轮仅根据时间粒度负责其的编排和重新提交 // Kafka中通过DelayQueue和ExpiredOperationReaper线程实现时间的推进(避免空转造成的性能浪费)\n如: 层级时间轮\n层级时间轮创建时会以当前系统时间作为最底层时间轮的起始时间(startMs) 高层时间轮的起始时间都为创建时上一层时间轮的currentTime 每层时间轮的currentTIme都必须是tickMs的整数倍 Kafka仅持有最底层时间轮的引用 延迟操作管理器(DelayedOperationPurgatory, DOP): 管理/执行Kafka中各类延迟操作\n每个DOP都对应个定时器(超时管理)和监听池(监听Partition事件) 当进行延迟拉取时, 会读取两次日志文件并等待足够数量的消息才会返回 如: Producer的延迟操作\nProducer Producer(生产者): 生产并发送消息到Broker(推送)\nProducer是多线程安全的(建议通过池化以提高性能) Producer实例后可发送多条消息(可对应多个ProducerRecord) // 0.9之后的版本是基于Java实现(之前是Scala实现)\nProducer客户端发送消息大致逻辑:\n配置Producer客户端参数并创建该Producer实例 构建需发送的消息 发送构建的消息 关闭实例 构造Producer必填的3个参数:\n参数 说明 bootstrap.servers 引导程序的服务地址\n格式: 地址1:端口1,地址N:端口N\n(建议指定两个以上的Broker地址以保证稳定性, 且使用主机名形式) key.serializer 发送时对Key调用的序列化器\nBroker仅能接受字节数组形式的消息byte[] value.serializer 发送时对Value调用的序列化器\nBroker仅能接受字节数组形式的消息byte[] // 序列化器必须以全限定名方式指定, Java的ProducerConfig类中包含所有的配置参数\nProducerRecord ProducerRecord(构建消息): Producer每次发送的消息体\nProducerRecord由多个属性构成(Topic和消息是基础属性) ProducerRecord有多个构造方法(指定属性的个数) 可根据不同需求创建特定ProducerRecord ProducerRecord定义:\npublic class ProducerRecord\u003cK, V\u003e { private final String topic; // Topic(必填) private final Integer partition; // Partition // 消息头部(0.11版本引入) // 指定与应用相关信息(可忽略) private final Headers headers; // 键(附加信息) // 其会用于计算Partition(二次归类) private final K key; // 值(消息体, 必填) // 为空则代表: 墓碑消息 private final V value; // 消息时间戳 // 细分为CreateTime(消息创建时间)和LogAppendTime(追加日志时间) private final Long timestamp; ...... } Send\u0026Close Send(发送消息): Producer构建ProducerRecord之后发送给Broker\n发送模式: 发后既忘(fire-and-forget)、同步(sync)、异步(async) 发送模式默认为异步(可通过获取返回值的方法以阻塞等待实现同步) 返回值通常为发送消息的元数据(Topic、Partition、偏移量和时间戳等) Send()方法的定义:\npublic Future\u003cRecordMetadata\u003e send(ProducerRecord\u003cK, V\u003e record); public Future\u003cRecordMetadata\u003e send(ProducerRecord\u003cK, V\u003e record, Callback callback); 可通过Future的get()方法阻塞实现同步(返回RecordMetadata对象) Send()方法需配合try/catch(发送成功或发生异常) 发送导致的异常分为: 重试异常、不可重试异常 // 不可重试异常发生时会直接抛出并结束\n常见的重试异常为：\n可重试异常 说明 NewworkException 网络异常 LeaderNotAvailableException 副本的leader不可用\n(可能正在选举leader) UnknownTopicOrPartitionException Topic或Partition异常 NotEnoughReplicasException 副本数量不足 NotCoordinatorException 协调器异常 Send()方法中的Callback定义:\npublic interface Callback { void onCompletion(RecordMetadata var1, Exception var2); } var1和var2参数互斥(两者必有个为null，后者代表异常) 若两个消息对相同Partition发送消息, 则按发送顺序调用Callback Close(结束发送):回收Producer实例\n发送结束后务必回收Producer实例(防止资源泄漏) Close默认会阻塞等待之前所有的发送请求完成之后再回收 可指定关闭的超时时间(超出该事件则强行回收, 不建议指定) Close()方法的定义：\npublic void close(); public void close(long timeout, TimeUnit timeUnit); 实现原理 Producer的发送消息由两个线程完成:\n主线程: 构建并处理消息后发送至RecordAccumulator Sender线程: 从RecordAccumulator获取消息, 并发送至Broker 如: Producer发送消息链路图\nRecordAccumulator: 双端队列缓存待发送ProducerBatch以减少网络影响 ProducerBatch: 包含任意多个待发送的ProducerRecord(消息批次) Request: Kafka支持的各种请求协议 InFlightRequests: 缓存已发送但未响应的Request // Interceptor和Partitioner可选择性处理, 但必须经Serializer处理\nProducer发送ProducerRecord的流程:\n主线程将ProducerRecord加工处理后发送至RecordAccumulator尾部 RecordAccumulator根据ProducerRecord分区选择对应的ProducerBatch RecordAccumulator根据内存复用原则和ProducerBatch大小决定是否新建 Sender线程从RecordAccumulator头部获取ProducerBatch 将\u003c分区, ",
+  "wordCount" : "19042",
+  "inLanguage": "en",
+  "datePublished": "2023-09-17T00:00:00Z",
+  "dateModified": "2023-09-17T00:00:00Z",
+  "author":{
+    "@type": "Person",
+    "name": "ZhouJze"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://zhoujze.github.io/en/posts/tech/kafka/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "ZhouJz's blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://zhoujze.github.io/img/Q.jpg"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    (function () {
+        let  arr,reg = new RegExp("(^| )"+"change-themes"+"=([^;]*)(;|$)");
+        if(arr = document.cookie.match(reg)) {
+        } else {
+            if (new Date().getHours() >= 19 || new Date().getHours() < 6) {
+                document.body.classList.add('dark');
+                localStorage.setItem("pref-theme", 'dark');
+            } else {
+                document.body.classList.remove('dark');
+                localStorage.setItem("pref-theme", 'light');
+            }
+        }
+    })()
+
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://zhoujze.github.io/en/" accesskey="h" title="ZhouJze&#39;s Blog (Alt + H)">
+            <img src="https://zhoujze.github.io/img/Q.jpg" alt="logo" aria-label="logo"
+                 height="35">ZhouJze&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                         stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                         stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://zhoujze.github.io/en/search" title="🔍搜索 (Alt &#43; /)" accesskey=/>
+                <span>🔍搜索</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zhoujze.github.io/en/" title="🏠主页">
+                <span>🏠主页</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zhoujze.github.io/en/archives/" title="⏱时间轴">
+                <span>⏱时间轴</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zhoujze.github.io/en/tags" title="🔖标签">
+                <span>🔖标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zhoujze.github.io/en/about" title="🙋🏻‍♂️关于">
+                <span>🙋🏻‍♂️关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main page">
+<style>
+    i[id*="post_meta_style"] {
+        display: flex;
+        align-items: center;
+        margin: 0 0 10px 0;
+    }
+</style>
+
+<article class="post-single">
+    <div id="single-content">
+        <header class="post-header">
+            <div class="breadcrumbs"><a href="https://zhoujze.github.io/en/">🏠 主页</a>&nbsp;»&nbsp;<a href="https://zhoujze.github.io/en/posts/">📚文章</a>&nbsp;»&nbsp;<a href="https://zhoujze.github.io/en/posts/tech/">👨🏻‍💻 技术</a></div>
+            <h1 class="post-title">
+                Kafka
+            </h1>
+            <div class="post-description">
+                Kafka基础入门
+            </div>
+            <div class="post-meta">
+
+<style>
+    i[id*="post_meta_style"] {
+        display: flex;
+        align-items: center;
+        margin: 0 0 10px 0;
+    }
+
+    .parent-post-meta {
+        display: flex;
+        flex-wrap: wrap;
+        opacity: 0.8;
+    }
+</style>
+
+<span class="parent-post-meta">
+    <span id="post_meta_style_1">
+        <span class="fa fa-calendar-check-o"></span>
+        <span>2023-09-17
+            &nbsp;&nbsp;
+        </span>
+    </span>
+    
+    
+    
+    
+    
+    
+    
+    <span id="post_meta_style_3">
+        <span class="fa fa-file-word-o"></span>
+        <span>19042字
+            &nbsp;&nbsp;
+        </span>
+    </span>
+    <span id="post_meta_style_4">
+        <span class="fa fa-clock-o"></span>
+        <span>39分钟
+            &nbsp;&nbsp;
+        </span>
+    </span>
+    <span id="post_meta_style_5">
+        <span class="fa fa-user-o"></span>
+        <span>ZhouJze
+            &nbsp;&nbsp;
+        </span>
+    </span>
+    <span id="post_meta_style_6">
+        <span class="fa fa-tags" style="opacity: 0.8"></span>
+        <span>
+            <span class="post-tags-meta">
+                <a href="https://zhoujze.github.io/en/tags/kafka/" style="color: var(--secondary)!important;">Kafka</a>
+                &nbsp;<a href="https://zhoujze.github.io/en/tags/%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" style="color: var(--secondary)!important;">基础知识</a>
+            </span>
+        </span>
+    </span>
+</span>
+<span style="opacity: 0.8;">
+                    <span id="post_meta_style_7">
+                        &nbsp;&nbsp;
+                        <span class="fa fa-eye" ></span>
+                        <span>
+                            <span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span></span>
+                            &nbsp;&nbsp;
+                        </span>
+                    </span>
+                    <span id="post_meta_style_8">
+                        <span class="fa fa-commenting-o"></span>
+                        <span>
+                            <script src="https://cdn.staticfile.org/twikoo/1.4.11/twikoo.all.min.js"></script>
+                            <script>
+                                let url = document.documentURI
+                                
+                                let dnsUrl = "https://zhoujze.github.io/"
+                                let urlSplit = url.split(dnsUrl)
+                                let finalUrl = urlSplit[1]
+                                if (finalUrl[0] !== '/') {
+                                    finalUrl = '/'+finalUrl
+                                }
+                                twikoo.getCommentsCount({
+                                    envId:  null , 
+                                region:  null , 
+                                urls: [ 
+                                    
+                                    finalUrl,
+                                ],
+                                    includeReply: false 
+                                }).then(function (res) {
+                                    let count = res[0].count
+                                    const obj = document.getElementById("comment_count");
+                                    obj.innerText = count
+                                    
+                                    
+                                    
+                                }).catch(function (err) {
+                                    
+                                    console.error(err);
+                                });
+                            </script>
+                            <span id="comment_count"></span>
+                        </span>
+                    </span>
+                </span>
+
+</div>
+        </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">文章目录</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#kafka" aria-label="Kafka">Kafka</a><ul>
+                        
+                <li>
+                    <a href="#%e5%9f%ba%e7%a1%80%e6%a6%82%e5%bf%b5" aria-label="基础概念">基础概念</a></li>
+                <li>
+                    <a href="#%e5%bb%b6%e8%bf%9f%e4%bb%bb%e5%8a%a1" aria-label="延迟任务">延迟任务</a></li></ul>
+                </li>
+                <li>
+                    <a href="#producer" aria-label="Producer">Producer</a><ul>
+                        
+                <li>
+                    <a href="#producerrecord" aria-label="ProducerRecord">ProducerRecord</a></li>
+                <li>
+                    <a href="#sendclose" aria-label="Send&amp;amp;Close">Send&amp;Close</a></li>
+                <li>
+                    <a href="#%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%90%86" aria-label="实现原理">实现原理</a><ul>
+                        
+                <li>
+                    <a href="#producerinterceptor" aria-label="ProducerInterceptor">ProducerInterceptor</a></li>
+                <li>
+                    <a href="#serializer" aria-label="Serializer">Serializer</a></li>
+                <li>
+                    <a href="#partitioner" aria-label="Partitioner">Partitioner</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e4%ba%8b%e5%8a%a1" aria-label="事务">事务</a></li></ul>
+                </li>
+                <li>
+                    <a href="#consumer" aria-label="Consumer">Consumer</a><ul>
+                        
+                <li>
+                    <a href="#%e6%b6%88%e8%b4%b9%e6%b6%88%e6%81%af" aria-label="消费消息">消费消息</a><ul>
+                        
+                <li>
+                    <a href="#%e8%ae%a2%e9%98%85%e6%8b%89%e5%8f%96" aria-label="订阅/拉取">订阅/拉取</a></li>
+                <li>
+                    <a href="#consumerrecord" aria-label="ConsumerRecord">ConsumerRecord</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e6%b6%88%e8%b4%b9%e4%bd%8d%e7%a7%bb" aria-label="消费位移">消费位移</a><ul>
+                        
+                <li>
+                    <a href="#%e4%bd%8d%e7%a7%bb%e6%8f%90%e4%ba%a4" aria-label="位移提交">位移提交</a></li>
+                <li>
+                    <a href="#%e4%bd%8d%e7%a7%bb%e6%b6%88%e8%b4%b9" aria-label="位移消费">位移消费</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%90%86-1" aria-label="实现原理">实现原理</a><ul>
+                        
+                <li>
+                    <a href="#rebalance" aria-label="Rebalance">Rebalance</a></li>
+                <li>
+                    <a href="#consumerinterceptor" aria-label="ConsumerInterceptor">ConsumerInterceptor</a></li>
+                <li>
+                    <a href="#deserializer" aria-label="DeSerializer">DeSerializer</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e5%a4%9a%e7%ba%bf%e7%a8%8b%e6%b6%88%e8%b4%b9" aria-label="多线程消费">多线程消费</a><ul>
+                        
+                <li>
+                    <a href="#%e6%b6%88%e8%b4%b9%e7%ba%bf%e7%a8%8b" aria-label="消费线程">消费线程</a></li>
+                <li>
+                    <a href="#%e5%a4%84%e7%90%86%e7%ba%bf%e7%a8%8b" aria-label="处理线程">处理线程</a></li></ul>
+                </li></ul>
+                </li>
+                <li>
+                    <a href="#topicpartition" aria-label="Topic/Partition">Topic/Partition</a><ul>
+                        
+                <li>
+                    <a href="#topic" aria-label="Topic">Topic</a></li>
+                <li>
+                    <a href="#partition" aria-label="Partition">Partition</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e6%97%a5%e5%bf%97%e5%ad%98%e5%82%a8" aria-label="日志存储">日志存储</a><ul>
+                        
+                <li>
+                    <a href="#%e5%ad%98%e5%82%a8%e6%a0%bc%e5%bc%8f" aria-label="存储格式">存储格式</a></li>
+                <li>
+                    <a href="#%e6%97%a5%e5%bf%97%e6%b8%85%e7%90%86" aria-label="日志清理">日志清理</a><ul>
+                        
+                <li>
+                    <a href="#%e5%88%a0%e9%99%a4" aria-label="删除">删除</a></li>
+                <li>
+                    <a href="#%e5%8e%8b%e7%bc%a9" aria-label="压缩">压缩</a></li></ul>
+                </li></ul>
+                </li>
+                <li>
+                    <a href="#%e9%99%84%e5%bd%95" aria-label="附录">附录</a><ul>
+                        
+                <li>
+                    <a href="#%e9%85%8d%e7%bd%ae%e5%8f%82%e6%95%b0" aria-label="配置参数">配置参数</a><ul>
+                        
+                <li>
+                    <a href="#broker" aria-label="Broker">Broker</a><ul>
+                        
+                <li>
+                    <a href="#topic-1" aria-label="Topic">Topic</a></li></ul>
+                </li>
+                <li>
+                    <a href="#producer-1" aria-label="Producer">Producer</a></li>
+                <li>
+                    <a href="#consumer-1" aria-label="Consumer">Consumer</a>
+                </li>
+            </ul>
+            </li>
+            </ul>
+            </li>
+            </ul>
+        </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+        
+        activeElement = elements[0];
+        const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+        document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+    }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        if (elements) {
+            activeElement = Array.from(elements).find((element) => {
+                if ((getOffsetTop(element) - window.pageYOffset) > 0 &&
+                    (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                    return element;
+                }
+            }) || activeElement
+
+            elements.forEach(element => {
+                const id = encodeURI(element.getAttribute('id')).toLowerCase();
+                if (element === activeElement){
+                    document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+                } else {
+                    document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+                }
+            })
+        }
+    }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;
+    }
+</script>
+        <div class="post-content"><h1 id="kafka">Kafka<a hidden class="anchor" aria-hidden="true" href="#kafka">#</a></h1>
+<p><strong>Kafka</strong>: <strong>ZooKeeper</strong>协调的分布式消息系统</p>
+<ol>
+<li>基于<strong>Scala</strong>语言编写的高性能、多分区、多副本</li>
+<li>Kafka高性能的原因：页缓存、顺序IO、零拷贝</li>
+</ol>
+<p>具有以下特性：</p>
+<ol>
+<li>消息中间件: 系统解耦、冗余存储、流量消峰、异步通信等</li>
+<li>存储系统: 通过消息持久化和多副本机制实现消息落盘</li>
+<li>流处理: 为流式处理框架提供可靠的数据来源和库</li>
+</ol>
+<br>
+<p>Kafka组成: 若干个Producer、Consumer、Broker和ZooKeeper集群</p>
+<ol>
+<li><strong>Producer</strong>(生产者): 生产并发送消息到Broker(推送)</li>
+<li><strong>Consumer</strong>(消费者): 从Broker订阅并消费消息(拉取)</li>
+<li><strong>Broker</strong>(服务代理节点): 将从Producer收到的消息进行落盘</li>
+<li><strong>ZooKeeper</strong>集群：管理Kafka集群的元数据</li>
+</ol>
+<p>// Broker可看成单个独立的Kafka服务实例, 多个Broker组成个Kafka集群</p>
+<br>
+<p>如: Kafka集群构成</p>
+<p><img loading="lazy" src="./image/constitute.png" alt="kafka集群构成"  />
+</p>
+<br>
+<h2 id="基础概念">基础概念<a hidden class="anchor" aria-hidden="true" href="#基础概念">#</a></h2>
+<p><strong>主题</strong>(<em>Topic</em>): Kafka中消息归类单位</p>
+<ol>
+<li>Topic并不实际存在(仅<font color="red">逻辑</font>上的概念)</li>
+<li>Topic可细分为多个Partition, 但Partition仅属于单个Topic</li>
+<li>功能: Producer将消息发送到特定Topic, Consumer订阅Topic消费消息</li>
+</ol>
+<p><strong>分区</strong>(<em>Partition</em>): 组成Topic的单位(实际存储消息)</p>
+<ol>
+<li>Partition在存储层面可视为: <font color="red">可被追加的日志文件</font></li>
+<li>同一Topic下的不同Partition包含的消息是不同的</li>
+<li>Partition可<font color="red">跨Broker</font>(Topic可跨Broker)</li>
+</ol>
+<p><strong>偏移量</strong>(<em>Offset</em>): 消息追加到Partition时分配的标志位</p>
+<ol>
+<li>Offset是<font color="red">消息在Partition中的唯一标识</font>(保证Partition内的有序性)</li>
+<li>Offset不支持跨Partition(Topic无序)</li>
+</ol>
+<br>
+<p>如: 消息追加写入Partition</p>
+<p><img loading="lazy" src="image/write-partition.png" alt="消息追加写入partition"  />
+</p>
+<ol>
+<li>消息在发送到Broker之前, 都会先根据Partition规则分配到具体的Partition</li>
+<li>Topic的Partition应避免都属于单个文件(避免机器的I/O成为性能瓶颈)</li>
+</ol>
+<br>
+<p>Partition中2个特殊的Offset:</p>
+<ol>
+<li><strong>HW</strong>(<em>High Watermark</em>): Consumer能拉取到消息的最大Offset</li>
+<li><strong>LEO</strong>(<em>Log End Offset</em>): Partition下条消息写入的Offset</li>
+</ol>
+<p>// ISR中最小的LEO为该Partition的HW(最慢的follower)</p>
+<br>
+<p>如: Partition中的特殊Offset</p>
+<p><img loading="lazy" src="image/partition-offset.png" alt="partition中的特殊offset"  />
+</p>
+<br>
+<p><strong>副本</strong>(<em>Replica</em>): Partition的冗余</p>
+<ol>
+<li>功能: Kafka通过多副本机制提高容灾能力</li>
+<li>副本之间分为：<strong>leader</strong>(主副本)、<strong>follower</strong>(从副本)</li>
+<li>副本间仅存在<strong>一主多从</strong>关系, 且可实现自动故障转移</li>
+<li>Producer和Consumer只能和leader进行交互(follower仅进行消息同步)</li>
+</ol>
+<br>
+<p>如: Kafka的多副本交互</p>
+<p><img loading="lazy" src="image/replicas.png" alt="kafka的多副本交互"  />
+</p>
+<br>
+<p>副本相关名词:</p>
+<ol>
+<li><strong>AR</strong>(<em>Assigned Replicas</em>): 所有副本(包括leader)</li>
+<li><strong>ISR</strong>(<em>In-Sync Replicas</em>): 与leader保持同步的副本(包括leader)</li>
+<li><strong>OSR</strong>(<em>Out-of-Synce Replicas</em>): 与leader同步滞后过多的副本(数据不同步)</li>
+</ol>
+<p>// 默认仅ISR中的副本才有资格选举为leader, 且负责动态管理ISR和OSR中的follower</p>
+<br>
+<h2 id="延迟任务">延迟任务<a hidden class="anchor" aria-hidden="true" href="#延迟任务">#</a></h2>
+<p><strong>时间轮</strong>(<em>TimeingWheel</em>): 以固定时间粒度为单位管理和调度事件的数据结构</p>
+<ol>
+<li><strong>时间跨度</strong>(<em>tickMs</em>): 时间轮构成的基本单位, 个数固定</li>
+<li><strong>表盘指针</strong>(<em>currentTime</em>): 指向当前所处的时间粒度</li>
+<li>时间轮对于插入/删除操作的时间复杂度为O(1)</li>
+</ol>
+<br>
+<p><strong>定时器</strong>(<em>SystemTimer</em>): Kafka中各类延迟操作的触发</p>
+<ol>
+<li>本质: 基于时间轮机制和数组构成的环形队列</li>
+<li><strong>定时任务项</strong>(<em>TimerTaskEntry</em>): 封装真正的定时/延迟任务(Task)</li>
+<li><strong>定时任务列表</strong>(<em>TimerTaskList</em>): 存放时间粒度下所有TimerTaskEntry的双向链表</li>
+</ol>
+<br>
+<p>如: 定时器构成结构</p>
+<p><img loading="lazy" src="image/systemtimer.png" alt="定时器构成结构"  />
+</p>
+<ol>
+<li>当添加TimerTaskEntry时, 会根据过期时间和currentTime算出应插入的TimerTaskList</li>
+<li>当计算结果超出总tickMs时, 会复用之前的TimerTaskList</li>
+<li>TimerTaskList中都有个哑元节点方便操作(不存储数据)</li>
+</ol>
+<br>
+<p><strong>层级时间轮</strong>(<em>Hierarchical TimeingWheel</em>): 分层处理不同tickMs的多级时间轮的组合结构</p>
+<ol>
+<li>本质: 通过划分每个时间轮处理的时间范围, 以保证时间轮的高性能</li>
+<li><strong>升级</strong>: 当TimerTaskEntry的过期时间超出本层的时间范围时, 将交由上层时间轮</li>
+<li><strong>降级</strong>: 当TimerTaskEntry在高层时间轮中过期时, 会将其减少已过的时间并重新提交到层级时间轮</li>
+<li>TimerTask仅能由最底层的时间轮负责执行处理, 高层的时间轮仅根据时间粒度负责其的编排和重新提交</li>
+</ol>
+<p>// Kafka中通过<code>DelayQueue</code>和<code>ExpiredOperationReaper</code>线程实现时间的推进(避免空转造成的性能浪费)</p>
+<br>
+<p>如: 层级时间轮</p>
+<p><img loading="lazy" src="image/hierarchical-timeingwheel.png" alt="层级时间轮"  />
+</p>
+<ol>
+<li>层级时间轮创建时会以当前系统时间作为最底层时间轮的起始时间(<em>startMs</em>)</li>
+<li>高层时间轮的起始时间都为创建时上一层时间轮的currentTime</li>
+<li>每层时间轮的currentTIme都必须是tickMs的整数倍</li>
+<li>Kafka仅持有最底层时间轮的引用</li>
+</ol>
+<br>
+<p><strong>延迟操作管理器</strong>(<em>DelayedOperationPurgatory</em>, DOP): 管理/执行Kafka中各类延迟操作</p>
+<ol>
+<li>每个DOP都对应个定时器(超时管理)和监听池(监听Partition事件)</li>
+<li>当进行延迟拉取时, 会读取两次日志文件并等待足够数量的消息才会返回</li>
+</ol>
+<br>
+<p>如: Producer的延迟操作</p>
+<p><img loading="lazy" src="image/producer-delay.png" alt="producer的延迟操作"  />
+</p>
+<br>
+<h1 id="producer">Producer<a hidden class="anchor" aria-hidden="true" href="#producer">#</a></h1>
+<p><strong>Producer</strong>(生产者): 生产并发送消息到Broker(推送)</p>
+<ol>
+<li>Producer是<font color="red">多线程安全</font>的(建议通过池化以提高性能)</li>
+<li>Producer实例后可发送多条消息(可对应多个ProducerRecord)</li>
+</ol>
+<p>// 0.9之后的版本是基于Java实现(之前是Scala实现)</p>
+<p>Producer客户端发送消息大致逻辑:</p>
+<ol>
+<li>配置Producer客户端参数并创建该Producer实例</li>
+<li>构建需发送的消息</li>
+<li>发送构建的消息</li>
+<li>关闭实例</li>
+</ol>
+<br>
+<p>构造Producer必填的3个参数:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">参数</th>
+<th style="text-align:center">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">bootstrap.servers</td>
+<td style="text-align:center">引导程序的服务地址<br>格式: <code>地址1:端口1,地址N:端口N</code><br>(建议指定两个以上的Broker地址以保证稳定性, 且使用主机名形式)</td>
+</tr>
+<tr>
+<td style="text-align:center">key.serializer</td>
+<td style="text-align:center">发送时对Key调用的序列化器<br>Broker仅能接受字节数组形式的消息<code>byte[]</code></td>
+</tr>
+<tr>
+<td style="text-align:center">value.serializer</td>
+<td style="text-align:center">发送时对Value调用的序列化器<br>Broker仅能接受字节数组形式的消息<code>byte[]</code></td>
+</tr>
+</tbody>
+</table>
+<p>// 序列化器必须以全限定名方式指定, Java的ProducerConfig类中包含所有的配置参数</p>
+<br>
+<h2 id="producerrecord">ProducerRecord<a hidden class="anchor" aria-hidden="true" href="#producerrecord">#</a></h2>
+<p><strong>ProducerRecord</strong>(构建消息): Producer每次发送的消息体</p>
+<ol>
+<li>ProducerRecord由多个属性构成(Topic和消息是基础属性)</li>
+<li>ProducerRecord有多个构造方法(指定属性的个数)</li>
+<li>可根据不同需求创建特定ProducerRecord</li>
+</ol>
+<br>
+<p>ProducerRecord定义:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ProducerRecord</span><span style="color:#f92672">&lt;</span>K<span style="color:#f92672">,</span> V<span style="color:#f92672">&gt;</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> String topic<span style="color:#f92672">;</span>      <span style="color:#75715e">// Topic(必填)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Integer partition<span style="color:#f92672">;</span> <span style="color:#75715e">// Partition
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 消息头部(0.11版本引入)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// 指定与应用相关信息(可忽略)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Headers headers<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 键(附加信息)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// 其会用于计算Partition(二次归类)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> K key<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 值(消息体, 必填)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// 为空则代表: 墓碑消息
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> V value<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 消息时间戳
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// 细分为CreateTime(消息创建时间)和LogAppendTime(追加日志时间)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Long timestamp<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">......</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><br>
+<h2 id="sendclose">Send&amp;Close<a hidden class="anchor" aria-hidden="true" href="#sendclose">#</a></h2>
+<p><strong>Send</strong>(发送消息): Producer构建ProducerRecord之后发送给Broker</p>
+<ol>
+<li>发送模式: 发后既忘(fire-and-forget)、同步(sync)、异步(async)</li>
+<li>发送模式默认为<font color="red">异步</font>(可通过获取返回值的方法以阻塞等待实现同步)</li>
+<li>返回值通常为发送消息的元数据(Topic、Partition、偏移量和时间戳等)</li>
+</ol>
+<br>
+<p>Send()方法的定义:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> Future<span style="color:#f92672">&lt;</span>RecordMetadata<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">send</span><span style="color:#f92672">(</span>ProducerRecord<span style="color:#f92672">&lt;</span>K<span style="color:#f92672">,</span> V<span style="color:#f92672">&gt;</span> record<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> Future<span style="color:#f92672">&lt;</span>RecordMetadata<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">send</span><span style="color:#f92672">(</span>ProducerRecord<span style="color:#f92672">&lt;</span>K<span style="color:#f92672">,</span> V<span style="color:#f92672">&gt;</span> record<span style="color:#f92672">,</span> Callback callback<span style="color:#f92672">);</span>
+</span></span></code></pre></div><ol>
+<li>可通过Future的get()方法阻塞实现同步(返回<code>RecordMetadata</code>对象)</li>
+<li><font color="red">Send()方法需配合try/catch</font>(发送成功或发生异常)</li>
+<li>发送导致的异常分为: 重试异常、不可重试异常</li>
+</ol>
+<p>// 不可重试异常发生时会直接抛出并结束</p>
+<br>
+<p>常见的重试异常为：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">可重试异常</th>
+<th style="text-align:center">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">NewworkException</td>
+<td style="text-align:center">网络异常</td>
+</tr>
+<tr>
+<td style="text-align:center">LeaderNotAvailableException</td>
+<td style="text-align:center">副本的leader不可用<br>(可能正在选举leader)</td>
+</tr>
+<tr>
+<td style="text-align:center">UnknownTopicOrPartitionException</td>
+<td style="text-align:center">Topic或Partition异常</td>
+</tr>
+<tr>
+<td style="text-align:center">NotEnoughReplicasException</td>
+<td style="text-align:center">副本数量不足</td>
+</tr>
+<tr>
+<td style="text-align:center">NotCoordinatorException</td>
+<td style="text-align:center">协调器异常</td>
+</tr>
+</tbody>
+</table>
+<br>
+<p>Send()方法中的Callback定义:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">Callback</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">onCompletion</span><span style="color:#f92672">(</span>RecordMetadata var1<span style="color:#f92672">,</span> Exception var2<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><ol>
+<li>var1和var2参数互斥(两者必有个为null，后者代表异常)</li>
+<li>若两个消息对相同Partition发送消息, 则按发送顺序调用Callback</li>
+</ol>
+<br>
+<p><strong>Close</strong>(结束发送):回收Producer实例</p>
+<ol>
+<li>发送结束后务必回收Producer实例(防止资源泄漏)</li>
+<li>Close默认会阻塞等待之前所有的发送请求完成之后再回收</li>
+<li>可指定关闭的超时时间(超出该事件则强行回收, 不建议指定)</li>
+</ol>
+<br>
+<p>Close()方法的定义：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">close</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">close</span><span style="color:#f92672">(</span><span style="color:#66d9ef">long</span> timeout<span style="color:#f92672">,</span> TimeUnit timeUnit<span style="color:#f92672">);</span>
+</span></span></code></pre></div><br>
+<h2 id="实现原理">实现原理<a hidden class="anchor" aria-hidden="true" href="#实现原理">#</a></h2>
+<p>Producer的发送消息由两个线程完成:</p>
+<ol>
+<li><strong>主线程</strong>: 构建并处理消息后发送至RecordAccumulator</li>
+<li><strong>Sender线程</strong>: 从RecordAccumulator获取消息, 并发送至Broker</li>
+</ol>
+<br>
+<p>如: Producer发送消息链路图</p>
+<p><img loading="lazy" src="image/producer-record.png" alt="producer发送消息链路图"  />
+</p>
+<ol>
+<li><strong>RecordAccumulator</strong>: 双端队列缓存待发送ProducerBatch以减少网络影响</li>
+<li><strong>ProducerBatch</strong>: 包含任意多个待发送的ProducerRecord(消息批次)</li>
+<li><strong>Request</strong>: Kafka支持的各种请求协议</li>
+<li><strong>InFlightRequests</strong>: 缓存已发送但未响应的Request</li>
+</ol>
+<p>// Interceptor和Partitioner可选择性处理, 但必须经Serializer处理</p>
+<br>
+<p>Producer发送ProducerRecord的流程:</p>
+<ol>
+<li>主线程将ProducerRecord加工处理后发送至<font color="red">RecordAccumulator尾部</font></li>
+<li>RecordAccumulator根据ProducerRecord分区选择对应的ProducerBatch</li>
+<li>RecordAccumulator根据内存复用原则和ProducerBatch大小决定是否新建</li>
+<li>Sender线程从<font color="red">RecordAccumulator头部</font>获取ProducerBatch</li>
+<li>将<code>&lt;分区, &lt;Deque&lt;ProducerBatch&gt;&gt;</code>形式变为<code>&lt;Node, List&lt;ProducerBatch&gt;&gt;</code></li>
+<li>再根据各种协议请求转换为<code>&lt;Node, Request&gt;</code>形式</li>
+<li>发送前以<code>Map&lt;nodeId, Deque&lt;Request&gt;&gt;</code>缓存Request</li>
+<li>返回发送后的响应并清理InFlightRequests和RecordAccumulator</li>
+</ol>
+<p>// 形式转换是为完成应用逻辑层到网络I/O层的转换</p>
+<br>
+<p>RecordAccumulator内存复用原则:</p>
+<ol>
+<li>RecordAccumulator通过<code>java.io.ByteBuffer</code>和<code>BufferPool</code>实现内存复用</li>
+<li>若内存申请不超过指定大小, 则申请指定大小并放置于BufferPool</li>
+<li>若内存申请超过指定大小, 则申请该内存并再使用后直接释放</li>
+</ol>
+<p>// BufferPool可避免频繁的申请和释放内存</p>
+<br>
+<p>InFlightRequest中包含leastLoadedNode</p>
+<ol>
+<li><strong>leastLoadedNode</strong>: 负载最小的Broker(未确认请求最少的)</li>
+<li>leastLoadedNode常用于元数据请求和Consumer组播协议的交互</li>
+<li>leastLoadedNode由Sender线程根据指定过期时间维护(主线程也可访问)</li>
+</ol>
+<p>// 元数据: Broker、Topic、Partition、leader和follower副本所在的Broker等</p>
+<br>
+<p>如: Sender线程维护leatLoadedNode信息</p>
+<ol>
+<li>Sender线程检查元数据是否过期(默认5m)</li>
+<li>超出则挑出leastLoadedNode, 向该Broker发送<strong>MetadataRequest</strong>请求</li>
+<li>获取结果后将其结果存入InFlightRequests中, 并更新元数据的过期时间</li>
+</ol>
+<br>
+<h3 id="producerinterceptor">ProducerInterceptor<a hidden class="anchor" aria-hidden="true" href="#producerinterceptor">#</a></h3>
+<p><strong>ProducerInterceptor</strong>(拦截器): 消息发送前/后的进行的操作</p>
+<ol>
+<li>不建议通过ProducerInterceptor修改topic、key和partition</li>
+<li>可指定多个ProducerInterceptor(拦截链按配置时顺序执行)</li>
+<li>可通过<code>interceptor.classes</code>参数指定Producer所使用的ProducerInterceptor</li>
+</ol>
+<br>
+<p>ProducerInterceptor定义:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">ProducerInterceptor</span><span style="color:#f92672">&lt;</span>K<span style="color:#f92672">,</span> V<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">extends</span> Configurable <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 发送前进行的操作
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">public</span> ProducerRecord<span style="color:#f92672">&lt;</span>K<span style="color:#f92672">,</span> V<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">onSend</span><span style="color:#f92672">(</span>ProducerRecord<span style="color:#f92672">&lt;</span>K<span style="color:#f92672">,</span> V<span style="color:#f92672">&gt;</span> record<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 发送后被应答之后或失败进行的操作
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// 优先于Send()方法中定义的Callback前执行
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// 由于该方法运行于Producer的IO线程中, 应简洁
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">onAcknowledgement</span><span style="color:#f92672">(</span>RecordMetadata metadata<span style="color:#f92672">,</span> Exception exception<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 关闭拦截器
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">close</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><p>// 抛出的任何异常都会被记录到日志中, 并不再向上抛</p>
+<br>
+<h3 id="serializer">Serializer<a hidden class="anchor" aria-hidden="true" href="#serializer">#</a></h3>
+<p><strong>Serializer</strong>(序列化器): 将特定数据转换成字节数组(<code>byte[]</code>)</p>
+<ol>
+<li>Broker仅能接受字节数组形式的数据(接收后会对其反序列化)</li>
+<li>Producer使用的Serializer需和Consumer使用的反序列化器需对应</li>
+<li>Producer指定Serializer时, 需通过全限定名方式指定(类的完整路径)</li>
+</ol>
+<br>
+<p>Serializer定义:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">Serializer</span><span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">extends</span> Closeable <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 配置序列化器
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// 常用于指定编码类型(默认UTF-8)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">configure</span><span style="color:#f92672">(</span>Map<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">,</span> <span style="color:#f92672">?&gt;</span> configs<span style="color:#f92672">,</span> <span style="color:#66d9ef">boolean</span> isKey<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 执行序列化
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">byte</span><span style="color:#f92672">[]</span> <span style="color:#a6e22e">serialize</span><span style="color:#f92672">(</span>String topic<span style="color:#f92672">,</span> T data<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 关闭序列化器
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// 需保证幂等性
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">close</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><p>// 不建议使用自定义Serializer或DeSerializer, 会增加耦合度</p>
+<br>
+<h3 id="partitioner">Partitioner<a hidden class="anchor" aria-hidden="true" href="#partitioner">#</a></h3>
+<p><strong>Partitioner</strong>(分区器): ProducerRecord分区的默认规则</p>
+<ol>
+<li>ProducerRecord中指定partition字段, 则略过Partitioner</li>
+<li>Partitioner的分区计算受Topic数量的影响(已分配的不受)</li>
+<li>可通过<code>partitioner.class</code>参数指定Producer所使用的Partitioner</li>
+</ol>
+<br>
+<p>Partitioner定义:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">Partitioner</span> <span style="color:#66d9ef">extends</span> Configurable<span style="color:#f92672">,</span> Closeable <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 计算并返回分区号
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">partition</span><span style="color:#f92672">(</span>String topic<span style="color:#f92672">,</span> Object key<span style="color:#f92672">,</span> <span style="color:#66d9ef">byte</span><span style="color:#f92672">[]</span> keyBytes<span style="color:#f92672">,</span> Object value<span style="color:#f92672">,</span> <span style="color:#66d9ef">byte</span><span style="color:#f92672">[]</span> valueBytes<span style="color:#f92672">,</span> Cluster cluster<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 关闭分区器
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">close</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">Configurable</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 获取配置信息并初始化数据
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">configure</span><span style="color:#f92672">(</span>Map<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">,</span> <span style="color:#f92672">?&gt;</span> configs<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><p>默认的Partitioner: <code>org.apache.kafka.clients.producer.internals.DefaultPartitioner</code></p>
+<ol>
+<li>其<code>close()</code>方法默认为空</li>
+<li>消息为null时, 则以轮询的方式分配可用的分区号</li>
+<li>消息不为null时, 则进行Hash计算(MurmurHash2算法)</li>
+</ol>
+<p>// 消息相同的情况下会写入相同的分区(存在消息互相覆盖的情况)</p>
+<br>
+<h2 id="事务">事务<a hidden class="anchor" aria-hidden="true" href="#事务">#</a></h2>
+<p><strong>事务</strong>(<em>Transaction</em>): Producer操作的最小原子单位(可跨Partition)</p>
+<ol>
+<li>开启事务时, 必须也需开启幂等性(<code>enable.idempotence</code>)</li>
+<li>开启事务时必须指定事务ID(若事务ID重复, 将结束被覆盖的事务并抛出异常)</li>
+<li>只能使事务处于以下两种状态(否则将抛出异常): COMMIT、ABORT</li>
+<li>事务开启后需关闭自动位移提交, 也不能位移消费</li>
+</ol>
+<br>
+<p>Producer中常用的事务方法:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#75715e">// 初始化事务
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">initTransactions</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 开启事务
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">beginTransaction</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 事务内的位移提交
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">sendOffsetsToTransaction</span><span style="color:#f92672">(</span>Map<span style="color:#f92672">&lt;</span>TopicPartition<span style="color:#f92672">,</span> OffsetAndMetadata<span style="color:#f92672">&gt;</span> offsets<span style="color:#f92672">,</span> String consumerGroupId<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 提交事务
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">commitTransaction</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 终止事务(回滚)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">abortTransaction</span><span style="color:#f92672">();</span>
+</span></span></code></pre></div><br>
+<p><strong>事务协调器</strong>(<em>TransactionCoordinator</em>): 负责事务中的各类操作</p>
+<ol>
+<li>每个Producer都对应个事务协调器, 由其负责Producer中各类请求</li>
+<li>事务协调器会将事务的信息都存储至内部Toipc的<code>__transaction_state</code></li>
+</ol>
+<br>
+<p>如: 事务的执行流程</p>
+<p><img loading="lazy" src="image/transaction-flow.png" alt="事务的执行流程"  />
+</p>
+<ol>
+<li>查找事务协调器: 找到事务协调器所在的Broker并建立连接(同时查找Partition)</li>
+<li>获取PID: 通过<code>InitProducerIdRequest</code>请求获取该事务ID</li>
+<li>执行事务: 通过各类请求处理Record并将数据存储至内部Topic</li>
+<li>结束事务: 发送各类请求结束事务, 同时将事务信息存储至内部Topic和日志文件</li>
+</ol>
+<br>
+<p>Consumer的事务受以下限制:</p>
+<ol>
+<li>采用日志压缩策略的Topic, 其Record可能被覆盖</li>
+<li>Consumer在消费时可能没有分配到事务内的所有Partition</li>
+<li>Record可能分布在Partition的多个LogSegment, 存在部分被清除的可能</li>
+<li>Consumer可通过位移提交/位移消费访问Record, 可能导致遗漏事务中的Record</li>
+</ol>
+<br>
+<h1 id="consumer">Consumer<a hidden class="anchor" aria-hidden="true" href="#consumer">#</a></h1>
+<p><strong>Consumer</strong>(消费者): 从Partition拉取并消费消息(<font color="red">非线程安全</font>)</p>
+<ol>
+<li>Topic的Partition在<font color="red">每个消费者组中有且仅能由一个Consumer消费</font></li>
+<li>若Consumer数量多于Partition, 则部分Consumer空闲(无对应Partition)</li>
+<li>每个Consumer仅能消费从消费者组中分配到或单独订阅Partition所含消息</li>
+</ol>
+<br>
+<p>Partition分配策略: 定义Consumer对订阅Topic下的Partition的划分</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">分配策略</th>
+<th style="text-align:center">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">RangeAssignor<br>(默认)</td>
+<td style="text-align:center">Partition按跨度依次分配给Consumer<br>(跨度 = Partition数量 / Consumer数量)</td>
+</tr>
+<tr>
+<td style="text-align:center">RoundRobinAssignor</td>
+<td style="text-align:center">轮询方式依次将Partition分配给Consumer<br>(轮询前会先按照字典序对Consumer和Partition进行排序)<br>(分配给Consumer的Partition必须是订阅Topic下的Partition, 否则将略过)</td>
+</tr>
+<tr>
+<td style="text-align:center">StickyAssignor</td>
+<td style="text-align:center">在RoundRobinAssignor的基础上尽可能保持黏性分配</td>
+</tr>
+</tbody>
+</table>
+<p>// 以下均以RangeAssignor分配策略说明, 可通过<code>partition.assignment.strategy</code>参数更改</p>
+<br>
+<p><strong>消费者组</strong>(<em>Consumer Group</em>): 多个Consumer组成的消费群体</p>
+<ol>
+<li>Topic可被订阅的消费者组下任意个Consumer消费</li>
+<li>Consumer通过<code>group.id</code>参数指定所属消费者组</li>
+<li>每个Consumer有且仅有一个消费者组</li>
+<li>消费者组之间无法感知(互不影响)</li>
+</ol>
+<br>
+<p>如：A消费者组和B消费者组订阅相同的Topic</p>
+<p><img loading="lazy" src="image/sub-topic.png" alt="两组订阅相同的topic"  />
+</p>
+<ol>
+<li>若Topic对应的所有Consumer都属于相同的消费者组, 则为点对点(P2P)</li>
+<li>若Topic对应的所有Consumer属于不同的消费者组, 则为发布/订阅(Pub/Sub)</li>
+</ol>
+<br>
+<p>Consumer客户端消费消息大致逻辑:</p>
+<ol>
+<li>配置Consumer客户端参数并创建该Consumer实例</li>
+<li>订阅Topic, 拉取并消费消息(位移提交)</li>
+<li>关闭实例</li>
+</ol>
+<br>
+<p>构建Consumer客户端必填的4个参数:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">参数</th>
+<th style="text-align:center">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">bootstrap.servers</td>
+<td style="text-align:center">引导程序的服务地址<br>格式: <code>地址1:端口1,地址N:端口N</code><br>(建议指定两个以上的Broker地址以保证稳定性, 且使用主机名形式)</td>
+</tr>
+<tr>
+<td style="text-align:center"><font color="red">group.id</font></td>
+<td style="text-align:center">Consumer所属消费者组</td>
+</tr>
+<tr>
+<td style="text-align:center">key.derializer</td>
+<td style="text-align:center">消费时对Key调用的反序列化器<br>Broker仅能接受字节数组形式的消息<code>byte[]</code></td>
+</tr>
+<tr>
+<td style="text-align:center">value.derializer</td>
+<td style="text-align:center">消费时对Value调用的反序列化器<br>Broker仅能接受字节数组形式的消息<code>byte[]</code></td>
+</tr>
+</tbody>
+</table>
+<p>// 序列化器必须以全限定名方式指定, Java的ConsumerConfig类中包含所有的配置参数</p>
+<br>
+<p><code>close()</code>和<code>wakeup()</code>方法的定义:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#75715e">// 关闭Consumer
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// timeout参数指定关闭的超时时间(默认30s)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">close</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">close</span><span style="color:#f92672">(</span>Duration timeout<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 唤醒Consumer
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 该方法是唯一的线程安全方法
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 若唤醒阻塞的Consumer, 则抛出WakeupException
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">wakeup</span><span style="color:#f92672">();</span>
+</span></span></code></pre></div><br>
+<h2 id="消费消息">消费消息<a hidden class="anchor" aria-hidden="true" href="#消费消息">#</a></h2>
+<p><strong>消费消息</strong>: 订阅Topic使Consumer消费特定Partition</p>
+<br>
+<p>Topic和Partition的定义:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#75715e">// Partition构成
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">TopicPartition</span> <span style="color:#66d9ef">implements</span> Serializable <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">int</span> hash <span style="color:#f92672">=</span> 0<span style="color:#f92672">;</span>        <span style="color:#75715e">// 每个TopicPartition的唯一标识
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> partition<span style="color:#f92672">;</span> <span style="color:#75715e">// 所属Topic
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> String topic<span style="color:#f92672">;</span>  <span style="color:#75715e">// Partition编号
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// 其他方法省略(构造函数和属性提取等)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Topic元数据信息
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 该信息可通过Consumer的partitionsFor()方法获取(List集合形式返回)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">PartitionInfo</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> String topic<span style="color:#f92672">;</span>           <span style="color:#75715e">// Topic编号
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> partition<span style="color:#f92672">;</span>          <span style="color:#75715e">// Partition编号
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Node leader<span style="color:#f92672">;</span>            <span style="color:#75715e">// leader副本所在的Partition
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Node<span style="color:#f92672">[]</span> replicas<span style="color:#f92672">;</span>        <span style="color:#75715e">// AR
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Node<span style="color:#f92672">[]</span> inSyncReplicas<span style="color:#f92672">;</span>  <span style="color:#75715e">// ISR
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Node<span style="color:#f92672">[]</span> offlineReplicas<span style="color:#f92672">;</span> <span style="color:#75715e">// OSR
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// 其他方法省略(构造函数和属性提取等)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><br>
+<h3 id="订阅拉取">订阅/拉取<a hidden class="anchor" aria-hidden="true" href="#订阅拉取">#</a></h3>
+<p><strong>订阅</strong>(<em>Subscribe</em>): Consumer订阅个Topic/Partition以消费Partition</p>
+<ol>
+<li>Consumer可单独订阅Partition, 但其会脱离消费者组管理</li>
+<li>单独订阅Partition还会导致Consumer的自动再均衡失效</li>
+<li>Consumer可订阅多个Topic(可分配到多个Partition)</li>
+<li>若Conuser进行多次订阅操作, 则以最后次为准</li>
+<li>两种形式的订阅都可被取消</li>
+</ol>
+<br>
+<p><code>subscribe()</code>和<code>assign()</code>方法的定义:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#75715e">// 订阅集合中所有的Topic
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// ConsumerRebalanceListener(再均衡监听器):监听特殊事件以触发再均衡
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">subscribe</span><span style="color:#f92672">(</span>Collection<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">&gt;</span> topics<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">subscribe</span><span style="color:#f92672">(</span>Collection<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">&gt;</span> topics<span style="color:#f92672">,</span> ConsumerRebalanceListener listener<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 订阅所有匹配正则表达式的Topic
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 若后续新创建的Topic满足正则表达式, 则会自动订阅该Topic
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// ConsumerRebalanceListener(再均衡监听器):监听特殊事件以触发再均衡
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">subscribe</span><span style="color:#f92672">(</span>Pattern pattern<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">subscribe</span><span style="color:#f92672">(</span>Pattern pattern<span style="color:#f92672">,</span>
+</span></span><span style="display:flex;"><span>ConsumerRebalanceListener listener<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 订阅指定集合中所有的Partition
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">assign</span><span style="color:#f92672">(</span>Collection<span style="color:#f92672">&lt;</span>TopicPartition<span style="color:#f92672">&gt;</span> partitions<span style="color:#f92672">);</span>
+</span></span></code></pre></div><ol>
+<li>订阅状态分为：AUTO_TOPICS、AUTO_PATTERN、USER_ASSIGNED</li>
+<li>Consumer的订阅状态只能为其一(未订阅则为NONE)</li>
+<li>建议通过<code>subscribe()</code>方法订阅(具有再均衡的功能)</li>
+</ol>
+<br>
+<p><code>unsubscribe()</code>方法的定义:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#75715e">// 取消Consumer的所有订阅
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 效果等同于订阅空的集合/无匹配的正则表达式
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">unsubscribe</span><span style="color:#f92672">();</span>
+</span></span></code></pre></div><br>
+<p><strong>拉取</strong>(<em>Pull</em>): Consumer的消费是基于拉模式</p>
+<ol>
+<li>拉模式: 主动向服务端发起请求以获取消息消费</li>
+<li>Consumer可暂停/恢复对指定Partition的消费(不再拉取)</li>
+<li>拉取会自动根据拉取请求的<code>session_id</code>和<code>epoc</code>分为: 全量拉取、增量拉取</li>
+</ol>
+<p><code>poll()</code>方法的定义:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#75715e">// 拉取Consumer绑定的Partition的消息
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// timeout参数用于指定获取消息前阻塞等待的时间(0则立刻返回)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> ConsumerRecords<span style="color:#f92672">&lt;</span>K<span style="color:#f92672">,</span> V<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">poll</span><span style="color:#f92672">(</span><span style="color:#66d9ef">final</span> Duration timeout<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> poll<span style="color:#f92672">(</span>timeout<span style="color:#f92672">.</span><span style="color:#a6e22e">toMillis</span><span style="color:#f92672">(),</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 拉取Consumer绑定的Partition的消息
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// timeout参数用于指定获取消息前阻塞等待的时间(0则立刻返回)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// includeMetadataInTimeout参数指定阻塞等待时是否考虑元数据超时
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// ConsumerRecords由多个ConsumerRecord组成的消息集(iterator()方法遍历)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 还可通过records（）方法获取消息集指定所属Topicd/Partition的消息
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">private</span> ConsumerRecords<span style="color:#f92672">&lt;</span>K<span style="color:#f92672">,</span> V<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">poll</span><span style="color:#f92672">(</span><span style="color:#66d9ef">final</span> <span style="color:#66d9ef">long</span> timeoutMs<span style="color:#f92672">,</span> <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">boolean</span> includeMetadataInTimeout<span style="color:#f92672">)</span>
+</span></span></code></pre></div><br>
+<p><code>pause()</code>和<code>resume()</code>方法的定义:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#75715e">// 暂停指定Partition的消费
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 该方法不会影响Consumer的订阅
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 可通过paused()获取所有被暂停的Partition
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">pause</span><span style="color:#f92672">(</span>Collection<span style="color:#f92672">&lt;</span>TopicPartition<span style="color:#f92672">&gt;</span> partitions<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 恢复指定Partition的消费
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 若Partition未被暂停, 则直接返回
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">resume</span><span style="color:#f92672">(</span>Collection<span style="color:#f92672">&lt;</span>TopicPartition<span style="color:#f92672">&gt;</span> partitions<span style="color:#f92672">);</span>
+</span></span></code></pre></div><br>
+<h3 id="consumerrecord">ConsumerRecord<a hidden class="anchor" aria-hidden="true" href="#consumerrecord">#</a></h3>
+<p><strong>ConsumerRecord</strong>(消费消息): Consumer获取的消息体</p>
+<ol>
+<li>ConsumerRecord由多个属性构成(Topic和消息算基础属性)</li>
+<li>ConsumerRecord有多个构造方法(指定属性的个数)</li>
+<li>ConsumerRecord与ProducerRecord相对应</li>
+</ol>
+<br>
+<p>ConsumerRecord定义:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ConsumerRecord</span><span style="color:#f92672">&lt;</span>K<span style="color:#f92672">,</span> V<span style="color:#f92672">&gt;</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> String topic<span style="color:#f92672">;</span>   <span style="color:#75715e">// 所属Topic
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> partition<span style="color:#f92672">;</span>  <span style="color:#75715e">// Partition编号
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">long</span> offset<span style="color:#f92672">;</span>    <span style="color:#75715e">// 所在Partition的偏移量
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">long</span> timestamp<span style="color:#f92672">;</span> <span style="color:#75715e">// 时间戳
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 时间戳类型
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// CreateTime类型: 创建消息时间
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// LogAppendTime类型: 追加到日志的时间
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> TimestampType timestampType<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> K key<span style="color:#f92672">;</span>                   <span style="color:#75715e">// 键
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> V value<span style="color:#f92672">;</span>                 <span style="color:#75715e">// 值
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> Headers headers<span style="color:#f92672">;</span>         <span style="color:#75715e">// 消息的头部内容
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> serializedKeySize<span style="color:#f92672">;</span>   <span style="color:#75715e">// 键所对应的反序列化器
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> serializedValueSize<span style="color:#f92672">;</span> <span style="color:#75715e">// 值所对应的反序列化器
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">volatile</span> Long checksum<span style="color:#f92672">;</span>        <span style="color:#75715e">// CRC32校验值
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 其他方法省略
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><br>
+<h2 id="消费位移">消费位移<a hidden class="anchor" aria-hidden="true" href="#消费位移">#</a></h2>
+<p><strong>消费位移</strong>: Consumer在Partition下个消费的ConsumerRecord位置</p>
+<ol>
+<li><strong>偏移量</strong>(<em>Offset</em>): ProducerRecord在Partition中的位置</li>
+<li>消费位移均存储于内部Topic的<code>__consumer_offsets</code></li>
+<li>Consumer在每个分区中都有个消费位移</li>
+</ol>
+<br>
+<p><code>position()</code>和<code>committed()</code>方法的定义:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#75715e">// 获取Consumer下条消费的ConsumerRecord在指定Partition中的位置
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// timeout参数指定获取该信息的最大阻塞时间
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">long</span> <span style="color:#a6e22e">position</span><span style="color:#f92672">(</span>TopicPartition partition<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">long</span> <span style="color:#a6e22e">position</span><span style="color:#f92672">(</span>TopicPartition partition<span style="color:#f92672">,</span> <span style="color:#66d9ef">final</span> Duration timeout<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 获取Consumer最后次消费的ConsumerRecord在指定Partition中的位置
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// timeout参数指定获取该信息的最大阻塞时间
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> OffsetAndMetadata <span style="color:#a6e22e">committed</span><span style="color:#f92672">(</span>TopicPartition partition<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> OffsetAndMetadata <span style="color:#a6e22e">committed</span><span style="color:#f92672">(</span>TopicPartition partition<span style="color:#f92672">,</span> <span style="color:#66d9ef">final</span> Duration timeout<span style="color:#f92672">);</span>
+</span></span></code></pre></div><br>
+<p>如: Consumer消费Partition后的位置信息</p>
+<p><img loading="lazy" src="image/consumer-offset.png" alt="consumer消费位移"  />
+</p>
+<p>// 从Broker拉取消息时, 会同时记录每条消息的具体位置</p>
+<br>
+<h3 id="位移提交">位移提交<a hidden class="anchor" aria-hidden="true" href="#位移提交">#</a></h3>
+<p><strong>位移提交</strong>: 持久化消费位移信息</p>
+<ol>
+<li>位移提交并不总是与Position信息相同</li>
+<li>位移提交策略分为：默认提交、手动提交</li>
+</ol>
+<p><strong>默认提交</strong>: 交由Kafka管理提交</p>
+<ol>
+<li><code>enable.auto.commit</code>参数配置是否开启</li>
+<li>默认5s提交次Partition中最大的消费位移, 其存在重复消费和消息丢失的风险</li>
+<li>Consumer每次拉取之前也会检查次是否可提交, 满足则先提交再拉取</li>
+<li>默认Consumer在消费完消息集后进行位移提交(延迟提交)</li>
+</ol>
+<br>
+<p>如: 消费过程中出现异常后恢复导致的重复消费</p>
+<p><img loading="lazy" src="image/repeated-consume.png" alt="重复消费"  />
+</p>
+<p>// 若出现异常后未恢复, 且其他Consumer又进行位移提交则发送消息丢失</p>
+<br>
+<p><strong>手动提交</strong>: 由用户决定位移提交</p>
+<ol>
+<li>手动提交分为: 同步提交、异步提交</li>
+<li>手动提交虽管理粒度更细, 但需消耗较多性能</li>
+</ol>
+<br>
+<p><code>commitSync()</code>和<code>commitAsync()</code>方法的定义:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#75715e">// 同步提交
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// timeout参数指定提交的超时时间
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// offsets参数指定提交具体Partition的(默认提前所有Partition的Position)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">commitSync</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">commitSync</span><span style="color:#f92672">(</span>Duration timeout<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">commitSync</span><span style="color:#f92672">(</span><span style="color:#66d9ef">final</span> Map<span style="color:#f92672">&lt;</span>TopicPartition<span style="color:#f92672">,</span> OffsetAndMetadata<span style="color:#f92672">&gt;</span> offsets<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">commitSync</span><span style="color:#f92672">(</span><span style="color:#66d9ef">final</span> Map<span style="color:#f92672">&lt;</span>TopicPartition<span style="color:#f92672">,</span> OffsetAndMetadata<span style="color:#f92672">&gt;</span> offsets<span style="color:#f92672">,</span> <span style="color:#66d9ef">final</span> Duration timeout<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 异步提交
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// callback参数指定提交完成后(调用onComplete()方法之后)的回调方法
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// offsets参数指定提交具体Partition的(默认提前所有Partition的Position)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">commitAsync</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">commitAsync</span><span style="color:#f92672">(</span>OffsetCommitCallback callback<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">commitAsync</span><span style="color:#f92672">(</span><span style="color:#66d9ef">final</span> Map<span style="color:#f92672">&lt;</span>TopicPartition<span style="color:#f92672">,</span> OffsetAndMetadata<span style="color:#f92672">&gt;</span> offsets<span style="color:#f92672">,</span> OffsetCommitCallback callback<span style="color:#f92672">);</span>
+</span></span></code></pre></div><br>
+<h3 id="位移消费">位移消费<a hidden class="anchor" aria-hidden="true" href="#位移消费">#</a></h3>
+<p><strong>位移消费</strong>(<em>Seek</em>): Consumer从指定位置处开始消费</p>
+<ol>
+<li><code>auto.offset.reset</code>参数指定Consumer没有消费位移时如何消费</li>
+<li>默认从Partition的末尾处开始(latest), 且位移越界也会触发该行为</li>
+</ol>
+<br>
+<p><code>seek()</code>和其他相关方法的定义：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#75715e">// 设置/覆盖指定Partition下次拉取时的消费位移
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 若Consumer多次调用该方法, 则以最后次调用为准
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 必须在Poll()方法之后调用该方法(必须分配Partition后)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">seek</span><span style="color:#f92672">(</span>TopicPartition partition<span style="color:#f92672">,</span> <span style="color:#66d9ef">long</span> offset<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 返回Consumer分配到的所有Partition
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> Set<span style="color:#f92672">&lt;</span>TopicPartition<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">assignment</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 返回指定Partition集合的末尾消息位置(将要写入消息的位置)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> Map<span style="color:#f92672">&lt;</span>TopicPartition<span style="color:#f92672">,</span> Long<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">endOffsets</span><span style="color:#f92672">(</span>Collection<span style="color:#f92672">&lt;</span>TopicPartition<span style="color:#f92672">&gt;</span> partitions<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> Map<span style="color:#f92672">&lt;</span>TopicPartition<span style="color:#f92672">,</span> Long<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">endOffsets</span><span style="color:#f92672">(</span>Collection<span style="color:#f92672">&lt;</span>TopicPartition<span style="color:#f92672">&gt;</span> partitions<span style="color:#f92672">,</span> Duration timeout<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 返回指定Partition集合的起始处消息位置(还未清理的最早消息)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> Map<span style="color:#f92672">&lt;</span>TopicPartition<span style="color:#f92672">,</span> Long<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">beginningOffsets</span><span style="color:#f92672">(</span>Collection<span style="color:#f92672">&lt;</span>TopicPartition<span style="color:#f92672">&gt;</span> partitions<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> Map<span style="color:#f92672">&lt;</span>TopicPartition<span style="color:#f92672">,</span> Long<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">beginningOffsets</span><span style="color:#f92672">(</span>Collection<span style="color:#f92672">&lt;</span>TopicPartition<span style="color:#f92672">&gt;</span> partitions<span style="color:#f92672">,</span>Duration timeout<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 返回Partition集合中每个的消费位移, 其需大于等于设定的时间戳(最小的)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> Map<span style="color:#f92672">&lt;</span>TopicPartition<span style="color:#f92672">,</span> OffsetAndTimestamp<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">offsetsForTimes</span><span style="color:#f92672">(</span>Map<span style="color:#f92672">&lt;</span>TopicPartition<span style="color:#f92672">,</span> Long<span style="color:#f92672">&gt;</span> timestampsToSearch<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> Map<span style="color:#f92672">&lt;</span>TopicPartition<span style="color:#f92672">,</span> OffsetAndTimestamp<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">offsetsForTimes</span><span style="color:#f92672">(</span>Map<span style="color:#f92672">&lt;</span>TopicPartition<span style="color:#f92672">,</span> Long<span style="color:#f92672">&gt;</span> timestampsToSearch<span style="color:#f92672">,</span> Duration timeout<span style="color:#f92672">);</span>
+</span></span></code></pre></div><p>// <code>seekToBegining()</code>/<code>seekToEnd()</code>方法可直接设为起始处/末尾</p>
+<br>
+<h2 id="实现原理-1">实现原理<a hidden class="anchor" aria-hidden="true" href="#实现原理-1">#</a></h2>
+<h3 id="rebalance">Rebalance<a hidden class="anchor" aria-hidden="true" href="#rebalance">#</a></h3>
+<p><strong>Rebalance</strong>(再均衡): 重新分配Partition所对应的Consumer</p>
+<ol>
+<li>Rebalance期间消费者组内的Consumer不可拉取(<font color="red">消费者不可用</font>)</li>
+<li>Partition被重新分配给新的Consumer时, 上个Consumer的状态会丢失</li>
+<li><strong>再均衡监听器</strong>(<em>RebalanceListener</em>): Rebalance发生前/后所就执行的操作</li>
+</ol>
+<br>
+<p>自动触发Rebalance的事件:</p>
+<ol>
+<li>消费者组增加/减少Consumer</li>
+<li>Topic的Partition数量发生变化</li>
+<li>消费者组中的Consumer主动取消订阅</li>
+<li>消费者组所对应的GroupCoordinator节点发生变化</li>
+</ol>
+<br>
+<p>再均衡监听器的定义:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">ConsumerRebalanceListener</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Rebalance之前和Consumer停止消费后调用
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// partitions参数指定Rebalance前所分配到的Partition
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">onPartitionsRevoked</span><span style="color:#f92672">(</span>Collection<span style="color:#f92672">&lt;</span>TopicPartition<span style="color:#f92672">&gt;</span> partitions<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Rebalance之后和Consumer开始消费前调用
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// partitions参数指定Rebalance后所分配到的Partition
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">onPartitionsAssigned</span><span style="color:#f92672">(</span>Collection<span style="color:#f92672">&lt;</span>TopicPartition<span style="color:#f92672">&gt;</span> partitions<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><br>
+<p>Rebalance的具体流程:</p>
+<ol>
+<li>FIND_COORDINATOR: 找到消费者组对应的GroupCoordinator所在的Broker, 并与之建立连接</li>
+<li>JOIN_GROUP: 加入GroupCoordinator, 并配置相关信息(如: 心跳报文周期)</li>
+<li>SYNC_GROUP: GroupCoordinator同步由Consumer leader选举出的Partition分配策略</li>
+<li>HEARTBEAT: Consumer确定offset并开始工作, 通过独立的线程周期性向GroupCoordinator发送心跳报文</li>
+</ol>
+<br>
+<p><strong>组协调器</strong>(<em>GroupCoordinator</em>): 管理消费者组的组件(Kafka服务端)</p>
+<ol>
+<li>默认将首个加入消费者组的Consumer作为Consumer leader</li>
+<li>根据Counsumer配置的Partition分配策略选举出消费者组的Partition分配策略(Consumer若不支持, 则抛出异常)</li>
+</ol>
+<p>// <strong>消费者协调器</strong>(<em>ConsumerCoordinator</em>): 与GroupCoordinator交互的组件(Kafka客户端)</p>
+<br>
+<h3 id="consumerinterceptor">ConsumerInterceptor<a hidden class="anchor" aria-hidden="true" href="#consumerinterceptor">#</a></h3>
+<p><strong>ConsumerInterceptor</strong>(拦截器): 拉取消息期间和位移提交前进行的操作</p>
+<ol>
+<li><code>interceptor.classes</code>参数指定Consumer使用的ConsumerInterceptor</li>
+<li>可指定多个ConsumerInterceptor(拦截链按配置时顺序执行)</li>
+</ol>
+<br>
+<p>ConsumerInterceptor的定义:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">ConsumerInterceptor</span><span style="color:#f92672">&lt;</span>K<span style="color:#f92672">,</span> V<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">extends</span> Configurable <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 拉取消息期间所进行的操作
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// 若抛出异常, 则会被捕获并记录到日志中(不会向上传递)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">public</span> ConsumerRecords<span style="color:#f92672">&lt;</span>K<span style="color:#f92672">,</span> V<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">onConsume</span><span style="color:#f92672">(</span>ConsumerRecords<span style="color:#f92672">&lt;</span>K<span style="color:#f92672">,</span> V<span style="color:#f92672">&gt;</span> records<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 位移提交后所进行的操作(也可进行位移提交)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">onCommit</span><span style="color:#f92672">(</span>Map<span style="color:#f92672">&lt;</span>TopicPartition<span style="color:#f92672">,</span> OffsetAndMetadata<span style="color:#f92672">&gt;</span> offsets<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 关闭拦截器
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">close</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><br>
+<h3 id="deserializer">DeSerializer<a hidden class="anchor" aria-hidden="true" href="#deserializer">#</a></h3>
+<p><strong>DeSerializer</strong>(反序列化器): 将字节数组转换成特定数据结构</p>
+<ol>
+<li>Consumer使用的DeSerializer需和Producer使用的序列化器对应</li>
+<li>Consumer指定DeSerializer时, 需通过全限定名方式指定(类的完整路径)</li>
+</ol>
+<br>
+<p>DeSerializer的定义:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>public interface Deserializer&lt;T&gt; extends Closeable {
+</span></span><span style="display:flex;"><span>    // 配置反序列化器
+</span></span><span style="display:flex;"><span>    // 常用于指定编码类型(默认UTF-8)
+</span></span><span style="display:flex;"><span>    void configure(Map&lt;String, ?&gt; configs, boolean isKey);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    // 执行反序列化
+</span></span><span style="display:flex;"><span>    // 若data参数为null, 则抛出异常
+</span></span><span style="display:flex;"><span>    T deserialize(String topic, byte[] data);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    // 关闭序列化器
+</span></span><span style="display:flex;"><span>    // 需保证幂等性
+</span></span><span style="display:flex;"><span>    void close();
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>// 不建议使用自定义Serializer或DeSerializer, 会增加耦合度</p>
+<br>
+<h2 id="多线程消费">多线程消费<a hidden class="anchor" aria-hidden="true" href="#多线程消费">#</a></h2>
+<p>Consumer默认是<font color="red">非线程安全</font></p>
+<ol>
+<li>通过<code>acquire()</code>和<code>release()</code>方法确保单线程(加锁和解锁)</li>
+<li><code>acquire()</code>方法为轻量级锁实现(检查标记以检测是否发生并发操作)</li>
+<li>Consumer执行操作前都会调用<code>acquire()</code>方法(<code>wakeup()</code>方法例外)</li>
+</ol>
+<br>
+<h3 id="消费线程">消费线程<a hidden class="anchor" aria-hidden="true" href="#消费线程">#</a></h3>
+<p><strong>消费线程</strong>: 每个线程代表个Consumer</p>
+<ol>
+<li>消费线程可处理多个Partition(属于不同Topic)</li>
+<li>若消费线程属于同一个消费者组, 则并发量受限于Partition数量</li>
+<li>不建议让Partition对应多个消费线程, 需处理位移提交和顺序控制</li>
+</ol>
+<p>如: 消费线程(不建议单独订阅Partition消费)</p>
+<p><img loading="lazy" src="image/consume-thread.png" alt="消费线程"  />
+</p>
+<br>
+<h3 id="处理线程">处理线程<a hidden class="anchor" aria-hidden="true" href="#处理线程">#</a></h3>
+<p><strong>处理线程</strong>: Consumer对应多个线程处理线程进行消费</p>
+<ol>
+<li>相较于消费线程避免过多TCP连接的资源消耗和快速消费</li>
+<li>该方式需解决消息的位移提交和顺序控制(可通过共享位移变量)</li>
+<li>该方式还存在消息丢失的风险, 可通过滑动窗口解决(消费成功才移动)</li>
+</ol>
+<p>如：处理线程</p>
+<p><img loading="lazy" src="image/process-thread.png" alt="处理线程"  />
+</p>
+<br>
+<h1 id="topicpartition">Topic/Partition<a hidden class="anchor" aria-hidden="true" href="#topicpartition">#</a></h1>
+<p><strong>Topic</strong>/<strong>Partition</strong>: Kafka中消息管理的基础单位</p>
+<ol>
+<li>Topic和Partition并不实际存在(仅逻辑上的概念)</li>
+</ol>
+<br>
+<p>如: Topic和Partition关系</p>
+<p><img loading="lazy" src="image/topic-partition.png" alt="topic和partition关系"  />
+</p>
+<p>// 每个日志文件可对应多个日志分段, 其还可分为索引、日志存储和快照等</p>
+<br>
+<h2 id="topic">Topic<a hidden class="anchor" aria-hidden="true" href="#topic">#</a></h2>
+<p><strong>Topic</strong>(主题): Kafka中消息归类单位</p>
+<ol>
+<li>Topic管理本质: 管理Topic对应的日志存储(文件)</li>
+<li>日志存储随机分步于各个Broker以提搞Topic容灾性</li>
+<li>日志存储数量 =  Partition数量 * Replica数量</li>
+<li>存储文件格式: <code>Topic名-Partition名-序列号</code></li>
+</ol>
+<p>// 可通过Kafka自带kafka-topics.sh脚本完成Topic相关管理</p>
+<br>
+<p>Topic名称组成: 大小写字母、数字、点号、连接线、下划线</p>
+<ol>
+<li>Topic名称必须含有点号或下划线(metrics命名时会将前者替换为后者)</li>
+<li>不建议使用双下划线作为前缀(其常为内部Topic格式)</li>
+<li>创建Topic的本质(交由控制器异步完成)</li>
+</ol>
+<p>// ZooKeeper的<code>/brokers/topics/</code>和<code>/config/topics/</code>下创建子节点并写入Partition分配方案和配置信息</p>
+<br>
+<p>管理Topic须知:</p>
+<ol>
+<li>创建Topic时Broker需统一是否配置机架信息, 否则会创建失败</li>
+<li>Topic创建后仅能增加Partition数量(<font color="red">Partition不能被删除</font>)</li>
+<li>Partition数量变化会影响Key的计算(影响消息顺序)</li>
+</ol>
+<br>
+<h2 id="partition">Partition<a hidden class="anchor" aria-hidden="true" href="#partition">#</a></h2>
+<p><strong>Partition</strong>(分区): 组成Topic的单位(实际存储消息)</p>
+<ol>
+<li>Partition可有多个副本(leader和follower), 每个<font color="red">副本对应个日志文件</font></li>
+<li>leader提供读写服务, <font color="red">follower副本仅和leader进行数据同步</font></li>
+<li>leader恢复后重新加入, 则只能为新的follower</li>
+</ol>
+<br>
+<p><strong>优先副本</strong>: AR集合中首个副本</p>
+<ol>
+<li>理想情况下优先副本应是Partition的leader</li>
+<li>Kafka会确保所有Topic的优先副本在集群中均匀分布</li>
+<li><strong>Partition平衡</strong>: 通过选举策略使优先副本选举为leader副本</li>
+</ol>
+<p>// 优先副本选举的元数据存储于ZooKeeper的<code>/admin/preferred_replica_election</code></p>
+<br>
+<p><strong>Partition重分配</strong>: Partition重新进行合理的分配</p>
+<ol>
+<li>当Partition所处的Broker节点下线, Kafka不会自动进行故障转移</li>
+<li>Kafka集群中增加新Broker节点时, 该节仅能分配到新创建的Partition</li>
+<li>本质：部分Partition增加新副本, 并从剩余Partition的副本中拷贝数据</li>
+<li>Partition重复配过程中需保证有足够的空间(完成后自动删除原有数据)</li>
+</ol>
+<p>// 建议分为多个小批次执行Partition重分配, 并重启预下线的Broker</p>
+<br>
+<p><strong>Partition数量与吞吐量关系</strong>:: 限定范围内增加Partition数量可增加吞吐量</p>
+<ol>
+<li>若无休止增加Partition数量, 超出限定范围后吞吐量反而下降</li>
+<li>Partition数量有上限(过多会导致Kafka进程崩溃)</li>
+<li>Partition也是最小的并行操作单位</li>
+</ol>
+<br>
+<h1 id="日志存储">日志存储<a hidden class="anchor" aria-hidden="true" href="#日志存储">#</a></h1>
+<p><strong>日志</strong>(<em>Log</em>): Partition对应的物理存储</p>
+<ol>
+<li>日志以目录方式存储多个LogSegment</li>
+<li>日志的目录命名格式: <code>Topic名称-Partition名称</code></li>
+<li>数据均以<font color="red">追加</font>方式写入日志, 且以特定顺序进行追加</li>
+</ol>
+<br>
+<p>如: 日志存储关系</p>
+<p><img loading="lazy" src="image/log.png" alt="日志存储关系"  />
+</p>
+<p>// LogSegment还包含<code>.deleted</code>、<code>.cleaned</code>、<code>.swap</code>等后缀文件</p>
+<br>
+<p><strong>LogSegment</strong>(日志分段): 组成日志的基础单位</p>
+<ol>
+<li>每个LogSement必须有个日志文件和两个索引文件</li>
+<li>日志的<font color="red">最后个LogSegment才可执行写入</font>, 其他仅存储数据</li>
+<li><strong>BaseOffset</strong>(基准偏移量): 每个LogSegment中首个消息的偏移量</li>
+<li>文件均以BaseOffset格式进行命名(固定为20位数字, 用0填充多余位)</li>
+</ol>
+<p>// BaseOffset是64位长整型数据, 其可得知前个LogSegment的数据量</p>
+<br>
+<p><strong>日志索引</strong>: 稀疏索引实现消息的快速检索</p>
+<ol>
+<li>稀疏索引达到指定大小后才建立索引(不保证Record均有对应的索引项)</li>
+<li>稀疏索引通过<code>MappedByteBuffer</code>将索引文件映射到内层中</li>
+<li>通过二分定位小于指定偏移量的最大偏移量</li>
+<li>各索引均严格单调递增</li>
+</ol>
+<br>
+<h2 id="存储格式">存储格式<a hidden class="anchor" aria-hidden="true" href="#存储格式">#</a></h2>
+<p><strong>存储格式</strong>: 日志存储在硬盘的格式</p>
+<ol>
+<li>日志的存储格式决定其占用空间大小和检索速率</li>
+<li>日志的存储格式演进为3个版本: v0(0.10.0)、v1(0.11.0)、v2</li>
+</ol>
+<br>
+<p>如: 日志存储格式</p>
+<p><img loading="lazy" src="image/log-storage-format.png" alt="日志存储格式"  />
+</p>
+<p>// <strong>Varints</strong>(变长整型): 使用任意多个字节序列化记录整数(特定范围减少空间)</p>
+<br>
+<p><strong>消息压缩</strong>: 将RecordBatch压缩成单个Record</p>
+<ol>
+<li>压缩生成的消息记为外层消息(反者为内层消息)</li>
+<li>外层消息的key为null, 而value为内层消息(偏移量查找)</li>
+<li>内层消息的偏移量均从0开始(使用时Broker会进行转换计算)</li>
+</ol>
+<br>
+<p>如: 外层消息和内层消息的偏移量</p>
+<p><img loading="lazy" src="image/log-compression.png" alt="内存消息"  />
+</p>
+<p>// 外层消息存储的是<font color="red">内层消息中最后条消息的绝对位移</font>(相对于Partition而言)</p>
+<br>
+<h2 id="日志清理">日志清理<a hidden class="anchor" aria-hidden="true" href="#日志清理">#</a></h2>
+<p><strong>日志清理</strong>: Kafka对日志的维护</p>
+<ol>
+<li>日志清理策略分为: 删除、压缩</li>
+<li>日志清理的粒度最细可为Topic级别</li>
+<li>可同时指定删除和压缩为日志清理的策略</li>
+</ol>
+<br>
+<h3 id="删除">删除<a hidden class="anchor" aria-hidden="true" href="#删除">#</a></h3>
+<p><strong>删除</strong>(<em>Delete</em>): 删除不符合特定条件的LogSegment</p>
+<ol>
+<li>删除依据分为: 时间、文件大小、日志的起始偏移量</li>
+<li>Broker启动时会同时启动个线程周期性检测并删除特定LogSegment</li>
+<li>删除线程会基于依据选择出可被删除的LogSegment(deletableSegment)</li>
+</ol>
+<br>
+<p>日志删除的大致流程：</p>
+<ol>
+<li>从日志对象中所维护的LogSegment跳跃表中移除待删除的LogSegment</li>
+<li>将所有待删除的文件添加<code>.deleted</code>后缀(包括索引文件)</li>
+<li>统一交由延迟删除线程处理(默认1m)</li>
+</ol>
+<br>
+<p>基于时间删除: 每个LogSegment拥有过期时间</p>
+<ol>
+<li>根据LogSegment的最大时间戳(最后条消息)</li>
+<li>若最后条消息的时间戳字段小于0, 则根据最近修改时间</li>
+<li>若所有LogSegment均满足删除条件, 则在删除前创建activeSegment</li>
+</ol>
+<br>
+<p>如: 基于时间的日志删除(只要最大时间戳未过期就不会被删除)</p>
+<p><img loading="lazy" src="image/log-delete-time.png" alt="基于时间的日志删除"  />
+</p>
+<br>
+<p>基于文件大小: 每个LogSegment的限定大小</p>
+<ol>
+<li>基于文件大小又可分为：日志大小、LogSegment大小</li>
+<li>若基于日志大小, 则超出限定时默认从头开始删除LogSegment</li>
+</ol>
+<br>
+<p>如：基于大小的日志删除</p>
+<p><img loading="lazy" src="image/log-delete-size.png" alt="基于大小的日志删除"  />
+</p>
+<br>
+<p>基于日志的起始偏移量: 下个LogSegment的BaseOffset是否小/等于起始偏移量</p>
+<ol>
+<li>删除线程会逐个遍历LogSegment以判断BaseOffset是否满足</li>
+<li>日志起始偏移量常为首个LogSegment的BaseOffset</li>
+</ol>
+<br>
+<p>如: 基于日志的起始偏移量(假设起始偏移量为25)</p>
+<p><img loading="lazy" src="image/log-delete-offset.png" alt="基于日志的起始偏移量"  />
+</p>
+<br>
+<h3 id="压缩">压缩<a hidden class="anchor" aria-hidden="true" href="#压缩">#</a></h3>
+<p><strong>压缩</strong>(<em>Compact</em>): 将具有<font color="red">相同Key</font>的消息仅保留最后个版本的Value</p>
+<ol>
+<li>压缩后生成新的LogSegment, 消息的物理位置不会改变</li>
+<li>压缩后的偏移量不再连续(不影响日志的检索)</li>
+<li>压缩前后的消息可分为: clean和dirty</li>
+<li>activeLogSegment不参与压缩</li>
+</ol>
+<br>
+<p>如：日志压缩时其构成部分</p>
+<p><img loading="lazy" src="image/log-compression-composition.png" alt="日志压缩时其构成部分"  />
+</p>
+<p>// 日志的<code>cleaner-offset-checkpoint</code>文件记录每个Partition的已清理偏移量</p>
+<br>
+<p>日志压缩时大致流程:</p>
+<ol>
+<li>日志的污浊率触发压缩操作</li>
+<li>压缩线程遍历两次日志(获取Key和判断)</li>
+<li>对于压缩LogSegment的进行分组(防止过多小文件)</li>
+<li>将LogSegment组中需保留消息存储于<code>.clean</code>后缀的临时文件</li>
+<li>对日志进行压缩, 在压缩完成后将<code>.clean</code>临时文件后缀改为<code>.swap</code></li>
+<li>删除被压缩的LogSegment, 并将<code>.swap</code>后缀去除(变为可用LogSegment)</li>
+</ol>
+<p>// LogSegment组的大小不可超过LogSegment的限定大小</p>
+<br>
+<p>如: 多次压缩的日志文件</p>
+<p><img loading="lazy" src="image/log-compression-result.png" alt="多次压缩的日志文件"  />
+</p>
+<p>// ActiveSegment(活跃的日志分段): 可执行写入操作的LogSegment</p>
+<br>
+<h1 id="附录">附录<a hidden class="anchor" aria-hidden="true" href="#附录">#</a></h1>
+<h2 id="配置参数">配置参数<a hidden class="anchor" aria-hidden="true" href="#配置参数">#</a></h2>
+<h3 id="broker">Broker<a hidden class="anchor" aria-hidden="true" href="#broker">#</a></h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">参数</th>
+<th style="text-align:center">默认值</th>
+<th style="text-align:center">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><font color="red">auto.create.topics.enable</font></td>
+<td style="text-align:center">true</td>
+<td style="text-align:center">Producer向不存在的Topic发送消息时, 是否自动创建该Topic<br>(不建议开启, 其会增加Topic的管理和维护难度)</td>
+</tr>
+<tr>
+<td style="text-align:center"><font color="red">auto.leader.rebalance.enabl</font></td>
+<td style="text-align:center">true</td>
+<td style="text-align:center">是否启用自动Partition平衡<br>通过定时任务轮询所有Broker, 并计算其Partition不平衡率<br>判断不平衡率是否超出设定值, 超出则执行优先副本选举以Partition平衡<br>(不建议开启，存在阻塞风险)</td>
+</tr>
+<tr>
+<td style="text-align:center">background.threads</td>
+<td style="text-align:center">10</td>
+<td style="text-align:center">指定后台执行任务的线程数</td>
+</tr>
+<tr>
+<td style="text-align:center"><font color="red">broker.id</font></td>
+<td style="text-align:center"></td>
+<td style="text-align:center">指定Broker运行时的唯一标识<br>(多个配置文件中的该值不同时会抛出异常)</td>
+</tr>
+<tr>
+<td style="text-align:center">broker.rack</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">Broker部署所在的OS节点</td>
+</tr>
+<tr>
+<td style="text-align:center">compression.type</td>
+<td style="text-align:center">producer</td>
+<td style="text-align:center">数据的压缩方式<br>(可设为: gzip、snappy、lz4、uncompressed(不压缩数据))</td>
+</tr>
+<tr>
+<td style="text-align:center">delete.topic.enable</td>
+<td style="text-align:center">true</td>
+<td style="text-align:center">Topic是否可删除<br>(内部Topic不可删除)</td>
+</tr>
+<tr>
+<td style="text-align:center">default.replication.factor</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">自动创建Topic时的副本数</td>
+</tr>
+<tr>
+<td style="text-align:center">follower.replication.throttled.rate</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">follower副本的消息同步速度</td>
+</tr>
+<tr>
+<td style="text-align:center">leader.imbalance.check.interval.seconds</td>
+<td style="text-align:center">300s</td>
+<td style="text-align:center">自动Partition平衡的定时任务轮询周期</td>
+</tr>
+<tr>
+<td style="text-align:center">leader.imbalance.per.broker.percentage</td>
+<td style="text-align:center">10%</td>
+<td style="text-align:center">Broker节点中不平衡率界限</td>
+</tr>
+<tr>
+<td style="text-align:center">leader.replication.throttled.rate</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">leader副本的消息传输速度</td>
+</tr>
+<tr>
+<td style="text-align:center">num.partitions</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">自动创建Topic时的Partition数量</td>
+</tr>
+</tbody>
+</table>
+<br>
+<p>Log相关的常用配置参数:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">参数</th>
+<th style="text-align:center">默认值</th>
+<th style="text-align:center">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">log.cleaner.min.cleanable.ratio</td>
+<td style="text-align:center">0.5</td>
+<td style="text-align:center">日志清理策略为压缩时, 触发执行压缩的污浊率<br>污浊率计算公式: <code>dirty LogSegment / (clean LogSegment + dirty LogSegment)</code></td>
+</tr>
+<tr>
+<td style="text-align:center">log.cleaner.min.compaction.log.ms</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">日志清理策略为压缩时, 消息的保留时间</td>
+</tr>
+<tr>
+<td style="text-align:center">log.cleaner.thread</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">日志清理策略为压缩时, 压缩线程数量</td>
+</tr>
+<tr>
+<td style="text-align:center">log.cleanup.policy</td>
+<td style="text-align:center">delete</td>
+<td style="text-align:center">日志清理策略<br>(可设为: compact、&ldquo;delete,compact&rdquo;)</td>
+</tr>
+<tr>
+<td style="text-align:center">file.delete.delay.ms</td>
+<td style="text-align:center">60000</td>
+<td style="text-align:center">日志清理策略为删除时, 其延迟删除线程的等待时间</td>
+</tr>
+<tr>
+<td style="text-align:center">log.dir<br>log.dirs</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">日志存储目录</td>
+</tr>
+<tr>
+<td style="text-align:center">log.index.size.max.bytes</td>
+<td style="text-align:center">10485760</td>
+<td style="text-align:center">偏移量索引文件活时间戳索引文件的最大值<br>超出该值则进行日志分段(生成新的LogSegment)</td>
+</tr>
+<tr>
+<td style="text-align:center">log.message.timestamp.type</td>
+<td style="text-align:center">CreateTime</td>
+<td style="text-align:center">消息的时间戳类型<br>(可设为: LogAppendTime)</td>
+</tr>
+<tr>
+<td style="text-align:center">log.rentention.bytes</td>
+<td style="text-align:center">-1</td>
+<td style="text-align:center">日志清理策略为删除时, 日志文件的限定大小(所有LogSegment)</td>
+</tr>
+<tr>
+<td style="text-align:center"><font color="red">log.retention.check.interval.ms</font></td>
+<td style="text-align:center">300000</td>
+<td style="text-align:center">日志清理策略为删除时, 删除线程的检测周期</td>
+</tr>
+<tr>
+<td style="text-align:center">log.retention.hours</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">日志清理策略为删除时, 日志的过期时间(时)<br>优先级: log.retention.hours &lt; log.retention.minutes &lt; log.rentention.ms</td>
+</tr>
+<tr>
+<td style="text-align:center">log.retention.minutes</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">日志清理策略为删除时, 日志的过期时间(分)</td>
+</tr>
+<tr>
+<td style="text-align:center">log.rentention.ms</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">日志清理策略为删除时, 日志的过期时间(秒)</td>
+</tr>
+<tr>
+<td style="text-align:center"><font color="red">log.roll.ms</font></td>
+<td style="text-align:center">168</td>
+<td style="text-align:center">LogSegment与当前系统时间戳的最大差值<br>超出该值则进行日志分段(生成新的LogSegment)<br>只有活跃的LogSegment才会为该参数的大小(其他的为实际占用大小)<br>参数值必须是8的整数倍(满足索引文件是索引项的整数倍)</td>
+</tr>
+<tr>
+<td style="text-align:center">log.segment.bytes</td>
+<td style="text-align:center">1073741824</td>
+<td style="text-align:center">日志文件切割为LogSegment的界限<br>(生成新的LogSegment)</td>
+</tr>
+</tbody>
+</table>
+<br>
+<h4 id="topic-1">Topic<a hidden class="anchor" aria-hidden="true" href="#topic-1">#</a></h4>
+<p>Topic相关的常用配置参数(在Broker层面都有对应的参数作为默认值):</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">参数</th>
+<th style="text-align:center">Broker参数</th>
+<th style="text-align:center">默认值</th>
+<th style="text-align:center">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">cleanup.policy</td>
+<td style="text-align:center">log.cleanup.policy</td>
+<td style="text-align:center">delete</td>
+<td style="text-align:center">日志压缩策略<br>(可设为: compact、&ldquo;delete,compact&rdquo;)</td>
+</tr>
+<tr>
+<td style="text-align:center">compression.type</td>
+<td style="text-align:center">compression.type</td>
+<td style="text-align:center">producer</td>
+<td style="text-align:center">消息的压缩类型<br>(可设为: gzip、snappy、lz4、uncompressed(不压缩数据))</td>
+</tr>
+<tr>
+<td style="text-align:center">delete.retention.ms</td>
+<td style="text-align:center">86400000</td>
+<td style="text-align:center">标识为删除的数据保留时间</td>
+<td style="text-align:center">log.cleaner.delete.retention.ms</td>
+</tr>
+<tr>
+<td style="text-align:center">file.delete.delay.ms</td>
+<td style="text-align:center">log.segment.delete.delay.ms</td>
+<td style="text-align:center">60000</td>
+<td style="text-align:center">清理文件前的等待时间</td>
+</tr>
+<tr>
+<td style="text-align:center">flush.messages</td>
+<td style="text-align:center">log.flush.interval.messages</td>
+<td style="text-align:center">Long.MAX_VALUE</td>
+<td style="text-align:center">消息多少数据量可进行落盘<br>(由OS决定, 不建议修改)</td>
+</tr>
+<tr>
+<td style="text-align:center">flush.ms</td>
+<td style="text-align:center">log.flush.interaval.ms</td>
+<td style="text-align:center">Long.MAX_VALUE</td>
+<td style="text-align:center">消息落盘前等待时间<br>(由OS决定, 不建议修改)</td>
+</tr>
+<tr>
+<td style="text-align:center">follower.replication.throttled.replicas</td>
+<td style="text-align:center">follower.replication.throttled.replicas</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">被限制速率的Topic所对应的follower副本列表</td>
+</tr>
+<tr>
+<td style="text-align:center">index.interval.bytes</td>
+<td style="text-align:center">log.index.interval.bytes</td>
+<td style="text-align:center">4096</td>
+<td style="text-align:center">添加索引项的频率</td>
+</tr>
+<tr>
+<td style="text-align:center">leader.replication.throttled.replicas</td>
+<td style="text-align:center">leader.replication.throttled.replicas</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">被限制速率的Topic所对应的leader副本列表</td>
+</tr>
+<tr>
+<td style="text-align:center">max.message.bytes</td>
+<td style="text-align:center">message.max.bytes</td>
+<td style="text-align:center">1000012</td>
+<td style="text-align:center">消息的最大字节数</td>
+</tr>
+<tr>
+<td style="text-align:center">message.format.version</td>
+<td style="text-align:center">log.message.format.version</td>
+<td style="text-align:center">2.0-IV1</td>
+<td style="text-align:center">消息格式的最大版本</td>
+</tr>
+<tr>
+<td style="text-align:center">message.timestamp.difference.max.ms</td>
+<td style="text-align:center">Long.MAX_VALUE</td>
+<td style="text-align:center">log.message.timestamp.difference.max.ms</td>
+<td style="text-align:center">消息与Broker之间时间戳相差的最大值<br>(仅在timestamp.type参数为CreateTime时才可设定该参数)</td>
+</tr>
+<tr>
+<td style="text-align:center">message.timestamp.type</td>
+<td style="text-align:center">log.message.timestamp.type</td>
+<td style="text-align:center">CreateTime</td>
+<td style="text-align:center">消息的时间戳类型</td>
+</tr>
+<tr>
+<td style="text-align:center">min.cleanable.dirty.ratio</td>
+<td style="text-align:center">log.cleaner.min.cleanable.ratio</td>
+<td style="text-align:center">0.5</td>
+<td style="text-align:center">日志清理时的最小污浊率</td>
+</tr>
+<tr>
+<td style="text-align:center">min.compaction.lag.ms</td>
+<td style="text-align:center">log.cleaner.min.compaction.log.ms</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">日志被清理前的最小保留时间</td>
+</tr>
+<tr>
+<td style="text-align:center">min.insync.replicas</td>
+<td style="text-align:center">log.insync.replicas</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">Partition的ISR集合中最小副本数</td>
+</tr>
+<tr>
+<td style="text-align:center">preallocate</td>
+<td style="text-align:center">log.preallocate</td>
+<td style="text-align:center">false</td>
+<td style="text-align:center">创建日志分段是否预分配空间</td>
+</tr>
+<tr>
+<td style="text-align:center">retention.bytes</td>
+<td style="text-align:center">log.retention.bytes</td>
+<td style="text-align:center">-1</td>
+<td style="text-align:center">Partition所能保留的消息总量</td>
+</tr>
+<tr>
+<td style="text-align:center">retention.ms</td>
+<td style="text-align:center">log.retention.ms</td>
+<td style="text-align:center">604800000</td>
+<td style="text-align:center">delete的清理策略的日志被清理后能够保留的时间</td>
+</tr>
+<tr>
+<td style="text-align:center">segment.bytes</td>
+<td style="text-align:center">log.segment.bytes</td>
+<td style="text-align:center">1073741824</td>
+<td style="text-align:center">日志分段的最大值</td>
+</tr>
+<tr>
+<td style="text-align:center">segment.index.bytes</td>
+<td style="text-align:center">log.index.size.max.bytes</td>
+<td style="text-align:center">10485760</td>
+<td style="text-align:center">日志分段索引的最大值</td>
+</tr>
+<tr>
+<td style="text-align:center">segment.jitter.ms</td>
+<td style="text-align:center">log.roll.jitter.ms</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">滚动日志分段时在segment.ms基础上增加的随机数</td>
+</tr>
+<tr>
+<td style="text-align:center">segment.ms</td>
+<td style="text-align:center">log.roll.ms</td>
+<td style="text-align:center">604800000</td>
+<td style="text-align:center">日志分段滚动周期</td>
+</tr>
+<tr>
+<td style="text-align:center">unclean.leader.election.enable</td>
+<td style="text-align:center">unclean.leader.election.enable</td>
+<td style="text-align:center">false</td>
+<td style="text-align:center">是否可从非ISR集合中选举leader副本</td>
+</tr>
+</tbody>
+</table>
+<br>
+<h3 id="producer-1">Producer<a hidden class="anchor" aria-hidden="true" href="#producer-1">#</a></h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">参数</th>
+<th style="text-align:center">默认值</th>
+<th style="text-align:center">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><font color="red">bootstrap.servers</font></td>
+<td style="text-align:center"></td>
+<td style="text-align:center">引导程序的服务地址<br>格式: <code>地址1:端口1,地址N:端口N</code><br>(建议指定两个以上的Broker地址以保证稳定性, 且使用主机名形式)</td>
+</tr>
+<tr>
+<td style="text-align:center"><font color="red">key.serializer</font></td>
+<td style="text-align:center"></td>
+<td style="text-align:center">发送时对Key调用的序列化器<br>Broker仅能接受字节数组形式的消息<code>byte[]</code></td>
+</tr>
+<tr>
+<td style="text-align:center"><font color="red">value.serializer</font></td>
+<td style="text-align:center"></td>
+<td style="text-align:center">发送时对Value调用的序列化器<br>Broker仅能接受字节数组形式的消息<code>byte[]</code></td>
+</tr>
+<tr>
+<td style="text-align:center"><font color="red">acks</font></td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">Partition中须多少个副本接收到ProducerRecord才视为写入<br>1: 仅leader副本接收成功即可<br>0: 无需任何副本接收成功验证<br>-1: ISR中所有副本都接收成功才可</td>
+</tr>
+<tr>
+<td style="text-align:center">batch.size</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">RecordAccumulator中BufferPool复用缓存的最大的ByteBuffer<br>(超出该限定的ByteBuffer在申请使用后直接释放)</td>
+</tr>
+<tr>
+<td style="text-align:center">buffer.memory</td>
+<td style="text-align:center">33554432B</td>
+<td style="text-align:center">Producer的RecordAccumulator的大小</td>
+</tr>
+<tr>
+<td style="text-align:center">client.id</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">Producer的ID<br>(未指定时随机生成个非空字符串)</td>
+</tr>
+<tr>
+<td style="text-align:center">compression.type</td>
+<td style="text-align:center">none</td>
+<td style="text-align:center">ProducerRecord的压缩方式</td>
+</tr>
+<tr>
+<td style="text-align:center">connections.amx.idle.ms</td>
+<td style="text-align:center">540000</td>
+<td style="text-align:center">闲置连接的最大存活时间</td>
+</tr>
+<tr>
+<td style="text-align:center">enable.idempotence</td>
+<td style="text-align:center">false</td>
+<td style="text-align:center">是否开启幂等<br>(开启时, akcs参数必须为-1)</td>
+</tr>
+<tr>
+<td style="text-align:center">interceptor.classes</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">发送ProducerRecord时使用的ProducerInterceptor<br>可指定多个ProducerInterceptor形成拦截链(拦截链按配置时顺序执行)</td>
+</tr>
+<tr>
+<td style="text-align:center">linger.ms</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">ProducerBatch发送之前的等待时间<br>(若ProducerBatch达到指定时间前已被填满, 则也会直接发送)</td>
+</tr>
+<tr>
+<td style="text-align:center">max.block.ms</td>
+<td style="text-align:center">60000</td>
+<td style="text-align:center">Producer的发送消息的最大阻塞时间</td>
+</tr>
+<tr>
+<td style="text-align:center">max.in.flight.requests.per.connection</td>
+<td style="text-align:center">5</td>
+<td style="text-align:center">发送请求的最大缓存数(发送后最多等待的数量)</td>
+</tr>
+<tr>
+<td style="text-align:center">max.request.size</td>
+<td style="text-align:center">1048576B</td>
+<td style="text-align:center">限定发送ProducerRecord的最大值<br>(不建议修改该参数, 可能导致未知的异常)</td>
+</tr>
+<tr>
+<td style="text-align:center">metadata.max.age.ms</td>
+<td style="text-align:center">30000</td>
+<td style="text-align:center">获取的Broker元数据过期时间<br>(超出该时间则向leastLoadedNode发送MetadataRequest请求)</td>
+</tr>
+<tr>
+<td style="text-align:center">partitioner.class</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">发送ProducerRecord时使用的Partitioner</td>
+</tr>
+<tr>
+<td style="text-align:center">request.timeout.ms</td>
+<td style="text-align:center">30000</td>
+<td style="text-align:center">Producer发送请求后等待的超时时间<br>超出该事件, 则根据retries参数进行重试<br>该参数值需大于Broker的replica.lag.time.max.ms参数值</td>
+</tr>
+<tr>
+<td style="text-align:center">retries</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">发送ProducerRecord失败时重试的次数<br>仅在发生可重试异常时进行重试<br>若超出指定重试次数后仍失败, 则放弃重试并返回异常<br>若该参数非0且max.in.flight.requests.per.connection参数大于1, 会导致错序</td>
+</tr>
+<tr>
+<td style="text-align:center">retry.backoff.ms</td>
+<td style="text-align:center">100</td>
+<td style="text-align:center">每次重试发送ProducerRecord的时间间隔</td>
+</tr>
+<tr>
+<td style="text-align:center">receive.buffer.bytes</td>
+<td style="text-align:center">32768B</td>
+<td style="text-align:center">Socket接收ProducerRecord的大小</td>
+</tr>
+<tr>
+<td style="text-align:center">send.buffer.bytes</td>
+<td style="text-align:center">131072B</td>
+<td style="text-align:center">Socket发送ProducerRecord的大小</td>
+</tr>
+<tr>
+<td style="text-align:center">transactional.id</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">事务ID</td>
+</tr>
+</tbody>
+</table>
+<br>
+<h3 id="consumer-1">Consumer<a hidden class="anchor" aria-hidden="true" href="#consumer-1">#</a></h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">参数</th>
+<th style="text-align:center">默认值</th>
+<th style="text-align:center">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><font color="red">bootstrap.servers</font></td>
+<td style="text-align:center"></td>
+<td style="text-align:center">引导程序的服务地址<br>格式: <code>地址1:端口1,地址N:端口N</code><br>(建议指定两个以上的Broker地址以保证稳定性, 且使用主机名形式)</td>
+</tr>
+<tr>
+<td style="text-align:center"><font color="red">group.id</font></td>
+<td style="text-align:center"></td>
+<td style="text-align:center">Consumer所属消费者组</td>
+</tr>
+<tr>
+<td style="text-align:center"><font color="red">key.derializer</font></td>
+<td style="text-align:center"></td>
+<td style="text-align:center">消费时对Key调用的反序列化器<br>Broker仅能接受字节数组形式的消息<code>byte[]</code></td>
+</tr>
+<tr>
+<td style="text-align:center"><font color="red">value.derializer</font></td>
+<td style="text-align:center"></td>
+<td style="text-align:center">消费时对Value调用的反序列化器<br>Broker仅能接受字节数组形式的消息<code>byte[]</code></td>
+</tr>
+<tr>
+<td style="text-align:center">auto.offset.reset</td>
+<td style="text-align:center">latest</td>
+<td style="text-align:center">Consumer没有指定消费位移时如何开始消费(位移越界也会触发)<br>earliest: 从起始处开始<br>none: 直接抛出异常</td>
+</tr>
+<tr>
+<td style="text-align:center">client.id</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">Consumer的ID<br>(未指定时随机生成个非空字符串)</td>
+</tr>
+<tr>
+<td style="text-align:center">connections.max.idle.ms</td>
+<td style="text-align:center">540000ms</td>
+<td style="text-align:center">Consumer闲置多长时间后关闭</td>
+</tr>
+<tr>
+<td style="text-align:center">enable.auto.commit</td>
+<td style="text-align:center">true</td>
+<td style="text-align:center">是否开启自动位移提交<br>默认5s提交次Partition中最大的消费位移<br>自动位移提交存在着重复消费和消息丢失的情景<br>每次拉取之间也会检查次是否可提交, 满足则先提交再拉取</td>
+</tr>
+<tr>
+<td style="text-align:center">exclude.internal.topics</td>
+<td style="text-align:center">true</td>
+<td style="text-align:center">Consumer是否可访问内部Topic<br>(内部Topic不可使用正则匹配方式订阅, 必须通过集合方式才可订阅)</td>
+</tr>
+<tr>
+<td style="text-align:center">fetch.min.bytes</td>
+<td style="text-align:center">1B</td>
+<td style="text-align:center">每次拉取消息的最小数据量<br>(可拉取的数据量不满足时, 则拉取动作将阻塞等待)</td>
+</tr>
+<tr>
+<td style="text-align:center">fetch.max.bytes</td>
+<td style="text-align:center">52428800B</td>
+<td style="text-align:center">每次拉取消息的最大数据量(软限制)</td>
+</tr>
+<tr>
+<td style="text-align:center">fetch.max.wait.ms</td>
+<td style="text-align:center">500ms</td>
+<td style="text-align:center">消息不满足最小数据量时等待的超时时间</td>
+</tr>
+<tr>
+<td style="text-align:center">heartbeat.interval.ms</td>
+<td style="text-align:center">3000</td>
+<td style="text-align:center">消费者组判断Consumer活跃的间隔<br>(必须小于sessio.timeout.ms参数)</td>
+</tr>
+<tr>
+<td style="text-align:center">interceptor.classes</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">使用的ConsumerInterceptor</td>
+</tr>
+<tr>
+<td style="text-align:center">isolation.level</td>
+<td style="text-align:center">read_uncommitted</td>
+<td style="text-align:center">Consumer的事务隔离级别<br>read_uncommitted: 未提交的事务可见(消费到HW)<br>read_committed: 忽略未提交的事务(消费到LSO)</td>
+</tr>
+<tr>
+<td style="text-align:center">max.partition.fetch.bytes</td>
+<td style="text-align:center">1048576B</td>
+<td style="text-align:center">从Partition中拉取消息的最大数据量(软限制)</td>
+</tr>
+<tr>
+<td style="text-align:center">max.poll.records</td>
+<td style="text-align:center">500</td>
+<td style="text-align:center">每次拉取的最多消息条数</td>
+</tr>
+<tr>
+<td style="text-align:center">max.poll.interval.ms</td>
+<td style="text-align:center">300000</td>
+<td style="text-align:center">消费者组中Consumer的最大空闲时间</td>
+</tr>
+<tr>
+<td style="text-align:center">metadata.max.age.ms</td>
+<td style="text-align:center">30000ms</td>
+<td style="text-align:center">元数据的过期时间</td>
+</tr>
+<tr>
+<td style="text-align:center">partition.assignment.strategy</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">Topic的Partition分配策略<br>(可设为: RangeAssignor、RoundRobinAssignor、StickyAssignor)</td>
+</tr>
+<tr>
+<td style="text-align:center">receive.buffer.bytes</td>
+<td style="text-align:center">65536B</td>
+<td style="text-align:center">Socket接收缓冲区的大小</td>
+</tr>
+<tr>
+<td style="text-align:center">reconnect.backoff.ms</td>
+<td style="text-align:center">50ms</td>
+<td style="text-align:center">Consumer连接Broker失败后的等待时间</td>
+</tr>
+<tr>
+<td style="text-align:center">request.timeout.ms</td>
+<td style="text-align:center">30000ms</td>
+<td style="text-align:center">Consumer等待请求响应的最长时间</td>
+</tr>
+<tr>
+<td style="text-align:center">retry.backoff.ms</td>
+<td style="text-align:center">100ms</td>
+<td style="text-align:center">重新发送失败请求到Partition的等待时间</td>
+</tr>
+<tr>
+<td style="text-align:center">send.buffer.bytes</td>
+<td style="text-align:center">131072B</td>
+<td style="text-align:center">Socket发送缓冲区大小</td>
+</tr>
+<tr>
+<td style="text-align:center">sessio.timeout.ms</td>
+<td style="text-align:center">10000</td>
+<td style="text-align:center">消费者组中Consumer判为离开的超时时间</td>
+</tr>
+</tbody>
+</table>
+
+
+        </div>
+
+        <footer class="post-footer">
+            
+<nav class="paginav">
+  <a class="next" href="https://zhoujze.github.io/en/posts/tech/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E8%B7%AF/">
+    <span class="title">下一页 »</span>
+    <br>
+    <span>计算机网络</span>
+  </a>
+</nav>
+
+
+<div class="share-buttons">
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Kafka on twitter"
+       href="https://twitter.com/intent/tweet/?text=Kafka&amp;url=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fkafka%2f&amp;hashtags=Kafka%2c%e5%9f%ba%e7%a1%80%e7%9f%a5%e8%af%86">
+    <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-253.927,424.544c135.939,0 210.268,-112.643 210.268,-210.268c0,-3.218 0,-6.437 -0.153,-9.502c14.406,-10.421 26.973,-23.448 36.935,-38.314c-13.18,5.824 -27.433,9.809 -42.452,11.648c15.326,-9.196 26.973,-23.602 32.49,-40.92c-14.252,8.429 -30.038,14.56 -46.896,17.931c-13.487,-14.406 -32.644,-23.295 -53.946,-23.295c-40.767,0 -73.87,33.104 -73.87,73.87c0,5.824 0.613,11.494 1.992,16.858c-61.456,-3.065 -115.862,-32.49 -152.337,-77.241c-6.284,10.881 -9.962,23.601 -9.962,37.088c0,25.594 13.027,48.276 32.95,61.456c-12.107,-0.307 -23.448,-3.678 -33.41,-9.196l0,0.92c0,35.862 25.441,65.594 59.311,72.49c-6.13,1.686 -12.72,2.606 -19.464,2.606c-4.751,0 -9.348,-0.46 -13.946,-1.38c9.349,29.426 36.628,50.728 68.965,51.341c-25.287,19.771 -57.164,31.571 -91.8,31.571c-5.977,0 -11.801,-0.306 -17.625,-1.073c32.337,21.15 71.264,33.41 112.95,33.41Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Kafka on linkedin"
+       href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fkafka%2f&amp;title=Kafka&amp;summary=Kafka&amp;source=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fkafka%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Kafka on reddit"
+       href="https://reddit.com/submit?url=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fkafka%2f&title=Kafka">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Kafka on facebook"
+       href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fkafka%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Kafka on whatsapp"
+       href="https://api.whatsapp.com/send?text=Kafka%20-%20https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fkafka%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Kafka on telegram"
+       href="https://telegram.me/share/url?text=Kafka&amp;url=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fkafka%2f">
+        <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28">
+            <path
+                    d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+        </svg>
+    </a>
+</div>
+
+        </footer>
+    </div>
+
+<style>
+    .comments_details summary::marker {
+        font-size: 20px;
+        content: '👉展开评论';
+        color: var(--content);
+    }
+    .comments_details[open] summary::marker{
+        font-size: 20px;
+        content: '👇关闭评论';
+        color: var(--content);
+    }
+</style>
+
+
+<div>
+    
+    <script src="https://cdn.staticfile.org/twikoo/1.4.11/twikoo.all.min.js">
+    </script>
+    <script>
+        twikoo.init({
+            envId:  null ,
+        el: "#tcomment",
+            lang: 'zh-CN',
+            region:  null ,
+        path: window.TWIKOO_MAGIC_PATH||window.location.pathname,
+        })
+    </script>
+</div>
+</article>
+</main>
+
+<footer class="footer">
+    <span>
+        Copyright
+        &copy;
+        2023-2023
+        <a href="https://zhoujze.github.io/en/" style="color:#939393;">ZhouJz&#39;s blog</a>
+        All Rights Reserved
+    </span>
+    <a href="https://beian.miit.gov.cn/" target="_blank" style="color:#939393;"></a>&nbsp;
+    <span>
+        <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=null"
+           style="display:inline-block;text-decoration:none;height:20px;color:#939393;">
+            <img src="" style="float:left;margin: 0px 5px 0px 0px;"/>
+            
+        </a>
+    </span>
+    <span id="busuanzi_container">
+        <span class="fa fa-user"></span> <span id="busuanzi_value_site_uv"></span>
+        <span class="fa fa-eye"></span> <span id="busuanzi_value_site_pv"></span>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <span class="topInner">
+        <svg class="topSvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+            <path d="M12 6H0l6-6z"/>
+        </svg>
+        <span id="read_progress"></span>
+    </span>
+</a>
+
+<script>
+    document.addEventListener('scroll', function (e) {
+        const readProgress = document.getElementById("read_progress");
+        const scrollHeight = document.documentElement.scrollHeight;
+        const clientHeight = document.documentElement.clientHeight;
+        const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        readProgress.innerText = ((scrollTop / (scrollHeight - clientHeight)).toFixed(2) * 100).toFixed(0);
+    })
+</script>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+</script>
+<script>
+    let mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        (function() {
+            document.cookie = "change-themes" + "="+ escape ("false");
+        })()
+
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    });
+</script>
+
+<script>
+    document.body.addEventListener('copy', function (e) {
+        if (window.getSelection().toString() && window.getSelection().toString().length > 50) {
+            let clipboardData = e.clipboardData || window.clipboardData;
+            if (clipboardData) {
+                e.preventDefault();
+                let htmlData = window.getSelection().toString() +
+                    '\r\n\n————————————————\r\n' +
+                    '版权声明：本文为「'+"ZhouJz's blog"+'」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。' +
+                '\r\n原文链接：' + location.href;
+                let textData = window.getSelection().toString() +
+                    '\r\n\n————————————————\r\n' +
+                    '版权声明：本文为「'+"ZhouJz's blog"+'」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。' +
+                '\r\n原文链接：' + location.href;
+                clipboardData.setData('text/html', htmlData);
+                clipboardData.setData('text/plain', textData);
+            }
+        }
+    });
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerText = '📄复制';
+
+        function copyingDone() {
+            copybutton.innerText = '👌🏻已复制!';
+            setTimeout(() => {
+                copybutton.innerText = '📄复制';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                let text = codeblock.textContent +
+                    '\r\n————————————————\r\n' +
+                    '版权声明：本文为「'+"ZhouJz's blog"+'」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。' +
+                '\r\n原文链接：' + location.href;
+                navigator.clipboard.writeText(text);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) {}
+            selection.removeRange(range);
+        });
+
+        let language = codeblock.className.replaceAll("language-", "")
+        let macTool = document.createElement("div")
+        let macTool1 = document.createElement("div")
+        let macTool2 = document.createElement("div")
+        let macTool3 = document.createElement("div")
+        let languageType = document.createElement("div")
+        languageType.innerText = language
+        macTool.setAttribute('class', 'mac-tool')
+        macTool1.setAttribute('class', 'mac bb1')
+        macTool2.setAttribute('class', 'mac bb2')
+        macTool3.setAttribute('class', 'mac bb3')
+        languageType.setAttribute('class', 'language-type')
+        macTool.appendChild(macTool1)
+        macTool.appendChild(macTool2)
+        macTool.appendChild(macTool3)
+        macTool.appendChild(languageType)
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+            container.appendChild(macTool)
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+            container.appendChild(macTool)
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+            container.appendChild(macTool)
+        }
+    });
+</script>
+</body>
+
+</html>

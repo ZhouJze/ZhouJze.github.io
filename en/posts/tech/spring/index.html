@@ -1,0 +1,2156 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Spring基础总结 | ZhouJz&#39;s blog</title>
+<meta name="keywords" content="Spring总结, 面试题">
+<meta name="description" content="Spring源码剖析、基础讲解。">
+<meta name="author" content="ZhouJze">
+<link rel="canonical" href="https://zhoujze.github.io/en/posts/tech/spring/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.1d3401cbcdd2f10bdb5198bcf67bd24686c4792045e0991c052459ef4196f5cf.css" integrity="" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/assets/js/highlight.f413e19d0714851f6474e7ee9632408e58ac146fbdbe62747134bea2fa3415e0.js" integrity="sha256-9BPhnQcUhR9kdOfuljJAjlisFG&#43;9vmJ0cTS&#43;ovo0FeA="
+        onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://zhoujze.github.io/img/Q.jpg">
+<link rel="icon" type="image/png" sizes="16x16" href="https://zhoujze.github.io/img/Q.jpg">
+<link rel="icon" type="image/png" sizes="32x32" href="https://zhoujze.github.io/img/Q.jpg">
+<link rel="apple-touch-icon" href="https://zhoujze.github.io/Q.jpg">
+<link rel="mask-icon" href="https://zhoujze.github.io/Q.jpg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.3/dist/jquery.min.js"></script>
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = ""; 
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<meta property="og:title" content="Spring基础总结" />
+<meta property="og:description" content="Spring源码剖析、基础讲解。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://zhoujze.github.io/en/posts/tech/spring/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2023-08-27T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-08-27T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Spring基础总结"/>
+<meta name="twitter:description" content="Spring源码剖析、基础讲解。"/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+
+        {
+          "@type": "ListItem",
+          "position":  1 ,
+          "name": "📚文章",
+          "item": "https://zhoujze.github.io/en/posts/"
+        },
+
+        {
+          "@type": "ListItem",
+          "position":  2 ,
+          "name": "👨🏻‍💻 技术",
+          "item": "https://zhoujze.github.io/en/posts/tech/"
+        }, 
+    {
+      "@type": "ListItem",
+      "position":  3 ,
+      "name": "Spring基础总结",
+      "item": "https://zhoujze.github.io/en/posts/tech/spring/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Spring基础总结",
+  "name": "Spring基础总结",
+  "description": "Spring源码剖析、基础讲解。",
+  "keywords": [
+    "Spring总结", "面试题"
+  ],
+  "articleBody": "Spring 面试题 什么是Spring spring是一个轻量级的Java开发框架，用于解决企业级应用开发的复杂性，简化Java开发。\nspring底层有两个核心特性：\nAOP面向切面编程 DI依赖注入 降低开发复杂度的四个策略：\n基于POJO的轻量级和最小侵入性编程 通过依赖注入和切面编程实现松散耦合 基于切面和惯例进行的声明式编程 通过切面和模板减少样式代码 Spring的设计目标、设计理念、核心 设计目标 为开发者提供一站式的轻量级应用开发平台\n设计理念 在JavaEE的开发中，支持POJO和JavaBean开发方式，是应用面向接口开发，充分支持面向对象设计方法。\nSpring通过IoC容器实现对象耦合关系的管理，并实现依赖反转，将对象之间的依赖关系交由IoC容器管理，实现解耦。\n核心 IoC容器和AOP模块。\nIoC容器用来管理对象之间的耦合关系，通过AOP以动态非侵入的方式增强服务。\nIoC容器让相互协作的组件实现松散耦合，AOP面向切面编程允许吧应用于各个层的功能分离出来复用。\nSpring的优缺点 优点 方便解耦，简化开发\nspring是个大工厂，可以把对象的创建和依赖关系的维护交给Spring进行管理。\nAOP切面编程\n方便对程序的权限拦截、运行监控等。\n声明式事务的支持\n通过配置就可以完成对事物的管理。\n方便测试\nSpring支持Junit4，可通过注解实现对Spring程序的测试。\n集成优秀框架\nSpring提供了对各种优秀框架的直接支持，如MyBatis等。\n提供JavaEE开发中难用的API的封装，降低JavaEE API使用难度\n如JDBC、远程调用等，\n缺点 Spring是轻量级框架，但是给人感觉大而全 Spring依赖反射，反射影响性能 使用门槛高，不易上手。 Spring的应用场景 JavaEE企业级应用开发，包括：SSH、SSM等。\nSpring的价值 Spring是非侵入式框架，使代码最低限度的依赖框架 Spring提供一致性编程模型，使应用直接使用POJO开发，与运行环境隔离 Spring推动面向对象和面向接口编程风格，提高代码复用率和可测性 Spring的组成 Core：提供框架基本支持，包括控制反转和依赖注入功能。 Beans：提供BeanFactory，是工厂模式的实现，Spring把管理对象称为Bean。 context；基于core构建的封装包，提供框架式的对象访问方法。 JDBC：提供JDBC的抽象类，简化jdbc。 AOP：提供面向切面的代码实现，可自定义拦截器、切点等。 Web：提供针对Web开发的集成特性。 Test：提供测试支持，支持Junit，进行单元测试和集成测试。 Spring使用到的5种设计模式 工厂模式：BeanFactory就是一种简单的工厂模式，用来创建实例对象。 单例模式：Bean默认就是单例模式。 代理模式：AOP用到了JDK的动态代理和CGLIB字节码生成技术。 模板方法：解决代码重复问题。 观察者模式：定义对象键的一种一对多的依赖管理，当对象发生改变，所有依赖于它的对象都要制动更新，如Spring中的Listener的实现ApplicationListener。 介绍下核心容器 ( spring context 应用上下文 ) 是最基本的Spring模块，提供Spring框架的基础功能。\nBeanFactory是任何以Spring为基础的核心，Spring框架建立在此模块之上，使Spring成为一个容器。\nBean工厂是工厂模式的一个实现，提供控制反转功能，把应用的配置和依赖从代码中分离开来，最常用的是XML文件中定义加载bean，该容器从xml文件中读取配置，并创建一个完全配置的系统或应用。\nSpring中的5种标准事件 上下文更新事件\n调用ConfigurableApplicationContext接口中的refresh()方法触发。\n上下文开始事件\n调用ConfigurableApplicationContext接口中的start()方法触发。\n上下文停止事件\n调用ConfigurableApplicationContext接口中的stop()方法触发。\n上下文关闭事件\nApplicationContext被关闭时触发。容器被关闭，所有Bean销毁。\n请求处理事件\nWeb应用中，当http请求结束时触发。\nSpring中的5大组件 接口 -\u003e 定义功能 Bean类 -\u003e 实体类，get、set方法 Bean配置文件 -\u003e 包含类的信息和配置 AOP -\u003e 提供面向切面编程功能 应用程序 -\u003e 使用接口 使用Spring的四大方式 一个成熟的Spring Web应用程序 作为第三方Web框架 作为企业级Java Bean，包装现有的POJO 用于远程 Spring 控制反转 ( IoC Inversion Of Control) 什么是IoC容器 控制反转即使IoC，它把传统上由程序代码直接控制的对象的调用权交给容器管理，通过容器实现对象组件的装配和管理。\n控制反转，通俗说，就是对组件对象控制权的转移，从程序本身转移到外部容器。\nIOC负责创建对象，管理对象(通过依赖注入)，装配对象，配置对象，并且管理对象的生命周期。\n控制反转的作用 管理对象的创建和依赖关系的维护。 解耦，由容器去维护具体对象。 托管类的产生过程，在类的产生过程中做一些处理，可以直接托管处理，最直接例子，代理。 优点 IoC把应用的代码降到最低 使应用容易测试，单元测试不再需要单例 最小代价和最小侵入性使松散耦合得以实现 IoC容器支持加载服务时的饿汉式初始化和懒加载 IoC实现机制 实现原理：工厂模式+反射机制\ninterface Fruit { public abstract void eat(); } class Apple implements Fruit { public void eat(){ System.out.println(\"Apple\"); } } class Orange implements Fruit { public void eat(){ System.out.println(\"Orange\"); } } class Factory { public static Fruit getInstance(String ClassName) { Fruit f=null; try { f=(Fruit)Class.forName(ClassName).newInstance(); } catch (Exception e) { e.printStackTrace(); } return f; } } class Client { public static void main(String[] a) { Fruit f=Factory.getInstance(\"io.github.dunwu.spring.Apple\"); if(f!=null){ f.eat(); } } } IoC 支持 6种 功能 依赖注入 依赖检查 自动装配 支持集合 指定初始化方法和销毁方法 支持回调某些方法（但是需要实现Spring接口，略有侵入） BeanFactory 和 ApplicationContext 区别 BeanFactory 和 ApplicationContext 是Spring的两大核心，都可当成容器。\nApplicationContext 是 BeanFactory 的子接口。\n依赖关系 BeanFactory : 是Spring的最低层接口，包含了Bean的定义，读取Bean配置，管理Bean的加载、实例化，控制Bean的生命周期，维护Bean之间的依赖关系。 ApplicationContext ：是BeanFactory的派生，拥有它所有的功能外，还有更完整的框架功能： 继承MessageSource 因此支持国际化 统一的资源文件访问方式 提供在监听器中注册bean的事件 同时加载多个配置文件 载入多个（有继承关系）上下文，使每个上下文都专注于一个特定的层次，如应用的web层。 加载方式 BeanFactory : 采用延迟加载来注入Bean，当使用到的时候才对Bean进行加载实例化。这样如果Spring配置有问题，那么就不会在启动时发现，直到第一次调用getBean()才会抛出错误。 ApplicationContext ：容器启动，一次性加载所有的Bean，如果Spring配置错误，可以直接发现。因为ApplicationContext启动后预加载的所有的Bean，所以在需要用的时候直接调用就可以了不用等待。 相对于BeanFactory，ApplicationContext唯一不足：占用内存空间，因实例较多的Bean，启动较慢。 创建方式 BeanFactory : 编程式创建 ApplicationContext ：编程式和声明的方式创建(ContextLoader) 注册方式 都支持BeanPostProcessor、BeanFactoryPostProcessor\nBeanFactory : 手动注册 ApplicationContext ：自动注册 Spring如何设计容器，BeanFactory 和 ApplicationContext关系 Spring 作者用两个接口表示容器\nBeanFactory ApplicationContext BeanFactory简单粗暴，称为低级容器，可以理解为是一个HashMap，Key式BeanName，Value是Bean实例。通常只提供注册（put）和获取（get），两个功能。\nApplicationContext称为高级容器，因比BeanFactory多了更多的功能，继承了多个接口。如该接口定义了一个refresh方法，刷新整个容器，重新加载刷新Bean。\n低级容器实现Spring：\n加载配置文件，解析成BeanDefinition放在Map里 调用getBean，从BeanDefinition的Map里拿到Class对象实例化，同时如果有依赖关系，递归调用getBean方法，完成依赖注入 高级容器实现Spring：\n当执行refresh方法，刷新整个容器的Bean。\n它不仅仅是IoC，同时还支持不同信息源头，BeanFactory工具类，层级容器，支持访问文件资源，支持事物发布，接口回调。\nApplicationContext通常的实现 FileSystemXmlApplicationContext：从xml文件中加载bean，xml文件的全路径名必须提供构造函数。 ClassPathXmlApplicationContext：从xml文件中加载bean，正确设置classpath，容器会在classpath里找bean配置。 WebXmlApplicationContext：从xml文件中加载bean，此文件定义了Web应用所有的bean。 依赖注入 什么是依赖注入 IoC可以用不同的方式实现，主要由依赖注入和依赖查找。\n依赖注入就是组件之间的依赖关系由容器来管理，在系统运行期间，由容器将某种依赖关系的目标对象注入到组件中，组件不负责查询，只提供普通的Java方法让容器决定依赖关系。\n依赖注入原则 组件不负责查找资源或者依赖关系的对象，配置对象的工作交给IoC容器负责，查找逻辑从组件中分离到IoC容器负责。容器负责组件的装配，把符合依赖关系的对象通过属性或构造器传给需要的对象。\n依赖注入优势 查找定位操作与应用代码无关 不依赖容器API，可以在容器外使用 不需要特殊接口，绝大多数对象可以做到完全不依赖容器 依赖注入的不同类型 接口注入：因灵活性和易用性较差，Spring4被遗弃。\nSetter方法注入：通过容器触发一个类的构造器实现。\n构造器注入：容器调用无参构造器或者无参static工厂方法实例化bean后，调用bean的setter方法。\n构造器注入和Setter注入区别 构造器注入 setter注入 没有部分注入 有部分注入 不会覆盖setter属性 会覆盖setter属性 任意修改都会创建一个新实例 任意修改不会创建新实例 适用于设置很多属性 适用于设置少量属性 Spring 面向切面编程 ( AOP ) 什么是AOP OOP面向对象编程，允许开发者定义纵向关系，并且适用于定义横向关系，导致了大量代码重复，不利于各模块重用。\nAOP面向切面编程，可以认为是OOP的补充，把与业务无关，却对多个对象产生影响的公共行为和逻辑，抽取并封装成可重用的模块，模块被明明为切面(Aspect)，减少代码重复，降低耦合度，提高系统可维护性，可用于权限认证、日志、事物处理等。\nSpring AOP 和 AspectJ AOP 区别，AOP的实现方法 AOP的实现在于代理模式，主要分为动态代理和静态代理。\nAspectJ AOP：静态代理的增强，即AOP框架会在编译时生成AOP代理类，编译时增强，在运行时就时增强后的AOP对象 Spring AOP：使用动态代理，AOP框架不会在编译的时候生成文件，而是在每次运行的时候在内存中生成临时的AOP对象，其中包含了目标对象的全部方法，在特定切点做增强处理。 JDK动态代理和CGLIB动态代理区别 Spring有两种动态代理方式，JDK动态代理和CGLIB动态代理\nJDK动态代理：只提供接口实现类，不提供类的代理 CGLIB动态代理：提供类的代理，主要针对类的生成子类，覆盖其中的方法进行增强，因为采用继承，所以最好不要声明final，无法继承。 Spring如何选择使用哪种\nbean实现接口，使用JDK bean没有实现接口，使用CGLIB 可以通过注解强行使用CGLIB @EnableAspectJAutoProxy(proxyTargetClass = true)\nSpring术语解释 通知：定义什么时候，做了什么 连接点：程序执行过程中能够执行通知的所有点（方法！） 切点：定义在哪里切入，得到通知。切入点一定是连接点 切面：通知和切点结合。定义了是什么、什么时候做、在哪里 织入：把切面应用到目标对象上，并创建新的代理的过程。分为编译织入、类加载期织入、运行期织入 AOP 5类 通知 前置通知（Before）：在方法执行前通知 后置通知（After）：在方法执行完成后通知 返回通知（AfterReturning）：在方法执行完后，成功执行返回通知 异常通知（AfterThrowing）：在方法执行完成，方法抛出异常返回通知 环绕通知（Around）：在被通知的方法调用之前或者调用之后通知 AOP示例 定义连接点 @RestController public class AopController { @RequestMapping(\"/hello\") public String sayHello(){ System.out.println(\"hello\"); return \"hello\"; } } 定义切面（切点+通知） 添加@Aspect注解 @Pointcut在一个切面内定义可重用的切点 @Aspect @Component public class AopAdvice { @Pointcut(\"execution (* com.veal.aop.controller.*.*(..))\") public void test() { } @Before(\"test()\") public void beforeAdvice() { System.out.println(\"beforeAdvice...\"); } @After(\"test()\") public void afterAdvice() { System.out.println(\"afterAdvice...\"); } @Around(\"test()\") public void aroundAdvice(ProceedingJoinPoint proceedingJoinPoint) { System.out.println(\"before\"); try { proceedingJoinPoint.proceed(); } catch (Throwable t) { t.printStackTrace(); } System.out.println(\"after\"); } } Spring Beans 什么时Spring Bean 交给Spring管理的对象，储存在Spring IoC容器中，由IoC容器初始化、装配和管理，通过配置中的元数据创建，如xml文件、注解、Java配置类等。\n一个Spring Bean的定义包含什么 创建bean 生命周期 依赖 如何提供配置元数据 xml配置文件 注解配置 Java配置类 创建 Spring Bean 4种方法 构造函数创建 @Configuration public class MyConfiguration { @Bean public MyBean myBean() { return new MyBean(); // 使用默认的无参构造函数创建 Bean 实例 } @Bean public AnotherBean anotherBean() { return new AnotherBean(myBean()); // 通过构造函数注入依赖的 Bean } } 静态工厂创建 @Configuration public class MyConfiguration { @Bean public MyBean myBean() { return MyBeanFactory.createMyBean(); // 调用工厂方法创建 Bean 实例 } } public class MyBeanFactory { public static MyBean createMyBean() { return new MyBean(); // 工厂方法创建 Bean 实例 } } 实例工厂创建 @Configuration public class MyConfiguration { @Bean public MyBeanFactory myBeanFactory() { return new MyBeanFactory(); // 实例工厂方法 } @Bean public MyBean myBean() { return myBeanFactory().createMyBean(); // 调用实例工厂方法创建 Bean 实例 } } public class MyBeanFactory { public MyBean createMyBean() { return new MyBean(); // 实例工厂方法创建 Bean 实例 } } 注解创建 使用@Component注解或者衍生@Service @Repository @Controller 标记类，让Spring自动扫描、创建bean实例。\nComponent：通用注解，可标记任意类为Spring的组件。如果不知道属于哪一层可以用。 @Service：服务类，针对复杂的逻辑，需要涉及Dao层。 @Repository：对Dao层，主要针对数据库相关操作。 @Controller：对应MVC控制层，用户接收请求调用Service层返回数据给前端。 @Component public class MyBean { // Bean 的实现 } @Component和@Bean区别 @Component作用于类，@Bean作用于方法\n@Component：通过类路径扫面自动装配到Spring容器 @Bean：在标有该注解的地方标记生成的Bean，告诉Spring这是某个类的实例，需要用到的时候还给我。 @Bean 比 @Component 自定义性更强。 示例： @Configuration public class AppConfig { @Bean public TransferService transferService() { return new TransferServiceImpl(); } } 相当于 ",
+  "wordCount" : "13517",
+  "inLanguage": "en",
+  "datePublished": "2023-08-27T00:00:00Z",
+  "dateModified": "2023-08-27T00:00:00Z",
+  "author":{
+    "@type": "Person",
+    "name": "ZhouJze"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://zhoujze.github.io/en/posts/tech/spring/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "ZhouJz's blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://zhoujze.github.io/img/Q.jpg"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    (function () {
+        let  arr,reg = new RegExp("(^| )"+"change-themes"+"=([^;]*)(;|$)");
+        if(arr = document.cookie.match(reg)) {
+        } else {
+            if (new Date().getHours() >= 19 || new Date().getHours() < 6) {
+                document.body.classList.add('dark');
+                localStorage.setItem("pref-theme", 'dark');
+            } else {
+                document.body.classList.remove('dark');
+                localStorage.setItem("pref-theme", 'light');
+            }
+        }
+    })()
+
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://zhoujze.github.io/en/" accesskey="h" title="ZhouJze&#39;s Blog (Alt + H)">
+            <img src="https://zhoujze.github.io/img/Q.jpg" alt="logo" aria-label="logo"
+                 height="35">ZhouJze&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                         stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                         stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://zhoujze.github.io/en/search" title="🔍搜索 (Alt &#43; /)" accesskey=/>
+                <span>🔍搜索</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zhoujze.github.io/en/" title="🏠主页">
+                <span>🏠主页</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zhoujze.github.io/en/archives/" title="⏱时间轴">
+                <span>⏱时间轴</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zhoujze.github.io/en/tags" title="🔖标签">
+                <span>🔖标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zhoujze.github.io/en/about" title="🙋🏻‍♂️关于">
+                <span>🙋🏻‍♂️关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main page">
+<style>
+    i[id*="post_meta_style"] {
+        display: flex;
+        align-items: center;
+        margin: 0 0 10px 0;
+    }
+</style>
+
+<article class="post-single">
+    <div id="single-content">
+        <header class="post-header">
+            <div class="breadcrumbs"><a href="https://zhoujze.github.io/en/">🏠 主页</a>&nbsp;»&nbsp;<a href="https://zhoujze.github.io/en/posts/">📚文章</a>&nbsp;»&nbsp;<a href="https://zhoujze.github.io/en/posts/tech/">👨🏻‍💻 技术</a></div>
+            <h1 class="post-title">
+                Spring基础总结
+            </h1>
+            <div class="post-description">
+                Spring源码剖析、基础讲解。
+            </div>
+            <div class="post-meta">
+
+<style>
+    i[id*="post_meta_style"] {
+        display: flex;
+        align-items: center;
+        margin: 0 0 10px 0;
+    }
+
+    .parent-post-meta {
+        display: flex;
+        flex-wrap: wrap;
+        opacity: 0.8;
+    }
+</style>
+
+<span class="parent-post-meta">
+    <span id="post_meta_style_1">
+        <span class="fa fa-calendar-check-o"></span>
+        <span>2023-08-27
+            &nbsp;&nbsp;
+        </span>
+    </span>
+    
+    
+    
+    
+    
+    
+    
+    <span id="post_meta_style_3">
+        <span class="fa fa-file-word-o"></span>
+        <span>13517字
+            &nbsp;&nbsp;
+        </span>
+    </span>
+    <span id="post_meta_style_4">
+        <span class="fa fa-clock-o"></span>
+        <span>27分钟
+            &nbsp;&nbsp;
+        </span>
+    </span>
+    <span id="post_meta_style_5">
+        <span class="fa fa-user-o"></span>
+        <span>ZhouJze
+            &nbsp;&nbsp;
+        </span>
+    </span>
+    <span id="post_meta_style_6">
+        <span class="fa fa-tags" style="opacity: 0.8"></span>
+        <span>
+            <span class="post-tags-meta">
+                <a href="https://zhoujze.github.io/en/tags/spring%E6%80%BB%E7%BB%93/" style="color: var(--secondary)!important;">Spring总结</a>
+                &nbsp;<a href="https://zhoujze.github.io/en/tags/%E9%9D%A2%E8%AF%95%E9%A2%98/" style="color: var(--secondary)!important;">面试题</a>
+            </span>
+        </span>
+    </span>
+</span>
+<span style="opacity: 0.8;">
+                    <span id="post_meta_style_7">
+                        &nbsp;&nbsp;
+                        <span class="fa fa-eye" ></span>
+                        <span>
+                            <span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span></span>
+                            &nbsp;&nbsp;
+                        </span>
+                    </span>
+                    <span id="post_meta_style_8">
+                        <span class="fa fa-commenting-o"></span>
+                        <span>
+                            <script src="https://cdn.staticfile.org/twikoo/1.4.11/twikoo.all.min.js"></script>
+                            <script>
+                                let url = document.documentURI
+                                
+                                let dnsUrl = "https://zhoujze.github.io/"
+                                let urlSplit = url.split(dnsUrl)
+                                let finalUrl = urlSplit[1]
+                                if (finalUrl[0] !== '/') {
+                                    finalUrl = '/'+finalUrl
+                                }
+                                twikoo.getCommentsCount({
+                                    envId:  null , 
+                                region:  null , 
+                                urls: [ 
+                                    
+                                    finalUrl,
+                                ],
+                                    includeReply: false 
+                                }).then(function (res) {
+                                    let count = res[0].count
+                                    const obj = document.getElementById("comment_count");
+                                    obj.innerText = count
+                                    
+                                    
+                                    
+                                }).catch(function (err) {
+                                    
+                                    console.error(err);
+                                });
+                            </script>
+                            <span id="comment_count"></span>
+                        </span>
+                    </span>
+                </span>
+
+</div>
+        </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">文章目录</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#spring-%e9%9d%a2%e8%af%95%e9%a2%98" aria-label="Spring 面试题">Spring 面试题</a><ul>
+                        
+                <li>
+                    <a href="#%e4%bb%80%e4%b9%88%e6%98%afspring" aria-label="什么是Spring">什么是Spring</a></li>
+                <li>
+                    <a href="#spring%e7%9a%84%e8%ae%be%e8%ae%a1%e7%9b%ae%e6%a0%87%e8%ae%be%e8%ae%a1%e7%90%86%e5%bf%b5%e6%a0%b8%e5%bf%83" aria-label="Spring的设计目标、设计理念、核心">Spring的设计目标、设计理念、核心</a><ul>
+                        
+                <li>
+                    <a href="#%e8%ae%be%e8%ae%a1%e7%9b%ae%e6%a0%87" aria-label="设计目标">设计目标</a></li>
+                <li>
+                    <a href="#%e8%ae%be%e8%ae%a1%e7%90%86%e5%bf%b5" aria-label="设计理念">设计理念</a></li>
+                <li>
+                    <a href="#%e6%a0%b8%e5%bf%83" aria-label="核心">核心</a></li></ul>
+                </li>
+                <li>
+                    <a href="#spring%e7%9a%84%e4%bc%98%e7%bc%ba%e7%82%b9" aria-label="Spring的优缺点">Spring的优缺点</a><ul>
+                        
+                <li>
+                    <a href="#%e4%bc%98%e7%82%b9" aria-label="优点">优点</a></li>
+                <li>
+                    <a href="#%e7%bc%ba%e7%82%b9" aria-label="缺点">缺点</a></li></ul>
+                </li>
+                <li>
+                    <a href="#spring%e7%9a%84%e5%ba%94%e7%94%a8%e5%9c%ba%e6%99%af" aria-label="Spring的应用场景">Spring的应用场景</a><ul>
+                        
+                <li>
+                    <a href="#spring%e7%9a%84%e4%bb%b7%e5%80%bc" aria-label="Spring的价值">Spring的价值</a></li></ul>
+                </li>
+                <li>
+                    <a href="#spring%e7%9a%84%e7%bb%84%e6%88%90" aria-label="Spring的组成">Spring的组成</a></li>
+                <li>
+                    <a href="#spring%e4%bd%bf%e7%94%a8%e5%88%b0%e7%9a%845%e7%a7%8d%e8%ae%be%e8%ae%a1%e6%a8%a1%e5%bc%8f" aria-label="Spring使用到的5种设计模式">Spring使用到的5种设计模式</a></li>
+                <li>
+                    <a href="#%e4%bb%8b%e7%bb%8d%e4%b8%8b%e6%a0%b8%e5%bf%83%e5%ae%b9%e5%99%a8--spring-context-%e5%ba%94%e7%94%a8%e4%b8%8a%e4%b8%8b%e6%96%87-" aria-label="介绍下核心容器 ( spring context 应用上下文 )">介绍下核心容器 ( spring context 应用上下文 )</a></li>
+                <li>
+                    <a href="#spring%e4%b8%ad%e7%9a%845%e7%a7%8d%e6%a0%87%e5%87%86%e4%ba%8b%e4%bb%b6" aria-label="Spring中的5种标准事件">Spring中的5种标准事件</a></li>
+                <li>
+                    <a href="#spring%e4%b8%ad%e7%9a%845%e5%a4%a7%e7%bb%84%e4%bb%b6" aria-label="Spring中的5大组件">Spring中的5大组件</a></li>
+                <li>
+                    <a href="#%e4%bd%bf%e7%94%a8spring%e7%9a%84%e5%9b%9b%e5%a4%a7%e6%96%b9%e5%bc%8f" aria-label="使用Spring的四大方式">使用Spring的四大方式</a></li></ul>
+                </li>
+                <li>
+                    <a href="#spring-%e6%8e%a7%e5%88%b6%e5%8f%8d%e8%bd%ac--ioc-inversion-of-control" aria-label="Spring 控制反转 ( IoC Inversion Of Control)">Spring 控制反转 ( IoC <code>Inversion Of Control</code>)</a><ul>
+                        
+                <li>
+                    <a href="#%e4%bb%80%e4%b9%88%e6%98%afioc%e5%ae%b9%e5%99%a8" aria-label="什么是IoC容器">什么是IoC容器</a></li>
+                <li>
+                    <a href="#%e6%8e%a7%e5%88%b6%e5%8f%8d%e8%bd%ac%e7%9a%84%e4%bd%9c%e7%94%a8" aria-label="控制反转的作用">控制反转的作用</a></li>
+                <li>
+                    <a href="#%e4%bc%98%e7%82%b9-1" aria-label="优点">优点</a></li>
+                <li>
+                    <a href="#ioc%e5%ae%9e%e7%8e%b0%e6%9c%ba%e5%88%b6" aria-label="IoC实现机制">IoC实现机制</a></li>
+                <li>
+                    <a href="#ioc-%e6%94%af%e6%8c%81-6%e7%a7%8d-%e5%8a%9f%e8%83%bd" aria-label="IoC 支持 6种 功能">IoC 支持 6种 功能</a></li>
+                <li>
+                    <a href="#beanfactory-%e5%92%8c-applicationcontext-%e5%8c%ba%e5%88%ab" aria-label="BeanFactory 和 ApplicationContext 区别">BeanFactory 和 ApplicationContext 区别</a><ul>
+                        
+                <li>
+                    <a href="#%e4%be%9d%e8%b5%96%e5%85%b3%e7%b3%bb" aria-label="依赖关系">依赖关系</a></li>
+                <li>
+                    <a href="#%e5%8a%a0%e8%bd%bd%e6%96%b9%e5%bc%8f" aria-label="加载方式">加载方式</a></li>
+                <li>
+                    <a href="#%e5%88%9b%e5%bb%ba%e6%96%b9%e5%bc%8f" aria-label="创建方式">创建方式</a></li>
+                <li>
+                    <a href="#%e6%b3%a8%e5%86%8c%e6%96%b9%e5%bc%8f" aria-label="注册方式">注册方式</a></li>
+                <li>
+                    <a href="#spring%e5%a6%82%e4%bd%95%e8%ae%be%e8%ae%a1%e5%ae%b9%e5%99%a8beanfactory-%e5%92%8c-applicationcontext%e5%85%b3%e7%b3%bb" aria-label="Spring如何设计容器，BeanFactory 和 ApplicationContext关系">Spring如何设计容器，BeanFactory 和 ApplicationContext关系</a></li>
+                <li>
+                    <a href="#applicationcontext%e9%80%9a%e5%b8%b8%e7%9a%84%e5%ae%9e%e7%8e%b0" aria-label="ApplicationContext通常的实现">ApplicationContext通常的实现</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e4%be%9d%e8%b5%96%e6%b3%a8%e5%85%a5" aria-label="依赖注入">依赖注入</a><ul>
+                        
+                <li>
+                    <a href="#%e4%bb%80%e4%b9%88%e6%98%af%e4%be%9d%e8%b5%96%e6%b3%a8%e5%85%a5" aria-label="什么是依赖注入">什么是依赖注入</a></li>
+                <li>
+                    <a href="#%e4%be%9d%e8%b5%96%e6%b3%a8%e5%85%a5%e5%8e%9f%e5%88%99" aria-label="依赖注入原则">依赖注入原则</a></li>
+                <li>
+                    <a href="#%e4%be%9d%e8%b5%96%e6%b3%a8%e5%85%a5%e4%bc%98%e5%8a%bf" aria-label="依赖注入优势">依赖注入优势</a></li>
+                <li>
+                    <a href="#%e4%be%9d%e8%b5%96%e6%b3%a8%e5%85%a5%e7%9a%84%e4%b8%8d%e5%90%8c%e7%b1%bb%e5%9e%8b" aria-label="依赖注入的不同类型">依赖注入的不同类型</a></li>
+                <li>
+                    <a href="#%e6%9e%84%e9%80%a0%e5%99%a8%e6%b3%a8%e5%85%a5%e5%92%8csetter%e6%b3%a8%e5%85%a5%e5%8c%ba%e5%88%ab" aria-label="构造器注入和Setter注入区别">构造器注入和Setter注入区别</a></li></ul>
+                </li></ul>
+                </li>
+                <li>
+                    <a href="#spring-%e9%9d%a2%e5%90%91%e5%88%87%e9%9d%a2%e7%bc%96%e7%a8%8b--aop-" aria-label="Spring 面向切面编程 ( AOP )">Spring 面向切面编程 ( AOP )</a><ul>
+                        
+                <li>
+                    <a href="#%e4%bb%80%e4%b9%88%e6%98%afaop" aria-label="什么是AOP">什么是AOP</a></li>
+                <li>
+                    <a href="#spring-aop-%e5%92%8c-aspectj-aop-%e5%8c%ba%e5%88%abaop%e7%9a%84%e5%ae%9e%e7%8e%b0%e6%96%b9%e6%b3%95" aria-label="Spring AOP 和 AspectJ AOP 区别，AOP的实现方法">Spring AOP 和 AspectJ AOP 区别，AOP的实现方法</a></li>
+                <li>
+                    <a href="#jdk%e5%8a%a8%e6%80%81%e4%bb%a3%e7%90%86%e5%92%8ccglib%e5%8a%a8%e6%80%81%e4%bb%a3%e7%90%86%e5%8c%ba%e5%88%ab" aria-label="JDK动态代理和CGLIB动态代理区别">JDK动态代理和CGLIB动态代理区别</a></li>
+                <li>
+                    <a href="#spring%e6%9c%af%e8%af%ad%e8%a7%a3%e9%87%8a" aria-label="Spring术语解释">Spring术语解释</a></li>
+                <li>
+                    <a href="#aop-5%e7%b1%bb-%e9%80%9a%e7%9f%a5" aria-label="AOP 5类 通知">AOP 5类 通知</a></li>
+                <li>
+                    <a href="#aop%e7%a4%ba%e4%be%8b" aria-label="AOP示例">AOP示例</a></li></ul>
+                </li>
+                <li>
+                    <a href="#spring-beans" aria-label="Spring Beans">Spring Beans</a><ul>
+                        
+                <li>
+                    <a href="#%e4%bb%80%e4%b9%88%e6%97%b6spring-bean" aria-label="什么时Spring Bean">什么时Spring Bean</a></li>
+                <li>
+                    <a href="#%e4%b8%80%e4%b8%aaspring-bean%e7%9a%84%e5%ae%9a%e4%b9%89%e5%8c%85%e5%90%ab%e4%bb%80%e4%b9%88" aria-label="一个Spring Bean的定义包含什么">一个Spring Bean的定义包含什么</a></li>
+                <li>
+                    <a href="#%e5%a6%82%e4%bd%95%e6%8f%90%e4%be%9b%e9%85%8d%e7%bd%ae%e5%85%83%e6%95%b0%e6%8d%ae" aria-label="如何提供配置元数据">如何提供配置元数据</a></li>
+                <li>
+                    <a href="#%e5%88%9b%e5%bb%ba-spring-bean-4%e7%a7%8d%e6%96%b9%e6%b3%95" aria-label="创建 Spring Bean 4种方法">创建 Spring Bean 4种方法</a><ul>
+                        
+                <li>
+                    <a href="#%e6%9e%84%e9%80%a0%e5%87%bd%e6%95%b0%e5%88%9b%e5%bb%ba" aria-label="构造函数创建">构造函数创建</a></li>
+                <li>
+                    <a href="#%e9%9d%99%e6%80%81%e5%b7%a5%e5%8e%82%e5%88%9b%e5%bb%ba" aria-label="静态工厂创建">静态工厂创建</a></li>
+                <li>
+                    <a href="#%e5%ae%9e%e4%be%8b%e5%b7%a5%e5%8e%82%e5%88%9b%e5%bb%ba" aria-label="实例工厂创建">实例工厂创建</a></li>
+                <li>
+                    <a href="#%e6%b3%a8%e8%a7%a3%e5%88%9b%e5%bb%ba" aria-label="注解创建">注解创建</a></li>
+                <li>
+                    <a href="#component%e5%92%8cbean%e5%8c%ba%e5%88%ab" aria-label="@Component和@Bean区别"><code>@Component</code>和<code>@Bean</code>区别</a></li></ul>
+                </li>
+                <li>
+                    <a href="#spring%e5%9f%ba%e4%ba%8exml%e6%b3%a8%e5%85%a5bean%e7%9a%84-4%e7%a7%8d-%e6%96%b9%e5%bc%8f" aria-label="Spring基于XML注入bean的 4种 方式">Spring基于XML注入bean的 4种 方式</a></li>
+                <li>
+                    <a href="#spring-bean-%e7%9a%84-%e4%ba%94%e7%a7%8d-%e4%bd%9c%e7%94%a8%e5%9f%9f" aria-label="Spring Bean 的 五种 作用域">Spring Bean 的 五种 作用域</a></li>
+                <li>
+                    <a href="#%e5%8d%95%e4%be%8bbean%e7%9a%84%e7%ba%bf%e7%a8%8b%e5%ae%89%e5%85%a8%e9%97%ae%e9%a2%98" aria-label="单例Bean的线程安全问题">单例Bean的线程安全问题</a><ul>
+                        
+                <li>
+                    <a href="#%e5%8d%95%e4%be%8bbean%e4%b8%8d%e6%98%af%e7%ba%bf%e7%a8%8b%e5%ae%89%e5%85%a8%e7%9a%84" aria-label="单例Bean不是线程安全的">单例Bean不是线程安全的</a></li>
+                <li>
+                    <a href="#%e8%a7%a3%e5%86%b3%e6%96%b9%e6%a1%88" aria-label="解决方案">解决方案</a></li></ul>
+                </li>
+                <li>
+                    <a href="#font-colorredbean%e7%9a%84%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f-%e9%87%8d%e8%a6%81font" aria-label="Bean的生命周期 （重要）"><font color=red><em>Bean的生命周期</em> （重要）</font></a><ul>
+                        
+                <li>
+                    <a href="#%e5%9b%9b%e4%b8%aa%e9%98%b6%e6%ae%b5" aria-label="四个阶段">四个阶段</a></li>
+                <li>
+                    <a href="#%e5%90%84%e4%b8%aa%e9%98%b6%e6%ae%b5%e7%9a%84%e5%b7%a5%e4%bd%9c" aria-label="各个阶段的工作">各个阶段的工作</a></li>
+                <li>
+                    <a href="#%e5%bd%b1%e5%93%8d%e5%a4%9a%e4%b8%aabean%e7%9a%84%e6%8e%a5%e5%8f%a3" aria-label="影响多个Bean的接口">影响多个Bean的接口</a></li>
+                <li>
+                    <a href="#%e5%bd%b1%e5%93%8d%e5%8d%95%e4%b8%aabean%e7%9a%84%e6%8e%a5%e5%8f%a3" aria-label="影响单个Bean的接口">影响单个Bean的接口</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e5%93%aa%e4%ba%9b%e6%98%af%e9%87%8d%e8%a6%81%e7%9a%84%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f%e6%96%b9%e6%b3%95" aria-label="哪些是重要的生命周期方法">哪些是重要的生命周期方法</a></li>
+                <li>
+                    <a href="#%e4%bb%80%e4%b9%88%e6%98%afspring%e5%86%85%e9%83%a8bean" aria-label="什么是Spring内部bean">什么是Spring内部bean</a></li>
+                <li>
+                    <a href="#%e4%bb%80%e4%b9%88%e6%98%afbean%e8%a3%85%e9%85%8d" aria-label="什么是Bean装配">什么是Bean装配</a></li>
+                <li>
+                    <a href="#%e4%bb%80%e4%b9%88%e6%98%afbean%e8%87%aa%e5%8a%a8%e8%a3%85%e9%85%8d" aria-label="什么是Bean自动装配">什么是Bean自动装配</a></li>
+                <li>
+                    <a href="#spring%e8%87%aa%e5%8a%a8%e8%a3%85%e9%85%8d%e7%9a%84%e6%96%b9%e5%bc%8f" aria-label="Spring自动装配的方式">Spring自动装配的方式</a></li>
+                <li>
+                    <a href="#%e4%bd%bf%e7%94%a8autowired%e8%87%aa%e5%8a%a8%e8%a3%85%e9%85%8d%e8%bf%87%e7%a8%8b" aria-label="使用@Autowired自动装配过程">使用<code>@Autowired</code>自动装配过程</a></li>
+                <li>
+                    <a href="#%e8%87%aa%e5%8a%a8%e8%a3%85%e9%85%8d%e5%b1%80%e9%99%90%e6%80%a7" aria-label="自动装配局限性">自动装配局限性</a></li>
+                <li>
+                    <a href="#factorybean-%e5%92%8c-beanfactory-%e7%9a%84%e5%8c%ba%e5%88%ab" aria-label="FactoryBean 和 BeanFactory 的区别">FactoryBean 和 BeanFactory 的区别</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e5%be%aa%e7%8e%af%e4%be%9d%e8%b5%96" aria-label="循环依赖">循环依赖</a><ul>
+                        
+                <li>
+                    <a href="#spring%e4%b8%89%e7%ba%a7%e7%bc%93%e5%ad%98" aria-label="Spring三级缓存">Spring三级缓存</a></li>
+                <li>
+                    <a href="#%e5%be%aa%e7%8e%af%e4%be%9d%e8%b5%96%e7%9a%84%e4%b8%bb%e8%a6%81%e5%9c%ba%e6%99%af" aria-label="循环依赖的主要场景">循环依赖的主要场景</a><ul>
+                        
+                <li>
+                    <a href="#1%e5%8d%95%e4%be%8bsetter%e6%b3%a8%e5%85%a5" aria-label="1、单例setter注入">1、单例setter注入</a></li>
+                <li>
+                    <a href="#2%e5%a4%9a%e4%be%8bsetter%e6%b3%a8%e5%85%a5" aria-label="2、多例setter注入">2、多例setter注入</a></li>
+                <li>
+                    <a href="#3%e6%9e%84%e9%80%a0%e5%99%a8%e6%b3%a8%e5%85%a5" aria-label="3、构造器注入">3、构造器注入</a></li>
+                <li>
+                    <a href="#4%e5%8d%95%e4%be%8b%e7%9a%84%e4%bb%a3%e7%90%86%e5%af%b9%e8%b1%a1setter%e6%b3%a8%e5%85%a5" aria-label="4、单例的代理对象setter注入">4、单例的代理对象setter注入</a></li>
+                <li>
+                    <a href="#5dependson%e5%be%aa%e7%8e%af%e4%be%9d%e8%b5%96" aria-label="5、dependsOn循环依赖">5、dependsOn循环依赖</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e5%be%aa%e7%8e%af%e4%be%9d%e8%b5%96%e7%9a%84%e5%88%92%e5%88%86" aria-label="循环依赖的划分">循环依赖的划分</a></li>
+                <li>
+                    <a href="#%e5%a6%82%e4%bd%95%e8%a7%a3%e5%86%b3%e5%be%aa%e7%8e%af%e4%be%9d%e8%b5%96%e6%80%bb%e7%bb%93" aria-label="如何解决循环依赖（总结）">如何解决循环依赖（总结）</a></li>
+                <li>
+                    <a href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e4%b8%89%e7%ba%a7%e4%ba%8c%e7%ba%a7%e4%b8%8d%e8%a1%8c%e5%90%97" aria-label="为什么要三级，二级不行吗">为什么要三级，二级不行吗</a></li></ul>
+                </li>
+                <li>
+                    <a href="#spring-%e6%b3%a8%e8%a7%a3" aria-label="Spring 注解">Spring 注解</a><ul>
+                        
+                <li>
+                    <a href="#%e4%bb%80%e4%b9%88%e6%98%af%e5%9f%ba%e4%ba%8ejava%e7%9a%84spring%e6%b3%a8%e8%a7%a3%e9%85%8d%e7%bd%ae" aria-label="什么是基于Java的Spring注解配置">什么是基于Java的Spring注解配置</a></li>
+                <li>
+                    <a href="#%e5%a6%82%e4%bd%95%e5%bc%80%e5%90%af%e6%b3%a8%e8%a7%a3" aria-label="如何开启注解">如何开启注解</a></li>
+                <li>
+                    <a href="#componentcontrollerservicerepository-%e5%8c%ba%e5%88%ab" aria-label="@Component、@Controller、@Service、@Repository 区别"><code>@Component</code>、<code>@Controller</code>、<code>@Service</code>、<code>@Repository</code> 区别</a></li>
+                <li>
+                    <a href="#required-%e6%b3%a8%e8%a7%a3%e6%9c%89%e4%bb%80%e4%b9%88%e4%bd%9c%e7%94%a8" aria-label="@Required 注解有什么作用"><code>@Required</code> 注解有什么作用</a></li>
+                <li>
+                    <a href="#autowired-%e6%b3%a8%e8%a7%a3%e6%9c%89%e4%bb%80%e4%b9%88%e4%bd%9c%e7%94%a8" aria-label="@Autowired 注解有什么作用"><code>@Autowired</code> 注解有什么作用</a></li>
+                <li>
+                    <a href="#autowired%e5%92%8cresource%e4%b9%8b%e9%97%b4%e7%9a%84%e5%8c%ba%e5%88%ab" aria-label="@Autowired和@Resource之间的区别"><code>@Autowired</code>和<code>@Resource</code>之间的区别</a></li>
+                <li>
+                    <a href="#qualifier-%e6%b3%a8%e8%a7%a3%e6%9c%89%e4%bb%80%e4%b9%88%e4%bd%9c%e7%94%a8" aria-label="@Qualifier 注解有什么作用"><code>@Qualifier</code> 注解有什么作用</a></li>
+                <li>
+                    <a href="#requestmapping-%e6%b3%a8%e8%a7%a3%e6%9c%89%e4%bb%80%e4%b9%88%e7%94%a8" aria-label="@RequestMapping 注解有什么用？"><code>@RequestMapping</code> 注解有什么用？</a></li></ul>
+                </li>
+                <li>
+                    <a href="#spring-%e6%95%b0%e6%8d%ae%e8%ae%bf%e9%97%ae" aria-label="Spring 数据访问">Spring 数据访问</a><ul>
+                        
+                <li>
+                    <a href="#%e5%af%b9%e8%b1%a1%e5%85%b3%e7%b3%bb%e6%98%a0%e5%b0%84%e9%9b%86%e6%88%90%e6%a8%a1%e5%9d%97" aria-label="对象/关系映射集成模块">对象/关系映射集成模块</a></li>
+                <li>
+                    <a href="#spring%e5%a6%82%e4%bd%95%e9%ab%98%e6%95%88%e4%bd%bf%e7%94%a8jdbc" aria-label="Spring如何高效使用JDBC">Spring如何高效使用JDBC</a></li>
+                <li>
+                    <a href="#spring-dao-%e6%9c%89%e4%bb%80%e4%b9%88%e7%94%a8" aria-label="spring DAO 有什么用">spring DAO 有什么用</a></li>
+                <li>
+                    <a href="#jdbctemplate%e6%98%af%e4%bb%80%e4%b9%88" aria-label="JdbcTemplate是什么">JdbcTemplate是什么</a></li></ul>
+                </li>
+                <li>
+                    <a href="#spring%e4%ba%8b%e5%8a%a1" aria-label="Spring事务">Spring事务</a><ul>
+                        
+                <li>
+                    <a href="#%e4%ba%8b%e5%8a%a1%e7%9a%84%e5%ae%9e%e7%8e%b0%e6%96%b9%e6%b3%95%e5%92%8c%e5%8e%9f%e7%90%86" aria-label="事务的实现方法和原理">事务的实现方法和原理</a></li>
+                <li>
+                    <a href="#spring%e4%ba%8b%e5%8a%a1%e7%ae%a1%e7%90%86%e7%b1%bb%e5%9e%8b%e5%92%8c%e5%ae%9e%e7%8e%b0%e6%96%b9%e5%bc%8f" aria-label="Spring事务管理类型和实现方式">Spring事务管理类型和实现方式</a></li>
+                <li>
+                    <a href="#%e4%bb%80%e4%b9%88%e6%98%af%e4%ba%8b%e5%8a%a1%e4%bc%a0%e6%92%ad" aria-label="什么是事务传播">什么是事务传播</a></li>
+                <li>
+                    <a href="#%e4%ba%8b%e5%8a%a1%e4%bc%a0%e6%92%ad%e7%9a%847%e5%a4%a7%e5%80%bc" aria-label="事务传播的7大值">事务传播的7大值</a></li>
+                <li>
+                    <a href="#%e4%ba%8b%e5%8a%a1%e7%9a%84%e4%ba%94%e5%a4%a7%e9%9a%94%e7%a6%bb%e7%ba%a7%e5%88%ab" aria-label="事务的五大隔离级别">事务的五大隔离级别</a></li>
+                <li>
+                    <a href="#%e4%ba%8b%e5%8a%a1%e7%9a%84%e5%a4%b1%e6%95%88%e5%9c%ba%e6%99%af" aria-label="事务的失效场景">事务的失效场景</a><ul>
+                        
+                <li>
+                    <a href="#1-%e5%8f%aa%e6%94%af%e6%8c%81public%e4%bf%ae%e9%a5%b0%e7%9a%84%e6%96%b9%e6%b3%95" aria-label="1. 只支持public修饰的方法">1. 只支持public修饰的方法</a></li>
+                <li>
+                    <a href="#2-%e7%94%a8final%e4%bf%ae%e9%a5%b0%e4%b8%8d%e7%94%9f%e6%95%88" aria-label="2. 用final修饰不生效">2. 用final修饰不生效</a></li>
+                <li>
+                    <a href="#3-%e5%90%8c%e4%b8%80%e4%b8%aa%e7%b1%bb%e7%9a%84%e5%86%85%e9%83%a8%e8%b0%83%e7%94%a8%e4%b8%8d%e7%94%9f%e6%95%88" aria-label="3. 同一个类的内部调用，不生效">3. 同一个类的内部调用，不生效</a></li>
+                <li>
+                    <a href="#4-%e6%9c%aa%e8%a2%abspring%e7%ae%a1%e7%90%86" aria-label="4. 未被Spring管理">4. 未被Spring管理</a></li>
+                <li>
+                    <a href="#5-%e5%a4%9a%e7%ba%bf%e7%a8%8b%e8%b0%83%e7%94%a8" aria-label="5. 多线程调用">5. 多线程调用</a></li>
+                <li>
+                    <a href="#6-%e6%95%b0%e6%8d%ae%e5%ba%93%e5%bc%95%e6%93%8e%e4%b8%8d%e6%94%af%e6%8c%81%e4%ba%8b%e5%8a%a1" aria-label="6. 数据库引擎不支持事务">6. 数据库引擎不支持事务</a></li></ul>
+                </li>
+                <li>
+                    <a href="#spring%e6%a1%86%e6%9e%b6%e4%b8%8b%e7%9a%84%e4%ba%8b%e5%8a%a1%e7%ae%a1%e7%90%86%e7%9a%84%e4%bc%98%e5%8a%bf" aria-label="Spring框架下的事务管理的优势">Spring框架下的事务管理的优势</a></li>
+                <li>
+                    <a href="#%e4%bd%a0%e6%9b%b4%e5%80%be%e5%90%91%e4%ba%8e%e9%82%a3%e7%a7%8d%e4%ba%8b%e5%8a%a1%e7%ae%a1%e7%90%86" aria-label="你更倾向于那种事务管理">你更倾向于那种事务管理</a></li></ul>
+                </li>
+                <li>
+                    <a href="#spring-mvc-%e4%b8%93%e9%a2%98" aria-label="Spring MVC 专题">Spring MVC 专题</a><ul>
+                        
+                <li>
+                    <a href="#%e9%9d%a2%e8%af%95%e9%a2%98" aria-label="面试题">面试题</a><ul>
+                        
+                <li>
+                    <a href="#%e4%bb%80%e4%b9%88%e6%98%afmvc" aria-label="什么是MVC">什么是MVC</a></li>
+                <li>
+                    <a href="#%e4%bb%80%e4%b9%88%e6%98%afspring-mvc" aria-label="什么是Spring MVC">什么是Spring MVC</a></li>
+                <li>
+                    <a href="#spring-mvc%e4%bc%98%e7%82%b9" aria-label="Spring MVC优点">Spring MVC优点</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e6%a0%b8%e5%bf%83%e7%bb%84%e4%bb%b6" aria-label="核心组件">核心组件</a><ul>
+                        
+                <li>
+                    <a href="#%e4%bb%80%e4%b9%88%e6%98%afdispatcherservlet" aria-label="什么是DispatcherServlet">什么是DispatcherServlet</a></li>
+                <li>
+                    <a href="#%e4%bb%80%e4%b9%88%e6%98%afspring-mvc%e7%9a%84%e6%8e%a7%e5%88%b6%e5%99%a8controller" aria-label="什么是Spring MVC的控制器——Controller">什么是Spring MVC的控制器——Controller</a></li>
+                <li>
+                    <a href="#spring-mvc%e7%9a%84%e6%8e%a7%e5%88%b6%e5%99%a8%e6%98%af%e4%b8%8d%e6%98%af%e5%8d%95%e4%be%8b%e6%a8%a1%e5%bc%8f" aria-label="Spring MVC的控制器是不是单例模式">Spring MVC的控制器是不是单例模式</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e5%b7%a5%e4%bd%9c%e5%8e%9f%e7%90%86" aria-label="工作原理">工作原理</a><ul>
+                        
+                <li>
+                    <a href="#spring-mvc-%e5%b7%a5%e4%bd%9c%e6%b5%81%e7%a8%8b" aria-label="Spring MVC 工作流程">Spring MVC 工作流程</a></li></ul>
+                </li>
+                <li>
+                    <a href="#mvc%e6%a1%86%e6%9e%b6" aria-label="MVC框架">MVC框架</a><ul>
+                        
+                <li>
+                    <a href="#%e4%bb%80%e4%b9%88%e6%98%afmvc%e6%a1%86%e6%9e%b6" aria-label="什么是MVC框架">什么是MVC框架</a></li></ul>
+                </li>
+                <li>
+                    <a href="#mvc%e6%a1%86%e6%9e%b6%e6%9c%89%e4%bb%80%e4%b9%88%e5%a5%bd%e5%a4%84" aria-label="MVC框架有什么好处">MVC框架有什么好处</a></li>
+                <li>
+                    <a href="#%e5%b8%b8%e7%94%a8%e6%b3%a8%e8%a7%a3" aria-label="常用注解">常用注解</a><ul>
+                        
+                <li>
+                    <a href="#%e6%b3%a8%e8%a7%a3%e6%98%af%e4%bb%80%e4%b9%88" aria-label="注解是什么">注解是什么</a></li>
+                <li>
+                    <a href="#spring-mvc-%e5%b8%b8%e7%94%a8%e6%b3%a8%e8%a7%a3" aria-label="Spring MVC 常用注解">Spring MVC 常用注解</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e5%85%b6%e4%bb%96" aria-label="其他">其他</a><ul>
+                        
+                <li>
+                    <a href="#spring%e6%80%8e%e4%b9%88%e8%ae%be%e7%bd%ae%e9%87%8d%e5%ae%9a%e5%90%91%e5%92%8c%e8%bd%ac%e5%8f%91" aria-label="Spring怎么设置重定向和转发">Spring怎么设置重定向和转发</a></li>
+                <li>
+                    <a href="#%e5%a6%82%e4%bd%95%e8%a7%a3%e5%86%b3post%e8%af%b7%e6%b1%82%e4%b8%ad%e6%96%87%e4%b9%b1%e7%a0%81%e9%97%ae%e9%a2%98get%e5%a6%82%e4%bd%95%e5%81%9a" aria-label="如何解决Post请求中文乱码问题，Get如何做">如何解决Post请求中文乱码问题，Get如何做</a></li>
+                <li>
+                    <a href="#spring-mvc%e7%9a%84%e5%bc%82%e5%b8%b8%e5%a4%84%e7%90%86" aria-label="Spring MVC的异常处理">Spring MVC的异常处理</a></li>
+                <li>
+                    <a href="#%e6%80%8e%e4%b9%88%e5%9c%a8%e6%96%b9%e6%b3%95%e9%87%8c%e8%8e%b7%e5%be%97request-%e6%88%96-session" aria-label="怎么在方法里获得Request 或 Session">怎么在方法里获得Request 或 Session</a></li>
+                <li>
+                    <a href="#%e6%80%8e%e4%b9%88%e8%8e%b7%e5%be%97%e4%bb%8e%e5%89%8d%e7%ab%af%e4%bc%a0%e5%85%a5%e7%9a%84%e5%8f%82%e6%95%b0" aria-label="怎么获得从前端传入的参数">怎么获得从前端传入的参数</a></li>
+                <li>
+                    <a href="#spring-mvc%e8%bf%94%e5%9b%9e%e5%80%bc" aria-label="Spring MVC返回值">Spring MVC返回值</a></li>
+                <li>
+                    <a href="#%e7%94%a8%e4%bb%80%e4%b9%88%e5%af%b9%e8%b1%a1%e4%bb%8e%e5%90%8e%e5%8f%b0%e5%90%91%e5%89%8d%e7%ab%af%e4%bc%a0%e6%95%b0%e6%8d%ae" aria-label="用什么对象从后台向前端传数据">用什么对象从后台向前端传数据</a>
+                </li>
+            </ul>
+            </li>
+            </ul>
+            </li>
+            </ul>
+        </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+        
+        activeElement = elements[0];
+        const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+        document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+    }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        if (elements) {
+            activeElement = Array.from(elements).find((element) => {
+                if ((getOffsetTop(element) - window.pageYOffset) > 0 &&
+                    (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                    return element;
+                }
+            }) || activeElement
+
+            elements.forEach(element => {
+                const id = encodeURI(element.getAttribute('id')).toLowerCase();
+                if (element === activeElement){
+                    document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+                } else {
+                    document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+                }
+            })
+        }
+    }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;
+    }
+</script>
+        <div class="post-content"><h1 id="spring-面试题">Spring 面试题<a hidden class="anchor" aria-hidden="true" href="#spring-面试题">#</a></h1>
+<h2 id="什么是spring">什么是Spring<a hidden class="anchor" aria-hidden="true" href="#什么是spring">#</a></h2>
+<p>spring是一个<strong>轻量级的Java开发框架</strong>，用于解决企业级应用开发的复杂性，简化Java开发。</p>
+<p>spring底层有两个核心特性：</p>
+<ol>
+<li><strong>AOP面向切面编程</strong></li>
+<li><strong>DI依赖注入</strong></li>
+</ol>
+<p>降低开发复杂度的四个策略：</p>
+<ol>
+<li>基于POJO的轻量级和最小侵入性编程</li>
+<li>通过依赖注入和切面编程实现松散耦合</li>
+<li>基于切面和惯例进行的声明式编程</li>
+<li>通过切面和模板减少样式代码</li>
+</ol>
+<h2 id="spring的设计目标设计理念核心">Spring的设计目标、设计理念、核心<a hidden class="anchor" aria-hidden="true" href="#spring的设计目标设计理念核心">#</a></h2>
+<h3 id="设计目标">设计目标<a hidden class="anchor" aria-hidden="true" href="#设计目标">#</a></h3>
+<p>为开发者提供一站式的轻量级应用开发平台</p>
+<h3 id="设计理念">设计理念<a hidden class="anchor" aria-hidden="true" href="#设计理念">#</a></h3>
+<p>在JavaEE的开发中，支持POJO和JavaBean开发方式，是应用面向接口开发，充分支持面向对象设计方法。</p>
+<p>Spring通过IoC容器实现对象耦合关系的管理，并实现依赖反转，将对象之间的依赖关系交由IoC容器管理，实现解耦。</p>
+<h3 id="核心">核心<a hidden class="anchor" aria-hidden="true" href="#核心">#</a></h3>
+<p>IoC容器和AOP模块。</p>
+<p>IoC容器用来管理对象之间的耦合关系，通过AOP以动态非侵入的方式增强服务。</p>
+<p>IoC容器让相互协作的组件实现松散耦合，AOP面向切面编程允许吧应用于各个层的功能分离出来复用。</p>
+<h2 id="spring的优缺点">Spring的优缺点<a hidden class="anchor" aria-hidden="true" href="#spring的优缺点">#</a></h2>
+<h3 id="优点">优点<a hidden class="anchor" aria-hidden="true" href="#优点">#</a></h3>
+<ol>
+<li>
+<p>方便解耦，简化开发<br>
+spring是个大工厂，可以把对象的创建和依赖关系的维护交给Spring进行管理。</p>
+</li>
+<li>
+<p>AOP切面编程<br>
+方便对程序的权限拦截、运行监控等。</p>
+</li>
+<li>
+<p>声明式事务的支持<br>
+通过配置就可以完成对事物的管理。</p>
+</li>
+<li>
+<p>方便测试<br>
+Spring支持Junit4，可通过注解实现对Spring程序的测试。</p>
+</li>
+<li>
+<p>集成优秀框架<br>
+Spring提供了对各种优秀框架的直接支持，如MyBatis等。</p>
+</li>
+<li>
+<p>提供JavaEE开发中难用的API的封装，降低JavaEE API使用难度<br>
+如JDBC、远程调用等，</p>
+</li>
+</ol>
+<h3 id="缺点">缺点<a hidden class="anchor" aria-hidden="true" href="#缺点">#</a></h3>
+<ol>
+<li>Spring是轻量级框架，但是给人感觉大而全</li>
+<li>Spring依赖反射，反射影响性能</li>
+<li>使用门槛高，不易上手。</li>
+</ol>
+<h2 id="spring的应用场景">Spring的应用场景<a hidden class="anchor" aria-hidden="true" href="#spring的应用场景">#</a></h2>
+<p>JavaEE企业级应用开发，包括：SSH、SSM等。</p>
+<h3 id="spring的价值">Spring的价值<a hidden class="anchor" aria-hidden="true" href="#spring的价值">#</a></h3>
+<ol>
+<li>Spring是非侵入式框架，使代码最低限度的依赖框架</li>
+<li>Spring提供一致性编程模型，使应用直接使用POJO开发，与运行环境隔离</li>
+<li>Spring推动面向对象和面向接口编程风格，提高代码复用率和可测性</li>
+</ol>
+<h2 id="spring的组成">Spring的组成<a hidden class="anchor" aria-hidden="true" href="#spring的组成">#</a></h2>
+<p><img loading="lazy" src="Spring%e7%9a%84%e7%bb%84%e6%88%90.png" alt="组成图"  />
+</p>
+<ul>
+<li><code>Core</code>：提供框架基本支持，包括控制反转和依赖注入功能。</li>
+<li><code>Beans</code>：提供<code>BeanFactory</code>，是工厂模式的实现，Spring把管理对象称为<code>Bean</code>。</li>
+<li><code>context</code>；基于<code>core</code>构建的封装包，提供框架式的对象访问方法。</li>
+<li><code>JDBC</code>：提供<code>JDBC</code>的抽象类，简化<code>jdbc</code>。</li>
+<li><code>AOP</code>：提供面向切面的代码实现，可自定义拦截器、切点等。</li>
+<li><code>Web</code>：提供针对Web开发的集成特性。</li>
+<li><code>Test</code>：提供测试支持，支持Junit，进行单元测试和集成测试。</li>
+</ul>
+<h2 id="spring使用到的5种设计模式">Spring使用到的5种设计模式<a hidden class="anchor" aria-hidden="true" href="#spring使用到的5种设计模式">#</a></h2>
+<ol>
+<li>工厂模式：BeanFactory就是一种简单的工厂模式，用来创建实例对象。</li>
+<li>单例模式：Bean默认就是单例模式。</li>
+<li>代理模式：AOP用到了JDK的动态代理和CGLIB字节码生成技术。</li>
+<li>模板方法：解决代码重复问题。</li>
+<li>观察者模式：定义对象键的一种一对多的依赖管理，当对象发生改变，所有依赖于它的对象都要制动更新，如Spring中的Listener的实现<code>ApplicationListener</code>。</li>
+</ol>
+<h2 id="介绍下核心容器--spring-context-应用上下文-">介绍下核心容器 ( spring context 应用上下文 )<a hidden class="anchor" aria-hidden="true" href="#介绍下核心容器--spring-context-应用上下文-">#</a></h2>
+<p>是最基本的Spring模块，提供Spring框架的基础功能。</p>
+<p><code>BeanFactory</code>是任何以Spring为基础的核心，Spring框架建立在此模块之上，使Spring成为一个容器。</p>
+<p>Bean工厂是工厂模式的一个实现，提供控制反转功能，把应用的配置和依赖从代码中分离开来，最常用的是XML文件中定义加载bean，该容器从xml文件中读取配置，并创建一个完全配置的系统或应用。</p>
+<h2 id="spring中的5种标准事件">Spring中的5种标准事件<a hidden class="anchor" aria-hidden="true" href="#spring中的5种标准事件">#</a></h2>
+<ol>
+<li>
+<p>上下文更新事件<br>
+调用<code>ConfigurableApplicationContext</code>接口中的<code>refresh()</code>方法触发。</p>
+</li>
+<li>
+<p>上下文开始事件<br>
+调用<code>ConfigurableApplicationContext</code>接口中的<code>start()</code>方法触发。</p>
+</li>
+<li>
+<p>上下文停止事件<br>
+调用<code>ConfigurableApplicationContext</code>接口中的<code>stop()</code>方法触发。</p>
+</li>
+<li>
+<p>上下文关闭事件<br>
+<code>ApplicationContext</code>被关闭时触发。容器被关闭，所有Bean销毁。</p>
+</li>
+<li>
+<p>请求处理事件<br>
+Web应用中，当http请求结束时触发。</p>
+</li>
+</ol>
+<h2 id="spring中的5大组件">Spring中的5大组件<a hidden class="anchor" aria-hidden="true" href="#spring中的5大组件">#</a></h2>
+<ol>
+<li><code>接口</code> -&gt; 定义功能</li>
+<li><code>Bean类</code> -&gt; 实体类，get、set方法</li>
+<li><code>Bean配置文件</code> -&gt; 包含类的信息和配置</li>
+<li><code>AOP</code> -&gt; 提供面向切面编程功能</li>
+<li><code>应用程序</code> -&gt; 使用接口</li>
+</ol>
+<h2 id="使用spring的四大方式">使用Spring的四大方式<a hidden class="anchor" aria-hidden="true" href="#使用spring的四大方式">#</a></h2>
+<ol>
+<li>一个成熟的Spring Web应用程序</li>
+<li>作为第三方Web框架</li>
+<li>作为企业级Java Bean，包装现有的POJO</li>
+<li>用于远程</li>
+</ol>
+<h1 id="spring-控制反转--ioc-inversion-of-control">Spring 控制反转 ( IoC <code>Inversion Of Control</code>)<a hidden class="anchor" aria-hidden="true" href="#spring-控制反转--ioc-inversion-of-control">#</a></h1>
+<h2 id="什么是ioc容器">什么是IoC容器<a hidden class="anchor" aria-hidden="true" href="#什么是ioc容器">#</a></h2>
+<p>控制反转即使IoC，它把传统上由程序代码直接控制的对象的调用权交给容器管理，通过容器实现对象组件的装配和管理。</p>
+<p>控制反转，通俗说，就是对组件对象控制权的转移，从程序本身转移到外部容器。</p>
+<p>IOC负责创建对象，管理对象(通过依赖注入)，装配对象，配置对象，并且管理对象的生命周期。</p>
+<h2 id="控制反转的作用">控制反转的作用<a hidden class="anchor" aria-hidden="true" href="#控制反转的作用">#</a></h2>
+<ol>
+<li>管理对象的创建和依赖关系的维护。</li>
+<li>解耦，由容器去维护具体对象。</li>
+<li>托管类的产生过程，在类的产生过程中做一些处理，可以直接托管处理，最直接例子，代理。</li>
+</ol>
+<h2 id="优点-1">优点<a hidden class="anchor" aria-hidden="true" href="#优点-1">#</a></h2>
+<ol>
+<li>IoC把应用的代码降到最低</li>
+<li>使应用容易测试，单元测试不再需要单例</li>
+<li>最小代价和最小侵入性使松散耦合得以实现</li>
+<li>IoC容器支持加载服务时的饿汉式初始化和懒加载</li>
+</ol>
+<h2 id="ioc实现机制">IoC实现机制<a hidden class="anchor" aria-hidden="true" href="#ioc实现机制">#</a></h2>
+<p>实现原理：工厂模式+反射机制</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">Fruit</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">abstract</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">eat</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span> <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Apple</span> <span style="color:#66d9ef">implements</span> Fruit <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">eat</span><span style="color:#f92672">(){</span>
+</span></span><span style="display:flex;"><span>        System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;Apple&#34;</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Orange</span> <span style="color:#66d9ef">implements</span> Fruit <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">eat</span><span style="color:#f92672">(){</span>
+</span></span><span style="display:flex;"><span>        System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;Orange&#34;</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Factory</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> Fruit <span style="color:#a6e22e">getInstance</span><span style="color:#f92672">(</span>String ClassName<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        Fruit f<span style="color:#f92672">=</span><span style="color:#66d9ef">null</span><span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>            f<span style="color:#f92672">=(</span>Fruit<span style="color:#f92672">)</span>Class<span style="color:#f92672">.</span><span style="color:#a6e22e">forName</span><span style="color:#f92672">(</span>ClassName<span style="color:#f92672">).</span><span style="color:#a6e22e">newInstance</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>Exception e<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>            e<span style="color:#f92672">.</span><span style="color:#a6e22e">printStackTrace</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> f<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Client</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">main</span><span style="color:#f92672">(</span>String<span style="color:#f92672">[]</span> a<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        Fruit f<span style="color:#f92672">=</span>Factory<span style="color:#f92672">.</span><span style="color:#a6e22e">getInstance</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;io.github.dunwu.spring.Apple&#34;</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span><span style="color:#f92672">(</span>f<span style="color:#f92672">!=</span><span style="color:#66d9ef">null</span><span style="color:#f92672">){</span>
+</span></span><span style="display:flex;"><span>            f<span style="color:#f92672">.</span><span style="color:#a6e22e">eat</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><h2 id="ioc-支持-6种-功能">IoC 支持 6种 功能<a hidden class="anchor" aria-hidden="true" href="#ioc-支持-6种-功能">#</a></h2>
+<ol>
+<li>依赖注入</li>
+<li>依赖检查</li>
+<li>自动装配</li>
+<li>支持集合</li>
+<li>指定初始化方法和销毁方法</li>
+<li>支持回调某些方法（但是需要实现Spring接口，略有侵入）</li>
+</ol>
+<h2 id="beanfactory-和-applicationcontext-区别">BeanFactory 和 ApplicationContext 区别<a hidden class="anchor" aria-hidden="true" href="#beanfactory-和-applicationcontext-区别">#</a></h2>
+<p><code>BeanFactory</code> 和 <code>ApplicationContext</code> 是Spring的两大核心，都可当成容器。</p>
+<p><code>ApplicationContext</code> 是 <code>BeanFactory</code> 的子接口。</p>
+<h3 id="依赖关系">依赖关系<a hidden class="anchor" aria-hidden="true" href="#依赖关系">#</a></h3>
+<ul>
+<li><code>BeanFactory</code> : 是Spring的最低层接口，包含了Bean的定义，读取Bean配置，管理Bean的加载、实例化，控制Bean的生命周期，维护Bean之间的依赖关系。</li>
+<li><code>ApplicationContext</code> ：是<code>BeanFactory</code>的派生，拥有它所有的功能外，还有更完整的框架功能：
+<ul>
+<li>继承<code>MessageSource</code> 因此支持国际化</li>
+<li>统一的资源文件访问方式</li>
+<li>提供在监听器中注册bean的事件</li>
+<li>同时加载多个配置文件</li>
+<li>载入多个（有继承关系）上下文，使每个上下文都专注于一个特定的层次，如应用的web层。</li>
+</ul>
+</li>
+</ul>
+<h3 id="加载方式">加载方式<a hidden class="anchor" aria-hidden="true" href="#加载方式">#</a></h3>
+<ul>
+<li><code>BeanFactory</code> : 采用延迟加载来注入Bean，当使用到的时候才对Bean进行加载实例化。这样如果Spring配置有问题，那么就不会在启动时发现，直到第一次调用<code>getBean()</code>才会抛出错误。</li>
+<li><code>ApplicationContext</code> ：容器启动，一次性加载所有的Bean，如果Spring配置错误，可以直接发现。因为<code>ApplicationContext</code>启动后预加载的所有的Bean，所以在需要用的时候直接调用就可以了不用等待。</li>
+<li>相对于<code>BeanFactory</code>，<code>ApplicationContext</code>唯一不足：占用内存空间，因实例较多的Bean，启动较慢。</li>
+</ul>
+<h3 id="创建方式">创建方式<a hidden class="anchor" aria-hidden="true" href="#创建方式">#</a></h3>
+<ul>
+<li><code>BeanFactory</code> : 编程式创建</li>
+<li><code>ApplicationContext</code> ：编程式和声明的方式创建(ContextLoader)</li>
+</ul>
+<h3 id="注册方式">注册方式<a hidden class="anchor" aria-hidden="true" href="#注册方式">#</a></h3>
+<p>都支持<code>BeanPostProcessor</code>、<code>BeanFactoryPostProcessor</code></p>
+<ul>
+<li><code>BeanFactory</code> : 手动注册</li>
+<li><code>ApplicationContext</code> ：自动注册</li>
+</ul>
+<h3 id="spring如何设计容器beanfactory-和-applicationcontext关系">Spring如何设计容器，BeanFactory 和 ApplicationContext关系<a hidden class="anchor" aria-hidden="true" href="#spring如何设计容器beanfactory-和-applicationcontext关系">#</a></h3>
+<p>Spring 作者用两个接口表示容器</p>
+<ol>
+<li><code>BeanFactory</code></li>
+<li><code>ApplicationContext</code></li>
+</ol>
+<p>BeanFactory简单粗暴，称为<strong>低级容器</strong>，可以理解为是一个HashMap，Key式BeanName，Value是Bean实例。通常只提供注册（put）和获取（get），两个功能。</p>
+<p>ApplicationContext称为<strong>高级容器</strong>，因比BeanFactory多了更多的功能，继承了多个接口。如该接口定义了一个<code>refresh</code>方法，刷新整个容器，重新加载刷新Bean。</p>
+<p><img loading="lazy" src="%e5%ae%b9%e5%99%a8%e6%a6%82%e5%bf%b5.png" alt="容器概念"  />
+</p>
+<p>低级容器实现Spring：</p>
+<ol>
+<li>加载配置文件，解析成<code>BeanDefinition</code>放在Map里</li>
+<li>调用getBean，从<code>BeanDefinition</code>的Map里拿到Class对象实例化，同时如果有依赖关系，递归调用getBean方法，完成依赖注入</li>
+</ol>
+<p>高级容器实现Spring：</p>
+<p>当执行refresh方法，刷新整个容器的Bean。</p>
+<p>它不仅仅是IoC，同时还支持不同信息源头，BeanFactory工具类，层级容器，支持访问文件资源，支持事物发布，接口回调。</p>
+<h3 id="applicationcontext通常的实现">ApplicationContext通常的实现<a hidden class="anchor" aria-hidden="true" href="#applicationcontext通常的实现">#</a></h3>
+<ol>
+<li><strong>FileSystemXmlApplicationContext</strong>：从xml文件中加载bean，xml文件的全路径名必须提供构造函数。</li>
+<li><strong>ClassPathXmlApplicationContext</strong>：从xml文件中加载bean，正确设置classpath，容器会在classpath里找bean配置。</li>
+<li><strong>WebXmlApplicationContext</strong>：从xml文件中加载bean，此文件定义了Web应用所有的bean。</li>
+</ol>
+<h2 id="依赖注入">依赖注入<a hidden class="anchor" aria-hidden="true" href="#依赖注入">#</a></h2>
+<h3 id="什么是依赖注入">什么是依赖注入<a hidden class="anchor" aria-hidden="true" href="#什么是依赖注入">#</a></h3>
+<p>IoC可以用不同的方式实现，主要由依赖注入和依赖查找。</p>
+<p>依赖注入就是组件之间的依赖关系由容器来管理，在系统运行期间，由容器将某种依赖关系的目标对象注入到组件中，组件不负责查询，只提供普通的Java方法让容器决定依赖关系。</p>
+<h3 id="依赖注入原则">依赖注入原则<a hidden class="anchor" aria-hidden="true" href="#依赖注入原则">#</a></h3>
+<p>组件不负责查找资源或者依赖关系的对象，配置对象的工作交给IoC容器负责，查找逻辑从组件中分离到IoC容器负责。容器负责组件的装配，把符合依赖关系的对象通过属性或构造器传给需要的对象。</p>
+<h3 id="依赖注入优势">依赖注入优势<a hidden class="anchor" aria-hidden="true" href="#依赖注入优势">#</a></h3>
+<ul>
+<li>查找定位操作与应用代码无关</li>
+<li>不依赖容器API，可以在容器外使用</li>
+<li>不需要特殊接口，绝大多数对象可以做到完全不依赖容器</li>
+</ul>
+<h3 id="依赖注入的不同类型">依赖注入的不同类型<a hidden class="anchor" aria-hidden="true" href="#依赖注入的不同类型">#</a></h3>
+<ol>
+<li>
+<p>接口注入：因灵活性和易用性较差，Spring4被遗弃。</p>
+</li>
+<li>
+<p>Setter方法注入：通过容器触发一个类的构造器实现。</p>
+</li>
+<li>
+<p>构造器注入：容器调用无参构造器或者无参static工厂方法实例化bean后，调用bean的setter方法。</p>
+</li>
+</ol>
+<h3 id="构造器注入和setter注入区别">构造器注入和Setter注入区别<a hidden class="anchor" aria-hidden="true" href="#构造器注入和setter注入区别">#</a></h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">构造器注入</th>
+<th style="text-align:center">setter注入</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">没有部分注入</td>
+<td style="text-align:center">有部分注入</td>
+</tr>
+<tr>
+<td style="text-align:center">不会覆盖setter属性</td>
+<td style="text-align:center">会覆盖setter属性</td>
+</tr>
+<tr>
+<td style="text-align:center">任意修改都会创建一个新实例</td>
+<td style="text-align:center">任意修改不会创建新实例</td>
+</tr>
+<tr>
+<td style="text-align:center">适用于设置很多属性</td>
+<td style="text-align:center">适用于设置少量属性</td>
+</tr>
+</tbody>
+</table>
+<h1 id="spring-面向切面编程--aop-">Spring 面向切面编程 ( AOP )<a hidden class="anchor" aria-hidden="true" href="#spring-面向切面编程--aop-">#</a></h1>
+<h2 id="什么是aop">什么是AOP<a hidden class="anchor" aria-hidden="true" href="#什么是aop">#</a></h2>
+<p>OOP面向对象编程，允许开发者定义纵向关系，并且适用于定义横向关系，导致了大量代码重复，不利于各模块重用。</p>
+<p>AOP面向切面编程，可以认为是OOP的补充，把与业务无关，却对多个对象产生影响的公共行为和逻辑，抽取并封装成可重用的模块，模块被明明为切面(Aspect)，减少代码重复，降低耦合度，提高系统可维护性，可用于权限认证、日志、事物处理等。</p>
+<h2 id="spring-aop-和-aspectj-aop-区别aop的实现方法">Spring AOP 和 AspectJ AOP 区别，AOP的实现方法<a hidden class="anchor" aria-hidden="true" href="#spring-aop-和-aspectj-aop-区别aop的实现方法">#</a></h2>
+<p>AOP的实现在于代理模式，主要分为动态代理和静态代理。</p>
+<ol>
+<li>AspectJ AOP：静态代理的增强，即AOP框架会在编译时生成AOP代理类，编译时增强，在运行时就时增强后的AOP对象</li>
+<li>Spring AOP：使用动态代理，AOP框架不会在编译的时候生成文件，而是在每次运行的时候在内存中生成临时的AOP对象，其中包含了目标对象的全部方法，在特定切点做增强处理。</li>
+</ol>
+<h2 id="jdk动态代理和cglib动态代理区别">JDK动态代理和CGLIB动态代理区别<a hidden class="anchor" aria-hidden="true" href="#jdk动态代理和cglib动态代理区别">#</a></h2>
+<p>Spring有两种动态代理方式，JDK动态代理和CGLIB动态代理</p>
+<ul>
+<li>JDK动态代理：只提供接口实现类，不提供类的代理</li>
+<li>CGLIB动态代理：提供类的代理，主要针对类的生成子类，覆盖其中的方法进行增强，因为采用继承，所以最好不要声明final，无法继承。</li>
+</ul>
+<p>Spring如何选择使用哪种</p>
+<ul>
+<li>bean实现接口，使用JDK</li>
+<li>bean没有实现接口，使用CGLIB</li>
+</ul>
+<p>可以通过注解强行使用CGLIB
+<code>@EnableAspectJAutoProxy(proxyTargetClass = true)</code></p>
+<h2 id="spring术语解释">Spring术语解释<a hidden class="anchor" aria-hidden="true" href="#spring术语解释">#</a></h2>
+<p><img loading="lazy" src="image-20230729164246598.png" alt="Spring术语"  />
+</p>
+<ul>
+<li>通知：定义什么时候，做了什么</li>
+<li>连接点：程序执行过程中能够执行通知的所有点（方法！）</li>
+<li>切点：定义在哪里切入，得到通知。切入点一定是连接点</li>
+<li>切面：通知和切点结合。定义了是什么、什么时候做、在哪里</li>
+<li>织入：把切面应用到目标对象上，并创建新的代理的过程。分为<strong>编译织入、类加载期织入、运行期织入</strong></li>
+</ul>
+<h2 id="aop-5类-通知">AOP 5类 通知<a hidden class="anchor" aria-hidden="true" href="#aop-5类-通知">#</a></h2>
+<p><img loading="lazy" src="image-20220815114614568.png" alt="AOP通知种类"  />
+</p>
+<ol>
+<li>前置通知（Before）：在方法执行前通知</li>
+<li>后置通知（After）：在方法执行完成后通知</li>
+<li>返回通知（AfterReturning）：在方法执行完后，成功执行返回通知</li>
+<li>异常通知（AfterThrowing）：在方法执行完成，方法抛出异常返回通知</li>
+<li>环绕通知（Around）：在被通知的方法调用之前或者调用之后通知</li>
+</ol>
+<h2 id="aop示例">AOP示例<a hidden class="anchor" aria-hidden="true" href="#aop示例">#</a></h2>
+<ol>
+<li>定义连接点</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@RestController</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">AopController</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@RequestMapping</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;/hello&#34;</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> String <span style="color:#a6e22e">sayHello</span><span style="color:#f92672">(){</span>
+</span></span><span style="display:flex;"><span>        System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;hello&#34;</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#34;hello&#34;</span><span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><ol start="2">
+<li>定义切面（切点+通知）
+<ol>
+<li>添加<code>@Aspect</code>注解</li>
+<li><code>@Pointcut</code>在一个切面内定义可重用的切点</li>
+</ol>
+</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@Aspect</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@Component</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">AopAdvice</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Pointcut</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;execution (* com.veal.aop.controller.*.*(..))&#34;</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">test</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Before</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;test()&#34;</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">beforeAdvice</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;beforeAdvice...&#34;</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@After</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;test()&#34;</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">afterAdvice</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;afterAdvice...&#34;</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Around</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;test()&#34;</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">aroundAdvice</span><span style="color:#f92672">(</span>ProceedingJoinPoint proceedingJoinPoint<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;before&#34;</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>            proceedingJoinPoint<span style="color:#f92672">.</span><span style="color:#a6e22e">proceed</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>Throwable t<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>            t<span style="color:#f92672">.</span><span style="color:#a6e22e">printStackTrace</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>        System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;after&#34;</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><h1 id="spring-beans">Spring Beans<a hidden class="anchor" aria-hidden="true" href="#spring-beans">#</a></h1>
+<h2 id="什么时spring-bean">什么时Spring Bean<a hidden class="anchor" aria-hidden="true" href="#什么时spring-bean">#</a></h2>
+<p>交给Spring管理的对象，储存在Spring IoC容器中，由IoC容器初始化、装配和管理，通过配置中的元数据创建，如xml文件、注解、Java配置类等。</p>
+<h2 id="一个spring-bean的定义包含什么">一个Spring Bean的定义包含什么<a hidden class="anchor" aria-hidden="true" href="#一个spring-bean的定义包含什么">#</a></h2>
+<ol>
+<li>创建bean</li>
+<li>生命周期</li>
+<li>依赖</li>
+</ol>
+<h2 id="如何提供配置元数据">如何提供配置元数据<a hidden class="anchor" aria-hidden="true" href="#如何提供配置元数据">#</a></h2>
+<ol>
+<li>xml配置文件</li>
+<li>注解配置</li>
+<li>Java配置类</li>
+</ol>
+<h2 id="创建-spring-bean-4种方法">创建 Spring Bean 4种方法<a hidden class="anchor" aria-hidden="true" href="#创建-spring-bean-4种方法">#</a></h2>
+<h3 id="构造函数创建">构造函数创建<a hidden class="anchor" aria-hidden="true" href="#构造函数创建">#</a></h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@Configuration</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyConfiguration</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Bean</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> MyBean <span style="color:#a6e22e">myBean</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> MyBean<span style="color:#f92672">();</span> <span style="color:#75715e">// 使用默认的无参构造函数创建 Bean 实例
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Bean</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> AnotherBean <span style="color:#a6e22e">anotherBean</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> AnotherBean<span style="color:#f92672">(</span>myBean<span style="color:#f92672">());</span> <span style="color:#75715e">// 通过构造函数注入依赖的 Bean
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><h3 id="静态工厂创建">静态工厂创建<a hidden class="anchor" aria-hidden="true" href="#静态工厂创建">#</a></h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@Configuration</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyConfiguration</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   <span style="color:#a6e22e">@Bean</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">public</span> MyBean <span style="color:#a6e22e">myBean</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>       <span style="color:#66d9ef">return</span> MyBeanFactory<span style="color:#f92672">.</span><span style="color:#a6e22e">createMyBean</span><span style="color:#f92672">();</span> <span style="color:#75715e">// 调用工厂方法创建 Bean 实例
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>   <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyBeanFactory</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> MyBean <span style="color:#a6e22e">createMyBean</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>       <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> MyBean<span style="color:#f92672">();</span> <span style="color:#75715e">// 工厂方法创建 Bean 实例
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>   <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><h3 id="实例工厂创建">实例工厂创建<a hidden class="anchor" aria-hidden="true" href="#实例工厂创建">#</a></h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@Configuration</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyConfiguration</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   <span style="color:#a6e22e">@Bean</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">public</span> MyBeanFactory <span style="color:#a6e22e">myBeanFactory</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>       <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> MyBeanFactory<span style="color:#f92672">();</span> <span style="color:#75715e">// 实例工厂方法
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>   <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   <span style="color:#a6e22e">@Bean</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">public</span> MyBean <span style="color:#a6e22e">myBean</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>       <span style="color:#66d9ef">return</span> myBeanFactory<span style="color:#f92672">().</span><span style="color:#a6e22e">createMyBean</span><span style="color:#f92672">();</span> <span style="color:#75715e">// 调用实例工厂方法创建 Bean 实例
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>   <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyBeanFactory</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">public</span> MyBean <span style="color:#a6e22e">createMyBean</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>       <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> MyBean<span style="color:#f92672">();</span> <span style="color:#75715e">// 实例工厂方法创建 Bean 实例
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>   <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><h3 id="注解创建">注解创建<a hidden class="anchor" aria-hidden="true" href="#注解创建">#</a></h3>
+<p>使用<code>@Component</code>注解或者衍生<code>@Service</code> <code>@Repository</code> <code>@Controller</code> 标记类，让Spring自动扫描、创建bean实例。</p>
+<ul>
+<li><code>Component</code>：通用注解，可标记任意类为Spring的组件。如果不知道属于哪一层可以用。</li>
+<li><code>@Service</code>：服务类，针对复杂的逻辑，需要涉及Dao层。</li>
+<li><code>@Repository</code>：对Dao层，主要针对数据库相关操作。</li>
+<li><code>@Controller</code>：对应MVC控制层，用户接收请求调用Service层返回数据给前端。</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@Component</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyBean</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Bean 的实现
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><blockquote>
+<h3 id="component和bean区别"><code>@Component</code>和<code>@Bean</code>区别<a hidden class="anchor" aria-hidden="true" href="#component和bean区别">#</a></h3>
+<p><code>@Component</code>作用于类，<code>@Bean</code>作用于方法</p>
+<ul>
+<li><code>@Component</code>：通过类路径扫面自动装配到Spring容器</li>
+<li><code>@Bean</code>：在标有该注解的地方标记生成的Bean，告诉Spring这是某个类的实例，需要用到的时候还给我。</li>
+<li><code>@Bean</code> 比 <code>@Component</code> 自定义性更强。</li>
+<li>示例：
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@Configuration</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">AppConfig</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Bean</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> TransferService <span style="color:#a6e22e">transferService</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> TransferServiceImpl<span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div>相当于
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-xml" data-lang="xml"><span style="display:flex;"><span><span style="color:#f92672">&lt;beans&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;bean</span> <span style="color:#a6e22e">id=</span><span style="color:#e6db74">&#34;transferService&#34;</span> <span style="color:#a6e22e">class=</span><span style="color:#e6db74">&#34;com.acme.TransferServiceImpl&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span> <span style="color:#f92672">&lt;/beans&gt;</span>
+</span></span></code></pre></div>@Component无法实现
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@Bean</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> OneService <span style="color:#a6e22e">getService</span><span style="color:#f92672">(</span>status<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span> <span style="color:#66d9ef">case</span> <span style="color:#f92672">(</span>status<span style="color:#f92672">)</span>  <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>     when 1<span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>             <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> serviceImpl1<span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>     when 2<span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>             <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> serviceImpl2<span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>     when 3<span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>             <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> serviceImpl3<span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span> <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div></li>
+</ul>
+</blockquote>
+<h2 id="spring基于xml注入bean的-4种-方式">Spring基于XML注入bean的 4种 方式<a hidden class="anchor" aria-hidden="true" href="#spring基于xml注入bean的-4种-方式">#</a></h2>
+<ol>
+<li>Set方法注入</li>
+<li>构造器注入</li>
+<li>静态工厂注入</li>
+<li>实例工厂注入</li>
+</ol>
+<h2 id="spring-bean-的-五种-作用域">Spring Bean 的 五种 作用域<a hidden class="anchor" aria-hidden="true" href="#spring-bean-的-五种-作用域">#</a></h2>
+<ol>
+<li><code>singleton</code>：单例的，在同一Spring IoC容器中只有一个实例。</li>
+<li><code>prototype</code>：一个bean的定义有多个实例。</li>
+<li><code>request</code>：每次http请求都会创建一个新的bean，只在该http request内有效。</li>
+<li><code>session</code>：每次新的session的http请求都会创建新的bean，只在该session http 内有效。</li>
+<li><code>global-session</code>：全局的session的http请求都会创建新的bean，只在该 session http 内有效。</li>
+</ol>
+<h2 id="单例bean的线程安全问题">单例Bean的线程安全问题<a hidden class="anchor" aria-hidden="true" href="#单例bean的线程安全问题">#</a></h2>
+<h3 id="单例bean不是线程安全的">单例Bean不是线程安全的<a hidden class="anchor" aria-hidden="true" href="#单例bean不是线程安全的">#</a></h3>
+<p>因spring没有对单例bean进行多线程封装处理。</p>
+<p>大部分时候Spring bean 无状态的（Dao类），但是如果有状态，那么就要自己去保证线程安全性。</p>
+<blockquote>
+<ul>
+<li>无状态：不会保存数据，无写数据操作</li>
+<li>有状态：会保存数据，有写数据的操作</li>
+<li>如果每个线程的全局变量、静态变量只有读操作，一般来说线程安全。</li>
+</ul>
+</blockquote>
+<h3 id="解决方案">解决方案<a hidden class="anchor" aria-hidden="true" href="#解决方案">#</a></h3>
+<ol>
+<li>改变bean的作用域为<code>prototype</code>，这样每次请求都是new Bean，保证线程安全。</li>
+<li>使用<code>ThreadLocal</code>，存放在ThreadLocal中与当前线程绑定。</li>
+</ol>
+<h2 id="font-colorredbean的生命周期-重要font"><font color=red><em>Bean的生命周期</em> （重要）</font><a hidden class="anchor" aria-hidden="true" href="#font-colorredbean的生命周期-重要font">#</a></h2>
+<h3 id="四个阶段">四个阶段<a hidden class="anchor" aria-hidden="true" href="#四个阶段">#</a></h3>
+<ol>
+<li>实例化</li>
+<li>属性赋值</li>
+<li>初始化</li>
+<li>销毁</li>
+</ol>
+<p><strong>实例化 -&gt; 属性赋值 -&gt; 初始化 -&gt; 销毁</strong></p>
+<p><img loading="lazy" src="image.png" alt="bean生命周期"  />
+</p>
+<h3 id="各个阶段的工作">各个阶段的工作<a hidden class="anchor" aria-hidden="true" href="#各个阶段的工作">#</a></h3>
+<ol>
+<li>实例化：创建Bean对象</li>
+<li>属性赋值：调用Bean的set方法【设置属性值】</li>
+<li>初始化：
+<ul>
+<li>如果实现了<code>xxxAware</code>接口，通过不同类型的Aware接口拿到Spring容器的资源。</li>
+<li>如果实现了<code>BeanPostProcessor</code>接口，则会回调该接口的<code>postProcessorBeforeInitialization</code> 和 <code>postProcessorAfterInitialization</code>方法</li>
+<li>如果配置了<code>init-method</code>方法，则会执行<code>init-method</code>配置的方法</li>
+</ul>
+</li>
+<li>销毁
+<ul>
+<li>容器关闭后，如果Bean实现了<code>DisposableBean</code>接口，则会回调该接口的<code>destroy</code>方法</li>
+<li>如果配置了<code>destroy-method</code>方法，则会执行<code>destroy-method</code>配置的方法</li>
+</ul>
+</li>
+</ol>
+<h3 id="影响多个bean的接口">影响多个Bean的接口<a hidden class="anchor" aria-hidden="true" href="#影响多个bean的接口">#</a></h3>
+<ul>
+<li><code>InstantiationAwareBeanPostProcessor</code></li>
+<li><code>BeanPostProcessor</code></li>
+</ul>
+<p><img loading="lazy" src="image-20220721190721000.png" alt="简略图"  />
+</p>
+<h3 id="影响单个bean的接口">影响单个Bean的接口<a hidden class="anchor" aria-hidden="true" href="#影响单个bean的接口">#</a></h3>
+<ul>
+<li>Aware类型的接口</li>
+<li>生命周期接口</li>
+</ul>
+<p><img loading="lazy" src="image-1.png" alt="Bean流程图"  />
+</p>
+<h2 id="哪些是重要的生命周期方法">哪些是重要的生命周期方法<a hidden class="anchor" aria-hidden="true" href="#哪些是重要的生命周期方法">#</a></h2>
+<p>两个重要的生命周期方法：</p>
+<ol>
+<li><code>setup</code>：容器加载bean被调用</li>
+<li><code>teardown</code>：容器卸载类的时候被调用</li>
+</ol>
+<h2 id="什么是spring内部bean">什么是Spring内部bean<a hidden class="anchor" aria-hidden="true" href="#什么是spring内部bean">#</a></h2>
+<p>当一个bean仅被用作另一个bean的属性的时候，它可以被声明为内部类。</p>
+<p>内部bean可以用setter注入属性和构造方法注入构造参数，内部bean通常是匿名的，Scope为prototype。</p>
+<h2 id="什么是bean装配">什么是Bean装配<a hidden class="anchor" aria-hidden="true" href="#什么是bean装配">#</a></h2>
+<p>知道bean的依赖关系，容器通过依赖关系把bean装配到一起。</p>
+<h2 id="什么是bean自动装配">什么是Bean自动装配<a hidden class="anchor" aria-hidden="true" href="#什么是bean自动装配">#</a></h2>
+<p>在Spring框架中，用配置文件设置bean之间的依赖，Spring就可自动装配相互依赖的bean。容器无需配置就能通过bean工厂自动处理bean之间的协作。</p>
+<h2 id="spring自动装配的方式">Spring自动装配的方式<a hidden class="anchor" aria-hidden="true" href="#spring自动装配的方式">#</a></h2>
+<p>在Spring框架xml配置文件有5种自动装配：</p>
+<ol>
+<li>no：默认不自动装配，手工设置ref属性来装配bean</li>
+<li>byName：通过bean的名称进行自动装配，与prototype的值对应</li>
+<li>byType：通过参数的数值类型自动装配</li>
+<li>constructor：利用构造函数进行进行装配</li>
+<li>autodetect：自动探测</li>
+</ol>
+<h2 id="使用autowired自动装配过程">使用<code>@Autowired</code>自动装配过程<a hidden class="anchor" aria-hidden="true" href="#使用autowired自动装配过程">#</a></h2>
+<p>使用之前要在Spring配置文件进行配置 <code>&lt;context:annotation-config /&gt;</code> 。</p>
+<p>启动Spring IoC的时候，容器自动装配了一个后置处理器，当容器扫描到<code>@Autowied</code>、<code>@Resource</code>或<code>@Inject</code>的时候，容器自动查找需要的bean，并装配给对象的属性。</p>
+<ul>
+<li>如果查询结果唯一，bean装配给@Autowired指定的数据</li>
+<li>如果查询结果多个，@Autowired会根据名称来查找</li>
+<li>如果上述查找的结果为空，那么会抛出异常。解决方法时，使用required=false。</li>
+</ul>
+<h2 id="自动装配局限性">自动装配局限性<a hidden class="anchor" aria-hidden="true" href="#自动装配局限性">#</a></h2>
+<ul>
+<li>重写：需要重写自动装配</li>
+<li>基本数据类型：不能自动装配简单的属性，如基本数据类型，String字符串和类</li>
+<li>模糊特性：不如显示装配精准</li>
+</ul>
+<h2 id="factorybean-和-beanfactory-的区别">FactoryBean 和 BeanFactory 的区别<a hidden class="anchor" aria-hidden="true" href="#factorybean-和-beanfactory-的区别">#</a></h2>
+<ul>
+<li>BeanFactory：是Bean工厂，ApplicationContext的父类，IoC容器的核心，负责生产和管理bean。</li>
+<li>FactoryBean：是一个Bean，通过实现FactoryBean接口定制实例化bean的逻辑。</li>
+</ul>
+<h1 id="循环依赖">循环依赖<a hidden class="anchor" aria-hidden="true" href="#循环依赖">#</a></h1>
+<p>有一个对象A内有属性对象B，对象B内有属性对象A。<br>
+创建对象A -&gt; 处理A的依赖 -&gt; 创建B对象 -&gt; 处理B的依赖 -&gt; 创建A -&gt; 处理A依赖 -&gt; 创建B ······无限循环。</p>
+<p><img loading="lazy" src="image-2.png" alt="循环依赖"  />
+</p>
+<p>自己依赖自己</p>
+<p><img loading="lazy" src="image-3.png" alt="自我依赖"  />
+</p>
+<p>当我们注入对象A的时候，需要注入对象A标记了某些注解的属性，这些属性称为A的依赖，对象A中依赖初始化完成才算是A创建成功。</p>
+<h2 id="spring三级缓存">Spring三级缓存<a hidden class="anchor" aria-hidden="true" href="#spring三级缓存">#</a></h2>
+<ul>
+<li><code>singletonObject</code> 一级缓存：用于保存实例化、注入、初始化完成的bean实例</li>
+<li><code>earlySingletonObject</code> 二级缓存：用于保存实例化完成的bean实例</li>
+<li><code>singletonFactories</code> 三级缓存：用于保存bean工厂，以便后续扩展创建代理对象</li>
+</ul>
+<h2 id="循环依赖的主要场景">循环依赖的主要场景<a hidden class="anchor" aria-hidden="true" href="#循环依赖的主要场景">#</a></h2>
+<p><img loading="lazy" src="image-4.png" alt="循环依赖场景"  />
+</p>
+<h3 id="1单例setter注入">1、单例setter注入<a hidden class="anchor" aria-hidden="true" href="#1单例setter注入">#</a></h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@Service</span>
+</span></span><span style="display:flex;"><span>publicclass TestService1 <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Autowired</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> TestService2 testService2<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">test1</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@Service</span>
+</span></span><span style="display:flex;"><span>publicclass TestService2 <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Autowired</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> TestService1 testService1<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">test2</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><p>解决方法</p>
+<p><img loading="lazy" src="image-5.png" alt="setter注入循环依赖"  />
+</p>
+<blockquote>
+<p>为什么要使用二级缓存：<br>
+因为三级缓存实际是一个objectFactory对象，并不是实例对象。
+三级缓存不能用实例对象，因为需要对对象进行增强。</p>
+</blockquote>
+<h3 id="2多例setter注入">2、多例setter注入<a hidden class="anchor" aria-hidden="true" href="#2多例setter注入">#</a></h3>
+<p>在多线程场景下，经常出现</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@Scope</span><span style="color:#f92672">(</span>ConfigurableBeanFactory<span style="color:#f92672">.</span><span style="color:#a6e22e">SCOPE_PROTOTYPE</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@Service</span>
+</span></span><span style="display:flex;"><span>publicclass TestService1 <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Autowired</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> TestService2 testService2<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">test1</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@Scope</span><span style="color:#f92672">(</span>ConfigurableBeanFactory<span style="color:#f92672">.</span><span style="color:#a6e22e">SCOPE_PROTOTYPE</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@Service</span>
+</span></span><span style="display:flex;"><span>publicclass TestService2 <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Autowired</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> TestService1 testService1<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">test2</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><p>因为没有用到缓存，每次都会生成新的对象，所以循环无法解决。</p>
+<h3 id="3构造器注入">3、构造器注入<a hidden class="anchor" aria-hidden="true" href="#3构造器注入">#</a></h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@Service</span>
+</span></span><span style="display:flex;"><span>publicclass TestService1 <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">TestService1</span><span style="color:#f92672">(</span>TestService2 testService2<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@Service</span>
+</span></span><span style="display:flex;"><span>publicclass TestService2 <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">TestService2</span><span style="color:#f92672">(</span>TestService1 testService1<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><p>执行过程</p>
+<p><img loading="lazy" src="image-6.png" alt="循环依赖构造器注入"  />
+</p>
+<p>也没有用到缓存，所以无法解决。</p>
+<h3 id="4单例的代理对象setter注入">4、单例的代理对象setter注入<a hidden class="anchor" aria-hidden="true" href="#4单例的代理对象setter注入">#</a></h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@Service</span>
+</span></span><span style="display:flex;"><span>publicclass TestService1 <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Autowired</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> TestService2 testService2<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Async</span>  <span style="color:#75715e">//使用AOP自动生成代理
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">test1</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@Service</span>
+</span></span><span style="display:flex;"><span>publicclass TestService2 <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Autowired</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> TestService1 testService1<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">test2</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><p>执行过程</p>
+<p><img loading="lazy" src="image-7.png" alt="代理循环依赖"  />
+</p>
+<p>bean初始化完成后会把原始数据与二级缓存数据比较，不相等抛异常。</p>
+<p>解决方法：修改TestService1为TestService5</p>
+<p>因为bean的加载顺序是由文件完整路径递归查找，按照路径+文件名进行查找，2排在前先加载。</p>
+<p>执行过程</p>
+<p><img loading="lazy" src="image-8.png" alt="代理解决循环依赖"  />
+</p>
+<p>因为6无二级缓存，所以不会报错。</p>
+<h3 id="5dependson循环依赖">5、dependsOn循环依赖<a hidden class="anchor" aria-hidden="true" href="#5dependson循环依赖">#</a></h3>
+<p>一些特殊场景下，我们可以用注解<code>@DependsOn</code>注解要求先实例化谁。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@DependsOn</span><span style="color:#f92672">(</span>value <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;testService2&#34;</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@Service</span>
+</span></span><span style="display:flex;"><span>publicclass TestService1 <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Autowired</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> TestService2 testService2<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">test1</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@DependsOn</span><span style="color:#f92672">(</span>value <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;testService1&#34;</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@Service</span>
+</span></span><span style="display:flex;"><span>publicclass TestService2 <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Autowired</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> TestService1 testService1<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">test2</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><p><code>@DependsOn</code>注解虽然可以指定先实例化谁，但是底层会判断时候存在循环依赖，如上代码，出现了循环依赖，那么就会抛异常。</p>
+<h2 id="循环依赖的划分">循环依赖的划分<a hidden class="anchor" aria-hidden="true" href="#循环依赖的划分">#</a></h2>
+<p><img loading="lazy" src="image-9.png" alt="循环依赖划分"  />
+</p>
+<h2 id="如何解决循环依赖总结">如何解决循环依赖（总结）<a hidden class="anchor" aria-hidden="true" href="#如何解决循环依赖总结">#</a></h2>
+<p>Spring可以解决的循环依赖有两个前提</p>
+<ol>
+<li>不全是构造器方式的循环依赖</li>
+<li>必须是单例</li>
+</ol>
+<p>通过三级缓存来解决循环依赖</p>
+<ul>
+<li>第一级缓存：保存实例化、初始化都完成的对象</li>
+<li>第二级缓存：保存实例化但是并未初始化的对象</li>
+<li>第三级缓存：保存实例化对象的所用的bean工厂</li>
+</ul>
+<p><img loading="lazy" src="image-10.png" alt="三级缓存图"  />
+</p>
+<p>假设一个简单的循环依赖，A、B对象互相依赖<br>
+<img loading="lazy" src="image-11.png" alt="示例循环依赖"  />
+</p>
+<p>A对象的创建过程：</p>
+<ol>
+<li>实例化A对象，把A的工厂存入第三级缓存   <img loading="lazy" src="image-12.png" alt="示例循环依赖1"  />
+</li>
+<li>A注入属性，发现存在B对象，去创建B对象</li>
+<li>实例化B对象，注入的时候发现存在A对象，依次从1-&gt;3级缓存查找A，在第三级缓存拿到A，把A放进第二级缓存，同时删除第三级缓存里的A对象。B对象实例化、注入、初始化完成，把B放入第一级缓存。   <img loading="lazy" src="image-13.png" alt="示例循环依赖2"  />
+</li>
+<li>继续创建A对象，从第一级缓存中拿到B对象，A对象创建完成，删除第二级缓存里的A对象，把A放入第一级缓存</li>
+<li>一级缓存保存着A、B对象   <img loading="lazy" src="image-14.png" alt="示例循环依赖3"  />
+</li>
+</ol>
+<blockquote>
+<p>因为实例化和初始化流程分开了，所以如果用构造器，没办法分离两个流程，就无法解决循环依赖。</p>
+</blockquote>
+<h2 id="为什么要三级二级不行吗">为什么要三级，二级不行吗<a hidden class="anchor" aria-hidden="true" href="#为什么要三级二级不行吗">#</a></h2>
+<p>不可以，因为第三级缓存是构建了一个<code>ObjectFactory</code>对象，保证在生成代理对象的时候不会覆盖掉二级缓存中的普通bean。如果只有二级缓存就会覆盖掉，在多线程下很难保证数据一致。</p>
+<p><img loading="lazy" src="image-15.png" alt="使用三级缓存原因"  />
+</p>
+<h1 id="spring-注解">Spring 注解<a hidden class="anchor" aria-hidden="true" href="#spring-注解">#</a></h1>
+<h2 id="什么是基于java的spring注解配置">什么是基于Java的Spring注解配置<a hidden class="anchor" aria-hidden="true" href="#什么是基于java的spring注解配置">#</a></h2>
+<p>基于Java的配置，使用少量的注解，代替大量的xml文件配置。</p>
+<p>举例：<br>
+如<code>@Configuration</code>，标记一个bean，被Spring IoC容器使用。
+<code>@Bean</code>，表示该方法要返回一个对象，作为bean用于Spring上下文。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@Configuration</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">StudentConfig</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Bean</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> StudentBean <span style="color:#a6e22e">myStudent</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> StudentBean<span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><h2 id="如何开启注解">如何开启注解<a hidden class="anchor" aria-hidden="true" href="#如何开启注解">#</a></h2>
+<p>注解装配默认不开启，需要在Spring配置里配置<code>&lt;context:annotation-config/&gt;</code>元素。</p>
+<h2 id="componentcontrollerservicerepository-区别"><code>@Component</code>、<code>@Controller</code>、<code>@Service</code>、<code>@Repository</code> 区别<a hidden class="anchor" aria-hidden="true" href="#componentcontrollerservicerepository-区别">#</a></h2>
+<ul>
+<li><code>@Component</code>：用于将java类标记为bean。</li>
+<li><code>@Controller</code>：用于标记为<code>Spring Web MVC</code>控制器</li>
+<li><code>@Service</code>：用于标记为服务层，更好知名意图。</li>
+<li><code>@Repository</code>：用于将DAO导入IoC。</li>
+</ul>
+<h2 id="required-注解有什么作用"><code>@Required</code> 注解有什么作用<a hidden class="anchor" aria-hidden="true" href="#required-注解有什么作用">#</a></h2>
+<p>明确bean的属性必须在配置的时候设置，如未设置则抛异常</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Employee</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> String name<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Required</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">setName</span><span style="color:#f92672">(</span>String name<span style="color:#f92672">){</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">name</span><span style="color:#f92672">=</span>name<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> string <span style="color:#a6e22e">getName</span><span style="color:#f92672">(){</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> name<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><h2 id="autowired-注解有什么作用"><code>@Autowired</code> 注解有什么作用<a hidden class="anchor" aria-hidden="true" href="#autowired-注解有什么作用">#</a></h2>
+<p>按照类型自动装配注入，要求依赖对象必须存在。</p>
+<p>可用于构造方法、成员变量、Setter方法</p>
+<h2 id="autowired和resource之间的区别"><code>@Autowired</code>和<code>@Resource</code>之间的区别<a hidden class="anchor" aria-hidden="true" href="#autowired和resource之间的区别">#</a></h2>
+<ul>
+<li><code>@Autowired</code>：按照类型装配注入，依赖对象必须存在</li>
+<li><code>@Resource</code>：按照名称装配注入，找不到名称再按类型。</li>
+</ul>
+<h2 id="qualifier-注解有什么作用"><code>@Qualifier</code> 注解有什么作用<a hidden class="anchor" aria-hidden="true" href="#qualifier-注解有什么作用">#</a></h2>
+<p>有多个相同的bean时，指定使用哪个bean。</p>
+<h2 id="requestmapping-注解有什么用"><code>@RequestMapping</code> 注解有什么用？<a hidden class="anchor" aria-hidden="true" href="#requestmapping-注解有什么用">#</a></h2>
+<p>将http请求映射到控制器指定的方法或者类</p>
+<ul>
+<li>类：映射请求的URL</li>
+<li>方法：映射URL和Http请求方法</li>
+</ul>
+<h1 id="spring-数据访问">Spring 数据访问<a hidden class="anchor" aria-hidden="true" href="#spring-数据访问">#</a></h1>
+<h2 id="对象关系映射集成模块">对象/关系映射集成模块<a hidden class="anchor" aria-hidden="true" href="#对象关系映射集成模块">#</a></h2>
+<p>Spring通过支持ORM模块，支持我们直接在jdbc上使用ORM映射工具。</p>
+<h2 id="spring如何高效使用jdbc">Spring如何高效使用JDBC<a hidden class="anchor" aria-hidden="true" href="#spring如何高效使用jdbc">#</a></h2>
+<p>使用Spring JDBC框架，减小操作失败的代价。集成JDBC的模板类。</p>
+<h2 id="spring-dao-有什么用">spring DAO 有什么用<a hidden class="anchor" aria-hidden="true" href="#spring-dao-有什么用">#</a></h2>
+<p>DAO被称为数据访问对象，使得JDBC等数据访问技术以一种统一的方式工作。</p>
+<h2 id="jdbctemplate是什么">JdbcTemplate是什么<a hidden class="anchor" aria-hidden="true" href="#jdbctemplate是什么">#</a></h2>
+<p>JdbcTemplate类提供了解决数据库数据和基本数据类型与对象之间的转换，执行写好可调用的sql语句，提供自定义错误处理。</p>
+<h1 id="spring事务">Spring事务<a hidden class="anchor" aria-hidden="true" href="#spring事务">#</a></h1>
+<h2 id="事务的实现方法和原理">事务的实现方法和原理<a hidden class="anchor" aria-hidden="true" href="#事务的实现方法和原理">#</a></h2>
+<p>事务本质就是对数据库事务的支持，没有数据库事务支持，Spring无法提供事务功能。</p>
+<p>真正数据库层的事务提交和回滚通过bin log和redo log实现。</p>
+<h2 id="spring事务管理类型和实现方式">Spring事务管理类型和实现方式<a hidden class="anchor" aria-hidden="true" href="#spring事务管理类型和实现方式">#</a></h2>
+<ul>
+<li>编程式事务管理：通过代码管理事务，灵活但是难管理。</li>
+<li>声明式事务管理：业务层和事务管理分开，使用注解或xml配置管理事务。</li>
+</ul>
+<h2 id="什么是事务传播">什么是事务传播<a hidden class="anchor" aria-hidden="true" href="#什么是事务传播">#</a></h2>
+<p>事务传播是为了解决业务层方法相互调用的事务问题，当一个事务方法调用另外一个事务方法时，指定事务如何传播。</p>
+<blockquote>
+<p>举例：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span>   <span style="color:#a6e22e">@Transactional</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">methodA</span><span style="color:#f92672">(){</span>
+</span></span><span style="display:flex;"><span>      jdbcTemplate<span style="color:#f92672">.</span><span style="color:#a6e22e">batchUpdate</span><span style="color:#f92672">(</span>updateSql<span style="color:#f92672">,</span> params<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">// A 事务调用 B 事务
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>      methodB<span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   <span style="color:#75715e">// 不使用当前事务，创建一个新事务
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>   <span style="color:#a6e22e">@Transactional</span><span style="color:#f92672">(</span>propagation <span style="color:#f92672">=</span> Propagation<span style="color:#f92672">.</span><span style="color:#a6e22e">REQUIRES_NEW</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">methodB</span><span style="color:#f92672">(){</span>
+</span></span><span style="display:flex;"><span>      jdbcTemplate<span style="color:#f92672">.</span><span style="color:#a6e22e">batchUpdate</span><span style="color:#f92672">(</span>updateSql<span style="color:#f92672">,</span> params<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">}</span>
+</span></span></code></pre></div></blockquote>
+<h2 id="事务传播的7大值">事务传播的7大值<a hidden class="anchor" aria-hidden="true" href="#事务传播的7大值">#</a></h2>
+<ol>
+<li><code>propagation_required</code>：如果当前没有事务，创建事务；如果当前有事务，加入事务。最常用。</li>
+<li><code>propagation_supports</code>：支持当前事务。如果当前有事务，加入；如果当前没事务，以非事务执行。</li>
+<li><code>propagation_mandatory</code>：支持当前事务。如果当前有事务，加入；如果当前没有事务，抛出异常。</li>
+<li><code>propagation_requires_new</code>：创建新事务，无论当前有无事务。</li>
+<li><code>propagation_not_supports</code>：以非事务方式执行。如果当前存在事务，挂起。</li>
+<li><code>propagation_never</code>：以非事务方式执行。如果当前存在事务，抛异常。</li>
+<li><code>propagation_nested</code>：如果当前有事务，嵌套在事务内执行；如果当前没有事务，以required属性执行。</li>
+</ol>
+<h2 id="事务的五大隔离级别">事务的五大隔离级别<a hidden class="anchor" aria-hidden="true" href="#事务的五大隔离级别">#</a></h2>
+<ol>
+<li><code>isolation_default</code>：用底层数据库设置的隔离级别，数据库用什么我用什么。</li>
+<li><code>isolation_read_uncommitted</code>：未提交读，最低的隔离级别，事务在提交之前，都可以其他事务读取（会出现脏读、幻读、不可重复读）</li>
+<li><code>isolation_read_committed</code>：提交读，事务只有提交之后，才能别其他事务读取（会出现幻读、不可重复读）SQL Server 默认级别。</li>
+<li><code>isolation_repeatable_read</code>：可重复读，保证多次读取同一值的时候，值都和事务开始时的内容一致，禁止读取到别的事务未提交的数据（会造成幻读）MySQL默认隔离级别。</li>
+<li><code>isolation_serializable</code>：序列化，代价最高最可靠，能防止脏读、幻读、不可重复读。</li>
+</ol>
+<blockquote>
+<ul>
+<li>脏读：一个事务读取到另一个事务还未提交的数据。</li>
+<li>不可重复读：同一事务内，多次读取同一数据。</li>
+<li>幻读：同一事务内，多次查询结果都不一样。</li>
+</ul>
+</blockquote>
+<p><img loading="lazy" src="image-16.png" alt="隔离级别辅助理解"  />
+</p>
+<h2 id="事务的失效场景">事务的失效场景<a hidden class="anchor" aria-hidden="true" href="#事务的失效场景">#</a></h2>
+<h3 id="1-只支持public修饰的方法">1. 只支持public修饰的方法<a hidden class="anchor" aria-hidden="true" href="#1-只支持public修饰的方法">#</a></h3>
+<h3 id="2-用final修饰不生效">2. 用final修饰不生效<a hidden class="anchor" aria-hidden="true" href="#2-用final修饰不生效">#</a></h3>
+<p>事务底层使用AOP，通过jdk或者CGLIB动态代理，生成代理类，对代理类添加事务，如果使用final修饰，在代理类中就无法重写该方法，而添加事务。</p>
+<h3 id="3-同一个类的内部调用不生效">3. 同一个类的内部调用，不生效<a hidden class="anchor" aria-hidden="true" href="#3-同一个类的内部调用不生效">#</a></h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@Servcie</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ServiceA</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   <span style="color:#a6e22e">@Transactional</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">save</span><span style="color:#f92672">(</span>User user<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>         <span style="color:#f92672">......;</span>
+</span></span><span style="display:flex;"><span>         <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">doSave</span><span style="color:#f92672">(</span>user<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   <span style="color:#a6e22e">@Transactional</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">doSave</span><span style="color:#f92672">(</span>User user<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>       <span style="color:#f92672">......;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span> <span style="color:#f92672">}</span>
+</span></span></code></pre></div><p>因为生成代理类后，直接调用了this对象的方法，不会生成事务。</p>
+<p>解决方法：</p>
+<ol>
+<li>新加一个类
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@Servcie</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ServiceA</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@Autowired</span>
+</span></span><span style="display:flex;"><span>prvate ServiceB serviceB<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">save</span><span style="color:#f92672">(</span>User user<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">......</span>
+</span></span><span style="display:flex;"><span>        serviceB<span style="color:#f92672">.</span><span style="color:#a6e22e">doSave</span><span style="color:#f92672">(</span>user<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@Servcie</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ServiceB</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Transactional</span><span style="color:#f92672">(</span>rollbackFor<span style="color:#f92672">=</span>Exception<span style="color:#f92672">.</span><span style="color:#a6e22e">class</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">doSave</span><span style="color:#f92672">(</span>User user<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">......</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div></li>
+<li>自己注入自己
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@Servcie</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ServiceA</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Autowired</span>
+</span></span><span style="display:flex;"><span>    prvate ServiceA serviceA<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">save</span><span style="color:#f92672">(</span>User user<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">......</span>
+</span></span><span style="display:flex;"><span>            serviceA<span style="color:#f92672">.</span><span style="color:#a6e22e">doSave</span><span style="color:#f92672">(</span>user<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Transactional</span><span style="color:#f92672">(</span>rollbackFor<span style="color:#f92672">=</span>Exception<span style="color:#f92672">.</span><span style="color:#a6e22e">class</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">doSave</span><span style="color:#f92672">(</span>User user<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">......</span>
+</span></span><span style="display:flex;"><span>        updateData2<span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div></li>
+<li>通过AopContent类
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#a6e22e">@Servcie</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ServiceA</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">save</span><span style="color:#f92672">(</span>User user<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">......</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">((</span>ServiceA<span style="color:#f92672">)</span>AopContext<span style="color:#f92672">.</span><span style="color:#a6e22e">currentProxy</span><span style="color:#f92672">()).</span><span style="color:#a6e22e">doSave</span><span style="color:#f92672">(</span>user<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Transactional</span><span style="color:#f92672">(</span>rollbackFor<span style="color:#f92672">=</span>Exception<span style="color:#f92672">.</span><span style="color:#a6e22e">class</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">doSave</span><span style="color:#f92672">(</span>User user<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">......</span>
+</span></span><span style="display:flex;"><span>        updateData2<span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div></li>
+</ol>
+<h3 id="4-未被spring管理">4. 未被Spring管理<a hidden class="anchor" aria-hidden="true" href="#4-未被spring管理">#</a></h3>
+<h3 id="5-多线程调用">5. 多线程调用<a hidden class="anchor" aria-hidden="true" href="#5-多线程调用">#</a></h3>
+<h3 id="6-数据库引擎不支持事务">6. 数据库引擎不支持事务<a hidden class="anchor" aria-hidden="true" href="#6-数据库引擎不支持事务">#</a></h3>
+<h2 id="spring框架下的事务管理的优势">Spring框架下的事务管理的优势<a hidden class="anchor" aria-hidden="true" href="#spring框架下的事务管理的优势">#</a></h2>
+<ul>
+<li>为不同的事务API（JDBC、JTA），提供不变的编程模式</li>
+<li>为编程式事务管理提供一套简单的API</li>
+<li>支持声明式事务管理</li>
+<li>和Spring的各种数据访问抽象层很好的集成</li>
+</ul>
+<h2 id="你更倾向于那种事务管理">你更倾向于那种事务管理<a hidden class="anchor" aria-hidden="true" href="#你更倾向于那种事务管理">#</a></h2>
+<p>更倾向于声明式事务管理。</p>
+<p>声明式事务管理对应用代码影响最小，更符合无侵入的轻量级思想。虽然比编程式事务少了一点灵活，但是便于管理。唯一的缺点可能就是没办法像编程式事务管理一样做到对代码块进行事务管理。</p>
+<h1 id="spring-mvc-专题">Spring MVC 专题<a hidden class="anchor" aria-hidden="true" href="#spring-mvc-专题">#</a></h1>
+<h2 id="面试题">面试题<a hidden class="anchor" aria-hidden="true" href="#面试题">#</a></h2>
+<h3 id="什么是mvc">什么是MVC<a hidden class="anchor" aria-hidden="true" href="#什么是mvc">#</a></h3>
+<p>MVC是模型（model）、视图（View）、控制器（Controller）。他是一种将应用程序的业务逻辑和展示逻辑分开管理，实现松散耦合的框架。提供了良好的扩展性和可测试性，使得开发和维护Web应用变得简单高效。</p>
+<h3 id="什么是spring-mvc">什么是Spring MVC<a hidden class="anchor" aria-hidden="true" href="#什么是spring-mvc">#</a></h3>
+<p>是一个基于Java的实现了MVC设计模式的请求驱动类型的轻量级Web框架，通过把模型-视图-控制器分离，实现松散耦合，把负责的Web应用分为逻辑清晰的几个部分，简化开发，减少出错。</p>
+<h3 id="spring-mvc优点">Spring MVC优点<a hidden class="anchor" aria-hidden="true" href="#spring-mvc优点">#</a></h3>
+<ol>
+<li>可以支持各种视图技术，包括不仅仅jsp</li>
+<li>与Spring框架集成</li>
+<li>清晰的角色分配：前端控制器<code>dispatcherServlet</code>、请求到处理器映射<code>handlerMapping</code>、处理适配器<code>HandlerAdapter</code>、视图解析器<code>ViewResolver</code></li>
+<li>支持各种请求到资源的映射策略。</li>
+</ol>
+<h2 id="核心组件">核心组件<a hidden class="anchor" aria-hidden="true" href="#核心组件">#</a></h2>
+<ol>
+<li>前端控制器<code>DispatcherServlet</code>（不需要程序员开发）</li>
+</ol>
+<p>作用：请求接收、相应结果，相当于转发器，减少其他组件的耦合度。</p>
+<ol start="2">
+<li>处理器映射器<code>HandleMapper</code>（不需要程序员开发）</li>
+</ol>
+<p>作用：根据请求的URL查找Handle</p>
+<ol start="3">
+<li>处理适配器<code>HandleAdapter</code>（不需要程序员开发）</li>
+</ol>
+<p>注意：编写Handle的时候要根据HandleAdapter的规则，这样才能正常执行。</p>
+<ol start="4">
+<li>
+<p>处理器<code>Handle</code>（程序员开发）</p>
+</li>
+<li>
+<p>视图解析器<code>ViewResolver</code>（不需要程序员开发）</p>
+</li>
+</ol>
+<p>作用：进行视图解析，根据视图逻辑名解析成真正的视图。</p>
+<ol start="6">
+<li>视图<code>View</code>（程序员开发jsp等）</li>
+</ol>
+<p>是一个View接口，实现类支持不同的视图类型（jsp、free marker）</p>
+<h3 id="什么是dispatcherservlet">什么是DispatcherServlet<a hidden class="anchor" aria-hidden="true" href="#什么是dispatcherservlet">#</a></h3>
+<p>Spring MVC是围绕DispatcherServlet设计的，用来处理所有的Http请求和响应。</p>
+<h3 id="什么是spring-mvc的控制器controller">什么是Spring MVC的控制器——Controller<a hidden class="anchor" aria-hidden="true" href="#什么是spring-mvc的控制器controller">#</a></h3>
+<p>提供访问应用程序的行为，控制器通过解析用户输入转换成视图呈现给用户的模型。Spring提供了抽象的控制层，允许创建多个控制器，多种用途。</p>
+<h3 id="spring-mvc的控制器是不是单例模式">Spring MVC的控制器是不是单例模式<a hidden class="anchor" aria-hidden="true" href="#spring-mvc的控制器是不是单例模式">#</a></h3>
+<p>是单例模式，在多线程访问的时候会出现线程安全问题，不要用到同步影响性能。解决方法是不在控制器里写字段。</p>
+<h2 id="工作原理">工作原理<a hidden class="anchor" aria-hidden="true" href="#工作原理">#</a></h2>
+<h3 id="spring-mvc-工作流程">Spring MVC 工作流程<a hidden class="anchor" aria-hidden="true" href="#spring-mvc-工作流程">#</a></h3>
+<p><img loading="lazy" src="image-17.png" alt="MVC流程图"  />
+</p>
+<ol>
+<li>用户发送请求到前端控制器<code>DispatcherServlet</code></li>
+<li>前端控制器接收请求，调用处理器映射器<code>HandlerMapping</code>，请求获取<code>Handler</code></li>
+<li>处理器映射器根据请求的URL找到对应的处理器，生成处理器对象以及处理器拦截器，返回给前端控制器</li>
+<li>前端控制器调用处理器适配器<code>HandlerAdapter</code></li>
+<li>处理器适配器调用对应的处理器-后端控制器<code>Handler</code></li>
+<li>后端控制器执行业务完成返回<code>ModelAndView</code></li>
+<li>处理器适配器把<code>ModelAndView</code>返回给前端控制器</li>
+<li>前端控制器把<code>ModelAndView</code>传给视图解析器<code>VierResolver</code></li>
+<li>视图解析器解析返回具体的视图<code>View</code></li>
+<li>前端控制器对<code>View</code>进行视图渲染</li>
+<li>响应给用户</li>
+</ol>
+<h2 id="mvc框架">MVC框架<a hidden class="anchor" aria-hidden="true" href="#mvc框架">#</a></h2>
+<h3 id="什么是mvc框架">什么是MVC框架<a hidden class="anchor" aria-hidden="true" href="#什么是mvc框架">#</a></h3>
+<p>Model View Control 把模块-视图-控制器分开管理的一种设计模式。用于把前端页面显示和后端业务处理分离。</p>
+<h2 id="mvc框架有什么好处">MVC框架有什么好处<a hidden class="anchor" aria-hidden="true" href="#mvc框架有什么好处">#</a></h2>
+<ol>
+<li>分层设计，实现了业务系统各层之间的解耦，有利于系统的维护和扩展</li>
+<li>系统并发开发，提高开发效率</li>
+</ol>
+<h2 id="常用注解">常用注解<a hidden class="anchor" aria-hidden="true" href="#常用注解">#</a></h2>
+<h3 id="注解是什么">注解是什么<a hidden class="anchor" aria-hidden="true" href="#注解是什么">#</a></h3>
+<p>注解的本质是继承了<code>Annotation</code>的特殊接口，具体实现类就是Java的动态代理类。我们通过反射获得注解。</p>
+<h3 id="spring-mvc-常用注解">Spring MVC 常用注解<a hidden class="anchor" aria-hidden="true" href="#spring-mvc-常用注解">#</a></h3>
+<ul>
+<li><code>@Controller</code>：用于定义控制器类</li>
+<li><code>@RequestMapper</code>：通常后面加括号，内填写路径，用于处理请求url映射的注解，可用在方法和类上，用在类上则表示所有响应请求的方法都已该地址为父路径。</li>
+<li><code>@ResponseBody</code>：把controller方法返回的对象转换成json响应给用户</li>
+<li><code>@RestController</code>：<code>@Controller</code>+<code>@ResponseBody</code></li>
+<li><code>@RequestBody</code>：将接收Http请求的json转换成java对象</li>
+<li><code>@ControllerAdvice</code>：统一异常处理</li>
+<li><code>@ExceptionHandler</code>：用在方法上，表示出现这类异常执行这个方法</li>
+</ul>
+<h2 id="其他">其他<a hidden class="anchor" aria-hidden="true" href="#其他">#</a></h2>
+<h3 id="spring怎么设置重定向和转发">Spring怎么设置重定向和转发<a hidden class="anchor" aria-hidden="true" href="#spring怎么设置重定向和转发">#</a></h3>
+<ul>
+<li>转发：在返回值前加<code>forward</code>。如<code>forward:user.do?name=method4</code></li>
+<li>重定向：在返回值前加<code>redirect</code>。如<code>redirect:http://www.baidu.com</code></li>
+</ul>
+<h3 id="如何解决post请求中文乱码问题get如何做">如何解决Post请求中文乱码问题，Get如何做<a hidden class="anchor" aria-hidden="true" href="#如何解决post请求中文乱码问题get如何做">#</a></h3>
+<ul>
+<li>POST请求：在web.xml中配置一个<code>CharacterEncodingFilter</code>过滤器，设置UTF-8</li>
+<li>GET请求：重新编码或者修改tomcat配置文件</li>
+</ul>
+<h3 id="spring-mvc的异常处理">Spring MVC的异常处理<a hidden class="anchor" aria-hidden="true" href="#spring-mvc的异常处理">#</a></h3>
+<p>可以把异常抛给Spring框架，我们只需要配置简单的异常处理器，在异常处理器中添加视图页即可。</p>
+<h3 id="怎么在方法里获得request-或-session">怎么在方法里获得Request 或 Session<a hidden class="anchor" aria-hidden="true" href="#怎么在方法里获得request-或-session">#</a></h3>
+<p>直接在方法形参中声明。</p>
+<h3 id="怎么获得从前端传入的参数">怎么获得从前端传入的参数<a hidden class="anchor" aria-hidden="true" href="#怎么获得从前端传入的参数">#</a></h3>
+<p>直接在形参里声明参数，参数名保持一致</p>
+<h3 id="spring-mvc返回值">Spring MVC返回值<a hidden class="anchor" aria-hidden="true" href="#spring-mvc返回值">#</a></h3>
+<p>String、ModelAndView，一般用String。</p>
+<h3 id="用什么对象从后台向前端传数据">用什么对象从后台向前端传数据<a hidden class="anchor" aria-hidden="true" href="#用什么对象从后台向前端传数据">#</a></h3>
+<p>通过ModelAndView对象</p>
+
+
+        </div>
+
+        <footer class="post-footer">
+            
+<nav class="paginav">
+  <a class="prev" href="https://zhoujze.github.io/en/posts/tech/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E8%B7%AF/">
+    <span class="title">« 上一页</span>
+    <br>
+    <span>计算机网络</span>
+  </a>
+  <a class="next" href="https://zhoujze.github.io/en/posts/tech/redis-05-%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1/">
+    <span class="title">下一页 »</span>
+    <br>
+    <span>Redis 05-缓存设计</span>
+  </a>
+</nav>
+
+
+<div class="share-buttons">
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Spring基础总结 on twitter"
+       href="https://twitter.com/intent/tweet/?text=Spring%e5%9f%ba%e7%a1%80%e6%80%bb%e7%bb%93&amp;url=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fspring%2f&amp;hashtags=Spring%e6%80%bb%e7%bb%93%2c%e9%9d%a2%e8%af%95%e9%a2%98">
+    <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-253.927,424.544c135.939,0 210.268,-112.643 210.268,-210.268c0,-3.218 0,-6.437 -0.153,-9.502c14.406,-10.421 26.973,-23.448 36.935,-38.314c-13.18,5.824 -27.433,9.809 -42.452,11.648c15.326,-9.196 26.973,-23.602 32.49,-40.92c-14.252,8.429 -30.038,14.56 -46.896,17.931c-13.487,-14.406 -32.644,-23.295 -53.946,-23.295c-40.767,0 -73.87,33.104 -73.87,73.87c0,5.824 0.613,11.494 1.992,16.858c-61.456,-3.065 -115.862,-32.49 -152.337,-77.241c-6.284,10.881 -9.962,23.601 -9.962,37.088c0,25.594 13.027,48.276 32.95,61.456c-12.107,-0.307 -23.448,-3.678 -33.41,-9.196l0,0.92c0,35.862 25.441,65.594 59.311,72.49c-6.13,1.686 -12.72,2.606 -19.464,2.606c-4.751,0 -9.348,-0.46 -13.946,-1.38c9.349,29.426 36.628,50.728 68.965,51.341c-25.287,19.771 -57.164,31.571 -91.8,31.571c-5.977,0 -11.801,-0.306 -17.625,-1.073c32.337,21.15 71.264,33.41 112.95,33.41Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Spring基础总结 on linkedin"
+       href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fspring%2f&amp;title=Spring%e5%9f%ba%e7%a1%80%e6%80%bb%e7%bb%93&amp;summary=Spring%e5%9f%ba%e7%a1%80%e6%80%bb%e7%bb%93&amp;source=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fspring%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Spring基础总结 on reddit"
+       href="https://reddit.com/submit?url=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fspring%2f&title=Spring%e5%9f%ba%e7%a1%80%e6%80%bb%e7%bb%93">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Spring基础总结 on facebook"
+       href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fspring%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Spring基础总结 on whatsapp"
+       href="https://api.whatsapp.com/send?text=Spring%e5%9f%ba%e7%a1%80%e6%80%bb%e7%bb%93%20-%20https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fspring%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Spring基础总结 on telegram"
+       href="https://telegram.me/share/url?text=Spring%e5%9f%ba%e7%a1%80%e6%80%bb%e7%bb%93&amp;url=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fspring%2f">
+        <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28">
+            <path
+                    d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+        </svg>
+    </a>
+</div>
+
+        </footer>
+    </div>
+
+<style>
+    .comments_details summary::marker {
+        font-size: 20px;
+        content: '👉展开评论';
+        color: var(--content);
+    }
+    .comments_details[open] summary::marker{
+        font-size: 20px;
+        content: '👇关闭评论';
+        color: var(--content);
+    }
+</style>
+
+
+<div>
+    
+    <script src="https://cdn.staticfile.org/twikoo/1.4.11/twikoo.all.min.js">
+    </script>
+    <script>
+        twikoo.init({
+            envId:  null ,
+        el: "#tcomment",
+            lang: 'zh-CN',
+            region:  null ,
+        path: window.TWIKOO_MAGIC_PATH||window.location.pathname,
+        })
+    </script>
+</div>
+</article>
+</main>
+
+<footer class="footer">
+    <span>
+        Copyright
+        &copy;
+        2023-2023
+        <a href="https://zhoujze.github.io/en/" style="color:#939393;">ZhouJz&#39;s blog</a>
+        All Rights Reserved
+    </span>
+    <a href="https://beian.miit.gov.cn/" target="_blank" style="color:#939393;"></a>&nbsp;
+    <span>
+        <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=null"
+           style="display:inline-block;text-decoration:none;height:20px;color:#939393;">
+            <img src="" style="float:left;margin: 0px 5px 0px 0px;"/>
+            
+        </a>
+    </span>
+    <span id="busuanzi_container">
+        <span class="fa fa-user"></span> <span id="busuanzi_value_site_uv"></span>
+        <span class="fa fa-eye"></span> <span id="busuanzi_value_site_pv"></span>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <span class="topInner">
+        <svg class="topSvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+            <path d="M12 6H0l6-6z"/>
+        </svg>
+        <span id="read_progress"></span>
+    </span>
+</a>
+
+<script>
+    document.addEventListener('scroll', function (e) {
+        const readProgress = document.getElementById("read_progress");
+        const scrollHeight = document.documentElement.scrollHeight;
+        const clientHeight = document.documentElement.clientHeight;
+        const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        readProgress.innerText = ((scrollTop / (scrollHeight - clientHeight)).toFixed(2) * 100).toFixed(0);
+    })
+</script>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+</script>
+<script>
+    let mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        (function() {
+            document.cookie = "change-themes" + "="+ escape ("false");
+        })()
+
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    });
+</script>
+
+<script>
+    document.body.addEventListener('copy', function (e) {
+        if (window.getSelection().toString() && window.getSelection().toString().length > 50) {
+            let clipboardData = e.clipboardData || window.clipboardData;
+            if (clipboardData) {
+                e.preventDefault();
+                let htmlData = window.getSelection().toString() +
+                    '\r\n\n————————————————\r\n' +
+                    '版权声明：本文为「'+"ZhouJz's blog"+'」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。' +
+                '\r\n原文链接：' + location.href;
+                let textData = window.getSelection().toString() +
+                    '\r\n\n————————————————\r\n' +
+                    '版权声明：本文为「'+"ZhouJz's blog"+'」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。' +
+                '\r\n原文链接：' + location.href;
+                clipboardData.setData('text/html', htmlData);
+                clipboardData.setData('text/plain', textData);
+            }
+        }
+    });
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerText = '📄复制';
+
+        function copyingDone() {
+            copybutton.innerText = '👌🏻已复制!';
+            setTimeout(() => {
+                copybutton.innerText = '📄复制';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                let text = codeblock.textContent +
+                    '\r\n————————————————\r\n' +
+                    '版权声明：本文为「'+"ZhouJz's blog"+'」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。' +
+                '\r\n原文链接：' + location.href;
+                navigator.clipboard.writeText(text);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) {}
+            selection.removeRange(range);
+        });
+
+        let language = codeblock.className.replaceAll("language-", "")
+        let macTool = document.createElement("div")
+        let macTool1 = document.createElement("div")
+        let macTool2 = document.createElement("div")
+        let macTool3 = document.createElement("div")
+        let languageType = document.createElement("div")
+        languageType.innerText = language
+        macTool.setAttribute('class', 'mac-tool')
+        macTool1.setAttribute('class', 'mac bb1')
+        macTool2.setAttribute('class', 'mac bb2')
+        macTool3.setAttribute('class', 'mac bb3')
+        languageType.setAttribute('class', 'language-type')
+        macTool.appendChild(macTool1)
+        macTool.appendChild(macTool2)
+        macTool.appendChild(macTool3)
+        macTool.appendChild(languageType)
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+            container.appendChild(macTool)
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+            container.appendChild(macTool)
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+            container.appendChild(macTool)
+        }
+    });
+</script>
+</body>
+
+</html>

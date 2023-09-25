@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Redis 03-多机数据库的实现 | ZhouJz&#39;s blog</title>
+<meta name="keywords" content="Redis, Redis多机数据库的实现">
+<meta name="description" content="Redis主从复制、集群、哨兵">
+<meta name="author" content="ZhouJze">
+<link rel="canonical" href="https://zhoujze.github.io/en/posts/tech/redis-03-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.1d3401cbcdd2f10bdb5198bcf67bd24686c4792045e0991c052459ef4196f5cf.css" integrity="" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/assets/js/highlight.f413e19d0714851f6474e7ee9632408e58ac146fbdbe62747134bea2fa3415e0.js" integrity="sha256-9BPhnQcUhR9kdOfuljJAjlisFG&#43;9vmJ0cTS&#43;ovo0FeA="
+        onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://zhoujze.github.io/img/Q.jpg">
+<link rel="icon" type="image/png" sizes="16x16" href="https://zhoujze.github.io/img/Q.jpg">
+<link rel="icon" type="image/png" sizes="32x32" href="https://zhoujze.github.io/img/Q.jpg">
+<link rel="apple-touch-icon" href="https://zhoujze.github.io/Q.jpg">
+<link rel="mask-icon" href="https://zhoujze.github.io/Q.jpg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.3/dist/jquery.min.js"></script>
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = ""; 
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<meta property="og:title" content="Redis 03-多机数据库的实现" />
+<meta property="og:description" content="Redis主从复制、集群、哨兵" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://zhoujze.github.io/en/posts/tech/redis-03-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2023-08-17T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-08-17T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Redis 03-多机数据库的实现"/>
+<meta name="twitter:description" content="Redis主从复制、集群、哨兵"/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+
+        {
+          "@type": "ListItem",
+          "position":  1 ,
+          "name": "📚文章",
+          "item": "https://zhoujze.github.io/en/posts/"
+        },
+
+        {
+          "@type": "ListItem",
+          "position":  2 ,
+          "name": "👨🏻‍💻 技术",
+          "item": "https://zhoujze.github.io/en/posts/tech/"
+        }, 
+    {
+      "@type": "ListItem",
+      "position":  3 ,
+      "name": "Redis 03-多机数据库的实现",
+      "item": "https://zhoujze.github.io/en/posts/tech/redis-03-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Redis 03-多机数据库的实现",
+  "name": "Redis 03-多机数据库的实现",
+  "description": "Redis主从复制、集群、哨兵",
+  "keywords": [
+    "Redis", "Redis多机数据库的实现"
+  ],
+  "articleBody": "主从复制 Redis使用SLAVEOF命令实现主从复制\nRedis 2.8 之前的旧版复制功能 旧版复制的具体过程 两个过程：\n同步 命令转播 同步：将从服务器的数据库状态更新至主服务器当前的数据库状态，具体命令SYNC。\n从服务器发送SYNC命令给主服务器 主服务器收到SYNC命令，执行BGSAVE同时创建子进程生成RDB文件，并使用缓存区记录从当前时刻开始执行的命令 主服务器执行BGSAVE命令结束，由BGSAVE生成的RDB文件发送给从服务器，从服务器接收并载入RDB文件 主服务器将缓存区记录的命令发送给从服务器执行 命令传播：同步完成后，主服务器接收的命令，同时传播给从服务器写命令，使得主从服务器数据一致。\n旧版复制的缺陷 主从复制包含两种情况：\n初次复制：从服务器是一台新的服务器，或者之前的主服务器不是目前的主服务器。 断线后复制：处于命令传播的时候，如果出现网络波动问题，从服务器又重新连接了主服务器，那么就要重新执行SYNC复制完整的主服务器数据库状态。(缺陷) Redis 2.8 之后的新版复制功能 新版复制的具体过程 新版复制包含三个操作：\n同步 命令传播(同旧版命令传播) 心跳检测 同步 新版同步命令PSYNC，命令有两种模式\n完整重同步\n用于初次复制，执行步骤和旧版sync命令一样。 部分重同步（解决断线后复制问题）\n部分重同步不用重新执行完整SYNC命令，主服务器将从服务器断开期间的写命令，发送给从服务器，从服务器接收就可更新成相同状态。 具体实现关键点： 复制偏移量：主从服务器偏移量要一致，不一致则需要同步\n复制积压缓冲区：主服务器在发送写命令的同时，发送到复制积压缓冲区队列一份。当从服务器偏移量不一致的时候，主服务器通过偏移量来决定从复制积压缓冲区队列的哪里开始同步。如果偏移量大于队列里的数据量，则需要完整重同步。\n运行ID： 初次复制：主从服务器连接后，主服务器发送自己的ID给从服务器记录。 断线重连：从服务器连上主服务器之后，从服务器发送保存的主服务器ID，由主服务器判断： 与自己ID相等，主服务器继续执行部分重同步 与自己ID不相等，主服务器对其执行完整重同步 命令转播 命令传播和旧版相同，主服务器接收命令，把写命令发送给从服务器执行。同步主服务器的数据库状态。\n心跳检测 在命令传播阶段，从服务器以每秒一次的频率向主服务器发送命令，作用包括：\n检测主从服务器网络连接是否正常 防止主服务器在不安全的情况下执行写操作 检测命令丢失 复制的具体实现步骤 设置主服务器地址和端口 建立套接字连接\n发送ping命令\n身份验证\n发送端口信息\n同步 命令传播 哨兵(Sentinel) 什么是哨兵： 哨兵是Redis为高可用性提供的解决方案。 由一个或多个sentinel实例组成的Sentinel系统，可以监测任意多个主服务器、从服务器，并且在被监视的主服务器下线的时候，对该服务器进行故障转移，然后由新的主服务器代替下线的主服务器继续接收命令。\n哨兵的初始化步骤 初始化普通Redis服务器 将普通的Redis服务器使用的代码替换成Sentinel专用代码 初始化Sentinel状态 根据给定的配置文件，初始化Sentinel监视的主服务器列表 创建连接主服务器的网络连接 Sentinel创建两个对主服务器进行的异步网络连接（因Sentinel需要与多个主服务器实例创建多个连接，所以使用异步连接）\n命令连接：用于向主服务器发送和接收命令 订阅连接：用于订阅主服务器的频道，以便后续与其他Sentinel相认。 当Sentinel发现主服务有新的从服务器时，Sentinel也会与其建立连接\n哨兵获取服务器状态 Sentinel默认每十秒一次，通过命令连接向服务器发送INFO命令，并通过分析回复获取服务器状态。\n哨兵集群搭建 监视统一主从服务器的多个Sentinel可以通过与主从服务器建立的订阅连接互相发现对方。原理就时Sentinel向订阅频道里发送信息，同时订阅了相同频道里的Sentinel会发现对方。\n哨兵如何判断服务器下线 Sentinel通过每秒一次的向建立了命令连接的所有实例（主从服务器、其他Sentinel）发送PING命令，并通过PING命令的返回判断实例是否在线。\n如果在规定事件没有PING响应，则标记为主观下线 因存在网络波动，短时间没有响应，所以为了减少误判，设计了客观下线（客观下线只针对主服务器） 客观下线规则：需要3台以上的已经与该主服务器建立连接的Sentinel集群一起判断。 Sentinel1将主服务器标记主观下线，同时通过该主服务器的频道询问其他Sentinel，看他们是否标记主观下线 当Sentinel1接收到足够多的已下线判断后（数量由Sentinel中的quorum属性，设置为Sentinel个数/2+1，如3个Sentinel设置为2），Sentinel1判断该主服务器客观下线，并对该主服务器进行故障转移。 选举领头哨兵（由领头哨兵进行故障转移） 从监视该主服务器的Sentinel中协商选举领头哨兵进行故障转移。\n选择规则：\n每次进行领头哨兵选举时，所有的哨兵配置纪元（内置的计数器）的值都自增1。 在一个配置纪元里，所有的哨兵都有一次设置某个哨兵为局部领头的机会，一旦设置成功，在该设置纪元无法更改。 每个发现主服务器客观下线的哨兵都会要求其他哨兵把自己设置为局部领头 哨兵局部领头的设置规则为先到先得，最先要求设置的设置成功，后面再要求的一律失败。 如果某个哨兵被半数以上（n/2+1）的哨兵设置为局部领头，那么该哨兵称为领头。 如果在规定时间里没有选举出，那么将在一段时间后继续选举。 该算法是基于Raft算法的领头选举方法\n为什么哨兵集群最少3个 因为在进行领头选举的时候，如果只有2个哨兵。要获得半数以上的票，就要2/2+1=2票，而不是1票。\n如果哨兵集群中有哨兵下线，那么只有1票，永远无法选出领头哨兵，无法进行主从节点切换。\n所以通常配置3个哨兵以上。\n故障转移 步骤：\n选出新的主服务器 通知从服务器修改复制目标 将旧主服务器降级成从服务器 集群(Cluster) 什么是集群 Redis提供的分布式数据库方案，通过分片进行数据共享，提供复制和故障转移功能。\n集群里的每个Redis服务器表示为一个节点\n每个节点存在两个结构：\nclusterNode：保存节点当前的状态 clusterState ：保存当前节点视角下，集群的状态，如集群的状态、配置纪元、节点数等 节点初始为单个节点，通过CLUSTER MEET命令将节点与节点连接，组成集群。\n命令格式：\nCLUSTER MEET 示例：现有三个节点，127.0.0.1:7000 127.0.0.1:7001 127.0.0.1:7002。\n使用客户端连接7000发送cluster node命令查看7000节点当前端口 $ redis-cli -c -p 7000 127.0.0.1:7000\u003e CLUSTER NODES 51549e625cfda318ad27423a31e7476fe3cd2939 :0 myself,master - 0 0 0 connected 发送命令将7001与7002加入7000所在集群 127.0.0.1:7000\u003e CLUSTER MEET 127.0.0.1 7001 OK 127.0.0.1:7000\u003e CLUSTER NODES 68eef66df23420a5862208ef5b1a7005b806f2ff 127.0.0.1:7001 master - 0 1388204746210 0 connected 51549e625cfda318ad27423a31e7476fe3cd2939 :0 myself,master - 0 0 0 connected 127.0.0.1:7000\u003e CLUSTER MEET 127.0.0.1 7002 OK 127.0.0.1:7000\u003e CLUSTER NODES 68eef66df23420a5862208ef5b1a7005b806f2ff 127.0.0.1:7001 master - 0 1388204848376 0 connected 9dfb4c4e016e627d9769e4c9bb0d4fa208e65c26 127.0.0.1:7002 master - 0 1388204847977 0 connected 51549e625cfda318ad27423a31e7476fe3cd2939 :0 myself,master - 0 0 0 connected 图片理解，节点之间握手连接：\n槽指派 什么是槽 集群通过分片来保存数据库中的键值对。\n集群的整个数据库被分为2^14个槽，数据库中的每个键都属于一个槽，每个节点可以处理若干个槽。\n集群使用哈希槽，方便添加和删除节点，只要把槽挪到新节点即可。\n集群状态判断：\n上线状态：所有的槽都有节点在处理 下线状态：只要有槽未被分配到节点处理 记录节点的槽指派信息 槽指派就是通过节点clusterNode的slot numslot属性指派该节点负责处理的槽。\n传播节点的槽指派信息 节点会把自己的slot数组通过消息发送给集群里的其他节点，告诉他们自己负责处理的槽。\n节点7001 7002接收到7000的slot数组后，对自己的clusterState.slot数组进行更新。\nclusterState.slot记录的集群中所有的槽指派信息。\n槽的数量为什么是2^14 slot数组是一个二进制数组，长度为2^14/8=2048字节（2KB）\n从业务层面，Redis不太可能扩展1000+主节点，节点越多，携带数据也越多，网络就会越拥堵，Redis不建议扩展超过1000节点。\n在集群中执行命令(moved错误) 在客户端连接的当前节点执行命令时，如果键所在槽没有在指派在当前节点就会报moved错误。\n引导客户端转向正确的节点，并发送命令。\n重新分片 什么是重新分片 把已经交给节点的槽，重新指派到另一个节点。并且槽所属的键也一同过去。\n集群可以在线进行重新分片，源节点和目标节点都可以继续接收命令操作。\n重新分片原理 由Redis集群管理软件redis-trib执行。\n步骤：\n目标节点准备好从源节点导入键值对 源节点准备好把键值对迁移 获得若干个属于槽的键值对的键名 根据键名，将键原子性的迁移到目标节点 重复3、4步骤，直到2准备的键全部迁移。 槽指派给目标节点 ASK错误 在进行3、4步骤进行槽迁移的时候，一部分键值对在源节点，一部分键值对在目标节点。这时对源节点发送命令，操作的键值对就是正在迁移的键：\n源节点找到键 -\u003e 直接执行命令 源节点未找到键 -\u003e 可能被迁至目标节点了，返回ASK错误，并引导客户端转向目标节点，再次发送命令。 引导转向并发送ASKING 命令 ，然后再执行命令。 注意：如果没有发送ASKING，直接执行命令，因为槽指派还是源节点，那么就会返回moved错误。\nmoved错误和ASK错误区别\nmoved代表槽指派已经更变，在第一次报出moved错误转向目标节点后，以后所有都会直接把命令发送到目标节点。 ask错误只是在迁移发生的时候使用的临时措施。不会因报出一次ASK错误下次就会改变发送对象。 集群中的主从复制 主节点处理槽，从节点复制主节点。如果主节点下线，代替成为主节点继续接收命令。\n集群中如何判断节点是否下线 集群里每个节点定期向其他节点发送PING，检测对方是否在线。\n如果PING无返回，或者返回超时。那么发送PING的节点就会把接收PING的节点标记疑似下线。 当A节点通过消息得知B节点标记了C节点为疑似下线。就会在自己的clusterState.nodes里找到C节点的结构，并在结构里的fail_reports链表里添加下线报告。\n如果半数以上的操作槽的主节点都标记为疑似下线，那么就会被标记为已下线。\n将主节点标记为已下线的节点会向集群广播节点下线。所有收到广播的节点都把节点标记为已下线。\n故障转移 从节点发现主节点下线，对主节点进行故障转移。\n步骤：\n选出新的主服务器成为主节点 基于Raft算法的领头选举\n开始故障转移，节点配置纪元+1 每个纪元里，负责处理槽的主节点都有一次投票 从节点发现主节点下线，广播让有投票权的主节点为自己投票 投票规则：先到先得。 如果有半数以上的票，则成为主节点。 如果该纪元选举失败，那么集群进入新纪元，重新选举，直到选出新主节点。 新主节点撤销所有旧主节点的槽指派并把槽指派指向自己 新主节点向集群广播自己成为主节点操作处理槽 新主节点接收命令处理操作负责的槽 一致性哈希 Redis中引用的一致性哈希思想，但是没有直接引用，而是引入了哈希槽的概念。\n简单哈希 问题在于，集群扩容的时候，length发生变化，大部分数据重新hash导致被分配到其他机器上，这样操作导致服务器在一定时间不可用，每次扩容都会存在这个问题。导致缓存雪崩。\n一致性哈希 一致性hash算法主要应用于分布式存储系统。\n一致性hash算法构建了一个虚拟的哈希环。\n按顺时针方向从0开始到2^32-1。\n将各个服务器进行哈希，具体使用服务器主机名，作为key进行哈希，确定在哈希环上的位置。\n插入key-value数据的时候，对key进行哈希，然后放入对应位置，顺时针找到第一个服务器存储。\n容错性和可扩展性 假设node2宕机，只有key-b受到影响，会接着顺时针找到第一个服务器node3进行存储。\n假设新增一台node4服务器，受影响的只有node1和node4之间的key-b。 总结：在一致性哈希中，新增或者下机一台服务器，受影响的只有该服务器和前一服务器之间的数据。具有较好的容错性和可扩展性。\n数据倾斜 一致性哈希在服务器数很少的时候，容易因为节点分布不均导致有的服务器数据量很大，而有的服务器仅仅只有少量数据。\n示例：node2数据量很大，而node1很小。\n为了解决，一致性哈希引入了虚拟节点机制：为每个服务器计算多个哈希，每个计算的位置都放一个虚拟节点。可用node#1来表示。如图：\n这样只是多了一个对实际节点的映射。\nRedis为什么不用一致性哈希（缓存雪崩） 无法很好的手动设置数据分布，哈希槽则可以灵活的配置每个节占用的哈希槽数量。 缓存雪崩：一致性哈希环里如果有节点承受不住数据量，就会宕机，数据传给下一个节点，下一节点也承受不住宕机，数据就滚雪球越来越大，最终集群雪崩。 一致性哈希比哈希槽更复杂。 如何解决集群数据丢失问题 Redis数据丢失的两种情况 异步复制导致丢失 集群脑裂导致丢失 主节点发生了假故障，与哨兵失联，但是客户端正常。这时客户端发送命令，因网络问题无法同步给从服务器。 哨兵选举新主服务器，集群有两个主服务器——集群脑裂 网络好了，旧主服务器降级，清空自己的数据，复制新主服务器的数据，但是，在一开始客户端写入的命令就会丢失，导致数据丢失。 解决方法 通过参数设置，限制主服务器在假故障的时候接收客户端命令。\n主从复制、哨兵、集群的区别 主从复制为了数据备份\n哨兵为了高可用\n集群为了在单实例环境下，分散压力\n主从模式：备份数据，负载均衡，读写分离，主服务器可以有多个从服务器。 哨兵模式：监控，故障转移，哨兵发现主服务器挂了，就会在从服务器中重新选举主服务器。 集群模式：解决单机Redis容量有限问题，将数据分给多个服务器。 ",
+  "wordCount" : "5512",
+  "inLanguage": "en",
+  "datePublished": "2023-08-17T00:00:00Z",
+  "dateModified": "2023-08-17T00:00:00Z",
+  "author":{
+    "@type": "Person",
+    "name": "ZhouJze"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://zhoujze.github.io/en/posts/tech/redis-03-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "ZhouJz's blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://zhoujze.github.io/img/Q.jpg"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    (function () {
+        let  arr,reg = new RegExp("(^| )"+"change-themes"+"=([^;]*)(;|$)");
+        if(arr = document.cookie.match(reg)) {
+        } else {
+            if (new Date().getHours() >= 19 || new Date().getHours() < 6) {
+                document.body.classList.add('dark');
+                localStorage.setItem("pref-theme", 'dark');
+            } else {
+                document.body.classList.remove('dark');
+                localStorage.setItem("pref-theme", 'light');
+            }
+        }
+    })()
+
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://zhoujze.github.io/en/" accesskey="h" title="ZhouJze&#39;s Blog (Alt + H)">
+            <img src="https://zhoujze.github.io/img/Q.jpg" alt="logo" aria-label="logo"
+                 height="35">ZhouJze&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                         stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                         stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://zhoujze.github.io/en/search" title="🔍搜索 (Alt &#43; /)" accesskey=/>
+                <span>🔍搜索</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zhoujze.github.io/en/" title="🏠主页">
+                <span>🏠主页</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zhoujze.github.io/en/archives/" title="⏱时间轴">
+                <span>⏱时间轴</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zhoujze.github.io/en/tags" title="🔖标签">
+                <span>🔖标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zhoujze.github.io/en/about" title="🙋🏻‍♂️关于">
+                <span>🙋🏻‍♂️关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main page">
+<style>
+    i[id*="post_meta_style"] {
+        display: flex;
+        align-items: center;
+        margin: 0 0 10px 0;
+    }
+</style>
+
+<article class="post-single">
+    <div id="single-content">
+        <header class="post-header">
+            <div class="breadcrumbs"><a href="https://zhoujze.github.io/en/">🏠 主页</a>&nbsp;»&nbsp;<a href="https://zhoujze.github.io/en/posts/">📚文章</a>&nbsp;»&nbsp;<a href="https://zhoujze.github.io/en/posts/tech/">👨🏻‍💻 技术</a></div>
+            <h1 class="post-title">
+                Redis 03-多机数据库的实现
+            </h1>
+            <div class="post-description">
+                Redis主从复制、集群、哨兵
+            </div>
+            <div class="post-meta">
+
+<style>
+    i[id*="post_meta_style"] {
+        display: flex;
+        align-items: center;
+        margin: 0 0 10px 0;
+    }
+
+    .parent-post-meta {
+        display: flex;
+        flex-wrap: wrap;
+        opacity: 0.8;
+    }
+</style>
+
+<span class="parent-post-meta">
+    <span id="post_meta_style_1">
+        <span class="fa fa-calendar-check-o"></span>
+        <span>2023-08-17
+            &nbsp;&nbsp;
+        </span>
+    </span>
+    
+    
+    
+    
+    
+    
+    
+    <span id="post_meta_style_3">
+        <span class="fa fa-file-word-o"></span>
+        <span>5512字
+            &nbsp;&nbsp;
+        </span>
+    </span>
+    <span id="post_meta_style_4">
+        <span class="fa fa-clock-o"></span>
+        <span>12分钟
+            &nbsp;&nbsp;
+        </span>
+    </span>
+    <span id="post_meta_style_5">
+        <span class="fa fa-user-o"></span>
+        <span>ZhouJze
+            &nbsp;&nbsp;
+        </span>
+    </span>
+    <span id="post_meta_style_6">
+        <span class="fa fa-tags" style="opacity: 0.8"></span>
+        <span>
+            <span class="post-tags-meta">
+                <a href="https://zhoujze.github.io/en/tags/redis/" style="color: var(--secondary)!important;">Redis</a>
+                &nbsp;<a href="https://zhoujze.github.io/en/tags/redis%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" style="color: var(--secondary)!important;">Redis多机数据库的实现</a>
+            </span>
+        </span>
+    </span>
+</span>
+<span style="opacity: 0.8;">
+                    <span id="post_meta_style_7">
+                        &nbsp;&nbsp;
+                        <span class="fa fa-eye" ></span>
+                        <span>
+                            <span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span></span>
+                            &nbsp;&nbsp;
+                        </span>
+                    </span>
+                    <span id="post_meta_style_8">
+                        <span class="fa fa-commenting-o"></span>
+                        <span>
+                            <script src="https://cdn.staticfile.org/twikoo/1.4.11/twikoo.all.min.js"></script>
+                            <script>
+                                let url = document.documentURI
+                                
+                                let dnsUrl = "https://zhoujze.github.io/"
+                                let urlSplit = url.split(dnsUrl)
+                                let finalUrl = urlSplit[1]
+                                if (finalUrl[0] !== '/') {
+                                    finalUrl = '/'+finalUrl
+                                }
+                                twikoo.getCommentsCount({
+                                    envId:  null , 
+                                region:  null , 
+                                urls: [ 
+                                    
+                                    finalUrl,
+                                ],
+                                    includeReply: false 
+                                }).then(function (res) {
+                                    let count = res[0].count
+                                    const obj = document.getElementById("comment_count");
+                                    obj.innerText = count
+                                    
+                                    
+                                    
+                                }).catch(function (err) {
+                                    
+                                    console.error(err);
+                                });
+                            </script>
+                            <span id="comment_count"></span>
+                        </span>
+                    </span>
+                </span>
+
+</div>
+        </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">文章目录</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#%e4%b8%bb%e4%bb%8e%e5%a4%8d%e5%88%b6" aria-label="主从复制">主从复制</a><ul>
+                        
+                <li>
+                    <a href="#redis-28-%e4%b9%8b%e5%89%8d%e7%9a%84%e6%97%a7%e7%89%88%e5%a4%8d%e5%88%b6%e5%8a%9f%e8%83%bd" aria-label="Redis 2.8 之前的旧版复制功能">Redis 2.8 之前的旧版复制功能</a><ul>
+                        
+                <li>
+                    <a href="#%e6%97%a7%e7%89%88%e5%a4%8d%e5%88%b6%e7%9a%84%e5%85%b7%e4%bd%93%e8%bf%87%e7%a8%8b" aria-label="旧版复制的具体过程">旧版复制的具体过程</a></li>
+                <li>
+                    <a href="#%e6%97%a7%e7%89%88%e5%a4%8d%e5%88%b6%e7%9a%84%e7%bc%ba%e9%99%b7" aria-label="旧版复制的缺陷">旧版复制的缺陷</a></li></ul>
+                </li>
+                <li>
+                    <a href="#redis-28-%e4%b9%8b%e5%90%8e%e7%9a%84%e6%96%b0%e7%89%88%e5%a4%8d%e5%88%b6%e5%8a%9f%e8%83%bd" aria-label="Redis 2.8 之后的新版复制功能">Redis 2.8 之后的新版复制功能</a><ul>
+                        
+                <li>
+                    <a href="#%e6%96%b0%e7%89%88%e5%a4%8d%e5%88%b6%e7%9a%84%e5%85%b7%e4%bd%93%e8%bf%87%e7%a8%8b" aria-label="新版复制的具体过程">新版复制的具体过程</a><ul>
+                        
+                <li>
+                    <a href="#%e5%90%8c%e6%ad%a5" aria-label="同步">同步</a></li>
+                <li>
+                    <a href="#%e5%91%bd%e4%bb%a4%e8%bd%ac%e6%92%ad" aria-label="命令转播">命令转播</a></li>
+                <li>
+                    <a href="#%e5%bf%83%e8%b7%b3%e6%a3%80%e6%b5%8b" aria-label="心跳检测">心跳检测</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e5%a4%8d%e5%88%b6%e7%9a%84%e5%85%b7%e4%bd%93%e5%ae%9e%e7%8e%b0%e6%ad%a5%e9%aa%a4" aria-label="复制的具体实现步骤">复制的具体实现步骤</a></li></ul>
+                </li></ul>
+                </li>
+                <li>
+                    <a href="#%e5%93%a8%e5%85%b5sentinel" aria-label="哨兵(Sentinel)">哨兵(Sentinel)</a><ul>
+                        
+                <li>
+                    <a href="#%e4%bb%80%e4%b9%88%e6%98%af%e5%93%a8%e5%85%b5" aria-label="什么是哨兵：">什么是哨兵：</a></li>
+                <li>
+                    <a href="#%e5%93%a8%e5%85%b5%e7%9a%84%e5%88%9d%e5%a7%8b%e5%8c%96%e6%ad%a5%e9%aa%a4" aria-label="哨兵的初始化步骤">哨兵的初始化步骤</a></li>
+                <li>
+                    <a href="#%e5%93%a8%e5%85%b5%e8%8e%b7%e5%8f%96%e6%9c%8d%e5%8a%a1%e5%99%a8%e7%8a%b6%e6%80%81" aria-label="哨兵获取服务器状态">哨兵获取服务器状态</a></li>
+                <li>
+                    <a href="#%e5%93%a8%e5%85%b5%e9%9b%86%e7%be%a4%e6%90%ad%e5%bb%ba" aria-label="哨兵集群搭建">哨兵集群搭建</a></li>
+                <li>
+                    <a href="#%e5%93%a8%e5%85%b5%e5%a6%82%e4%bd%95%e5%88%a4%e6%96%ad%e6%9c%8d%e5%8a%a1%e5%99%a8%e4%b8%8b%e7%ba%bf" aria-label="哨兵如何判断服务器下线">哨兵如何判断服务器下线</a></li>
+                <li>
+                    <a href="#%e9%80%89%e4%b8%be%e9%a2%86%e5%a4%b4%e5%93%a8%e5%85%b5%e7%94%b1%e9%a2%86%e5%a4%b4%e5%93%a8%e5%85%b5%e8%bf%9b%e8%a1%8c%e6%95%85%e9%9a%9c%e8%bd%ac%e7%a7%bb" aria-label="选举领头哨兵（由领头哨兵进行故障转移）">选举领头哨兵（由领头哨兵进行故障转移）</a></li>
+                <li>
+                    <a href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e5%93%a8%e5%85%b5%e9%9b%86%e7%be%a4%e6%9c%80%e5%b0%913%e4%b8%aa" aria-label="为什么哨兵集群最少3个">为什么哨兵集群最少3个</a></li>
+                <li>
+                    <a href="#%e6%95%85%e9%9a%9c%e8%bd%ac%e7%a7%bb" aria-label="故障转移">故障转移</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e9%9b%86%e7%be%a4cluster" aria-label="集群(Cluster)">集群(Cluster)</a><ul>
+                        
+                <li>
+                    <a href="#%e4%bb%80%e4%b9%88%e6%98%af%e9%9b%86%e7%be%a4" aria-label="什么是集群">什么是集群</a></li>
+                <li>
+                    <a href="#%e6%a7%bd%e6%8c%87%e6%b4%be" aria-label="槽指派">槽指派</a><ul>
+                        
+                <li>
+                    <a href="#%e4%bb%80%e4%b9%88%e6%98%af%e6%a7%bd" aria-label="什么是槽">什么是槽</a></li>
+                <li>
+                    <a href="#%e8%ae%b0%e5%bd%95%e8%8a%82%e7%82%b9%e7%9a%84%e6%a7%bd%e6%8c%87%e6%b4%be%e4%bf%a1%e6%81%af" aria-label="记录节点的槽指派信息">记录节点的槽指派信息</a></li>
+                <li>
+                    <a href="#%e4%bc%a0%e6%92%ad%e8%8a%82%e7%82%b9%e7%9a%84%e6%a7%bd%e6%8c%87%e6%b4%be%e4%bf%a1%e6%81%af" aria-label="传播节点的槽指派信息">传播节点的槽指派信息</a></li>
+                <li>
+                    <a href="#%e6%a7%bd%e7%9a%84%e6%95%b0%e9%87%8f%e4%b8%ba%e4%bb%80%e4%b9%88%e6%98%af214" aria-label="槽的数量为什么是2^14">槽的数量为什么是2^14</a></li>
+                <li>
+                    <a href="#%e5%9c%a8%e9%9b%86%e7%be%a4%e4%b8%ad%e6%89%a7%e8%a1%8c%e5%91%bd%e4%bb%a4moved%e9%94%99%e8%af%af" aria-label="在集群中执行命令(moved错误)">在集群中执行命令(moved错误)</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e9%87%8d%e6%96%b0%e5%88%86%e7%89%87" aria-label="重新分片">重新分片</a><ul>
+                        
+                <li>
+                    <a href="#%e4%bb%80%e4%b9%88%e6%98%af%e9%87%8d%e6%96%b0%e5%88%86%e7%89%87" aria-label="什么是重新分片">什么是重新分片</a></li>
+                <li>
+                    <a href="#%e9%87%8d%e6%96%b0%e5%88%86%e7%89%87%e5%8e%9f%e7%90%86" aria-label="重新分片原理">重新分片原理</a></li>
+                <li>
+                    <a href="#ask%e9%94%99%e8%af%af" aria-label="ASK错误">ASK错误</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e9%9b%86%e7%be%a4%e4%b8%ad%e7%9a%84%e4%b8%bb%e4%bb%8e%e5%a4%8d%e5%88%b6" aria-label="集群中的主从复制">集群中的主从复制</a><ul>
+                        
+                <li>
+                    <a href="#%e9%9b%86%e7%be%a4%e4%b8%ad%e5%a6%82%e4%bd%95%e5%88%a4%e6%96%ad%e8%8a%82%e7%82%b9%e6%98%af%e5%90%a6%e4%b8%8b%e7%ba%bf" aria-label="集群中如何判断节点是否下线">集群中如何判断节点是否下线</a></li>
+                <li>
+                    <a href="#%e6%95%85%e9%9a%9c%e8%bd%ac%e7%a7%bb-1" aria-label="故障转移">故障转移</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e4%b8%80%e8%87%b4%e6%80%a7%e5%93%88%e5%b8%8c" aria-label="一致性哈希">一致性哈希</a><ul>
+                        
+                <li>
+                    <a href="#%e7%ae%80%e5%8d%95%e5%93%88%e5%b8%8c" aria-label="简单哈希">简单哈希</a></li>
+                <li>
+                    <a href="#%e4%b8%80%e8%87%b4%e6%80%a7%e5%93%88%e5%b8%8c-1" aria-label="一致性哈希">一致性哈希</a><ul>
+                        
+                <li>
+                    <a href="#%e5%ae%b9%e9%94%99%e6%80%a7%e5%92%8c%e5%8f%af%e6%89%a9%e5%b1%95%e6%80%a7" aria-label="容错性和可扩展性">容错性和可扩展性</a></li>
+                <li>
+                    <a href="#%e6%95%b0%e6%8d%ae%e5%80%be%e6%96%9c" aria-label="数据倾斜">数据倾斜</a></li>
+                <li>
+                    <a href="#redis%e4%b8%ba%e4%bb%80%e4%b9%88%e4%b8%8d%e7%94%a8%e4%b8%80%e8%87%b4%e6%80%a7%e5%93%88%e5%b8%8c%e7%bc%93%e5%ad%98%e9%9b%aa%e5%b4%a9" aria-label="Redis为什么不用一致性哈希（缓存雪崩）">Redis为什么不用一致性哈希（缓存雪崩）</a></li></ul>
+                </li></ul>
+                </li>
+                <li>
+                    <a href="#%e5%a6%82%e4%bd%95%e8%a7%a3%e5%86%b3%e9%9b%86%e7%be%a4%e6%95%b0%e6%8d%ae%e4%b8%a2%e5%a4%b1%e9%97%ae%e9%a2%98" aria-label="如何解决集群数据丢失问题">如何解决集群数据丢失问题</a><ul>
+                        
+                <li>
+                    <a href="#redis%e6%95%b0%e6%8d%ae%e4%b8%a2%e5%a4%b1%e7%9a%84%e4%b8%a4%e7%a7%8d%e6%83%85%e5%86%b5" aria-label="Redis数据丢失的两种情况">Redis数据丢失的两种情况</a></li>
+                <li>
+                    <a href="#%e8%a7%a3%e5%86%b3%e6%96%b9%e6%b3%95" aria-label="解决方法">解决方法</a></li></ul>
+                </li></ul>
+                </li>
+                <li>
+                    <a href="#%e4%b8%bb%e4%bb%8e%e5%a4%8d%e5%88%b6%e5%93%a8%e5%85%b5%e9%9b%86%e7%be%a4%e7%9a%84%e5%8c%ba%e5%88%ab" aria-label="主从复制、哨兵、集群的区别">主从复制、哨兵、集群的区别</a>
+                </li>
+            </ul>
+        </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+        
+        activeElement = elements[0];
+        const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+        document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+    }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        if (elements) {
+            activeElement = Array.from(elements).find((element) => {
+                if ((getOffsetTop(element) - window.pageYOffset) > 0 &&
+                    (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                    return element;
+                }
+            }) || activeElement
+
+            elements.forEach(element => {
+                const id = encodeURI(element.getAttribute('id')).toLowerCase();
+                if (element === activeElement){
+                    document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+                } else {
+                    document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+                }
+            })
+        }
+    }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;
+    }
+</script>
+        <div class="post-content"><h1 id="主从复制">主从复制<a hidden class="anchor" aria-hidden="true" href="#主从复制">#</a></h1>
+<p>Redis使用<code>SLAVEOF</code>命令实现主从复制</p>
+<h2 id="redis-28-之前的旧版复制功能">Redis 2.8 之前的旧版复制功能<a hidden class="anchor" aria-hidden="true" href="#redis-28-之前的旧版复制功能">#</a></h2>
+<h3 id="旧版复制的具体过程">旧版复制的具体过程<a hidden class="anchor" aria-hidden="true" href="#旧版复制的具体过程">#</a></h3>
+<p>两个过程：</p>
+<ol>
+<li>同步</li>
+<li>命令转播</li>
+</ol>
+<ul>
+<li>
+<p>同步：将从服务器的数据库状态更新至主服务器当前的数据库状态，具体命令<code>SYNC</code>。<br>
+<img loading="lazy" src="%e6%97%a7%e7%89%88%e5%a4%8d%e5%88%b6.png" alt="复制旧版"  />
+</p>
+<ol>
+<li>从服务器发送<code>SYNC</code>命令给主服务器</li>
+<li>主服务器收到<code>SYNC</code>命令，执行<code>BGSAVE</code>同时创建子进程生成RDB文件，并使用<strong>缓存区</strong>记录从当前时刻开始执行的命令</li>
+<li>主服务器执行<code>BGSAVE</code>命令结束，由<code>BGSAVE</code>生成的RDB文件发送给从服务器，从服务器接收并载入RDB文件</li>
+<li>主服务器将缓存区记录的命令发送给从服务器执行</li>
+</ol>
+</li>
+<li>
+<p>命令传播：同步完成后，主服务器接收的命令，同时传播给从服务器<strong>写</strong>命令，使得主从服务器数据一致。</p>
+</li>
+</ul>
+<h3 id="旧版复制的缺陷">旧版复制的缺陷<a hidden class="anchor" aria-hidden="true" href="#旧版复制的缺陷">#</a></h3>
+<p>主从复制包含两种情况：</p>
+<ol>
+<li>初次复制：从服务器是一台新的服务器，或者之前的主服务器不是目前的主服务器。</li>
+<li>断线后复制：处于命令传播的时候，如果出现网络波动问题，从服务器又重新连接了主服务器，<strong>那么就要重新执行<code>SYNC</code>复制完整的主服务器数据库状态。(缺陷)</strong></li>
+</ol>
+<h2 id="redis-28-之后的新版复制功能">Redis 2.8 之后的新版复制功能<a hidden class="anchor" aria-hidden="true" href="#redis-28-之后的新版复制功能">#</a></h2>
+<h3 id="新版复制的具体过程">新版复制的具体过程<a hidden class="anchor" aria-hidden="true" href="#新版复制的具体过程">#</a></h3>
+<p>新版复制包含三个操作：</p>
+<ol>
+<li>同步</li>
+<li>命令传播(同旧版命令传播)</li>
+<li>心跳检测</li>
+</ol>
+<h4 id="同步">同步<a hidden class="anchor" aria-hidden="true" href="#同步">#</a></h4>
+<p>新版同步命令<code>PSYNC</code>，命令有两种模式</p>
+<ol>
+<li>完整重同步<br>
+用于初次复制，执行步骤和旧版sync命令一样。</li>
+<li>部分重同步（<em>解决断线后复制问题</em>）<br>
+部分重同步不用重新执行完整<code>SYNC</code>命令，主服务器将从服务器断开期间的写命令，发送给从服务器，从服务器接收就可更新成相同状态。 <br>
+<img loading="lazy" src="%e6%96%b0%e7%89%88%e9%83%a8%e5%88%86%e9%87%8d%e5%90%8c%e6%ad%a5.png" alt="部分重同步"  />
+<br>
+具体实现关键点：
+<ol>
+<li>复制偏移量：主从服务器偏移量要一致，不一致则需要同步<br>
+<img loading="lazy" src="%e5%a4%8d%e5%88%b6%e5%81%8f%e7%a7%bb%e9%87%8f.png" alt="复制偏移量"  />
+</li>
+<li>复制积压缓冲区：主服务器在发送写命令的同时，发送到复制积压缓冲区队列一份。当从服务器偏移量不一致的时候，主服务器通过偏移量来决定从复制积压缓冲区队列的哪里开始同步。如果偏移量大于队列里的数据量，则需要完整重同步。<br>
+<img loading="lazy" src="%e5%a4%8d%e5%88%b6%e7%a7%af%e5%8e%8b%e7%bc%93%e5%86%b2%e5%8c%ba%e9%98%9f%e5%88%97.png" alt="复制积压缓冲区队列"  />
+<br>
+<img loading="lazy" src="%e5%a4%8d%e5%88%b6%e7%a7%af%e5%8e%8b%e7%bc%93%e5%86%b2%e5%8c%ba.png" alt="复制积压缓冲区"  />
+</li>
+<li>运行ID：
+<ol>
+<li>初次复制：主从服务器连接后，主服务器发送自己的ID给从服务器记录。</li>
+<li>断线重连：从服务器连上主服务器之后，从服务器发送保存的主服务器ID，由主服务器判断：
+<ol>
+<li>与自己ID相等，主服务器继续执行部分重同步</li>
+<li>与自己ID不相等，主服务器对其执行完整重同步</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+<h4 id="命令转播">命令转播<a hidden class="anchor" aria-hidden="true" href="#命令转播">#</a></h4>
+<p>命令传播和旧版相同，主服务器接收命令，把写命令发送给从服务器执行。同步主服务器的数据库状态。</p>
+<h4 id="心跳检测">心跳检测<a hidden class="anchor" aria-hidden="true" href="#心跳检测">#</a></h4>
+<p>在<font color=red>命令传播阶段</font>，从服务器以每秒一次的频率向主服务器发送命令，作用包括：</p>
+<ol>
+<li>检测主从服务器网络连接是否正常</li>
+<li>防止主服务器在不安全的情况下执行写操作</li>
+<li>检测命令丢失</li>
+</ol>
+<h3 id="复制的具体实现步骤">复制的具体实现步骤<a hidden class="anchor" aria-hidden="true" href="#复制的具体实现步骤">#</a></h3>
+<ol>
+<li>设置主服务器地址和端口</li>
+<li>建立套接字连接<br>
+<img loading="lazy" src="%e5%bb%ba%e7%ab%8b%e5%a5%97%e6%8e%a5%e5%ad%97%e8%bf%9e%e6%8e%a5.png" alt="建立连接"  />
+</li>
+<li>发送ping命令<br>
+<img loading="lazy" src="%e5%8f%91%e9%80%81PING.png" alt="PINg"  />
+</li>
+<li>身份验证<br>
+<img loading="lazy" src="%e8%ba%ab%e4%bb%bd%e9%aa%8c%e8%af%81.png" alt="身份验证"  />
+</li>
+<li>发送端口信息<br>
+<img loading="lazy" src="%e5%8f%91%e9%80%81%e7%ab%af%e5%8f%a3%e4%bf%a1%e6%81%af.png" alt="发送端口"  />
+</li>
+<li>同步</li>
+<li>命令传播</li>
+</ol>
+<h1 id="哨兵sentinel">哨兵(Sentinel)<a hidden class="anchor" aria-hidden="true" href="#哨兵sentinel">#</a></h1>
+<h2 id="什么是哨兵">什么是哨兵：<a hidden class="anchor" aria-hidden="true" href="#什么是哨兵">#</a></h2>
+<ul>
+<li>哨兵是Redis为高可用性提供的解决方案。</li>
+<li>由一个或多个sentinel实例组成的Sentinel系统，可以<strong>监测</strong>任意多个主服务器、从服务器，并且在被监视的主服务器下线的时候，对该服务器进行<strong>故障转移</strong>，然后由新的主服务器代替下线的主服务器继续接收命令。<br>
+<img loading="lazy" src="%e5%93%a8%e5%85%b5%e7%b3%bb%e7%bb%9f.png" alt="哨兵系统"  />
+</li>
+</ul>
+<h2 id="哨兵的初始化步骤">哨兵的初始化步骤<a hidden class="anchor" aria-hidden="true" href="#哨兵的初始化步骤">#</a></h2>
+<ol>
+<li>初始化普通Redis服务器</li>
+<li>将普通的Redis服务器使用的代码替换成Sentinel专用代码</li>
+<li>初始化Sentinel状态</li>
+<li>根据给定的配置文件，初始化Sentinel监视的主服务器列表</li>
+<li><strong>创建连接主服务器的网络连接</strong>
+<ul>
+<li>Sentinel创建两个对主服务器进行的<strong>异步网络连接</strong>（因Sentinel需要与多个主服务器实例创建多个连接，所以使用异步连接）<br>
+<img loading="lazy" src="Sentinel%e5%88%9b%e5%bb%ba1.png" alt="Sentin创建"  />
+
+<ul>
+<li>命令连接：用于向主服务器发送和接收命令</li>
+<li>订阅连接：用于订阅主服务器的频道，以便后续与其他Sentinel相认。</li>
+</ul>
+</li>
+<li>当Sentinel发现主服务有新的从服务器时，Sentinel也会与其建立连接<br>
+<img loading="lazy" src="Sentinel%e5%88%9b%e5%bb%ba2.png" alt="Sentinel创建"  />
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="哨兵获取服务器状态">哨兵获取服务器状态<a hidden class="anchor" aria-hidden="true" href="#哨兵获取服务器状态">#</a></h2>
+<p>Sentinel默认每十秒一次，通过<code>命令连接</code>向服务器发送<code>INFO</code>命令，并通过分析回复获取服务器状态。</p>
+<h2 id="哨兵集群搭建">哨兵集群搭建<a hidden class="anchor" aria-hidden="true" href="#哨兵集群搭建">#</a></h2>
+<p>监视统一主从服务器的多个Sentinel可以通过与主从服务器建立的订阅连接互相发现对方。原理就时Sentinel向订阅频道里发送信息，同时订阅了相同频道里的Sentinel会发现对方。<br>
+<img loading="lazy" src="Sentinel%e9%9b%86%e7%be%a41.png" alt="哨兵集群"  />
+</p>
+<h2 id="哨兵如何判断服务器下线">哨兵如何判断服务器下线<a hidden class="anchor" aria-hidden="true" href="#哨兵如何判断服务器下线">#</a></h2>
+<p>Sentinel通过每秒一次的向建立了命令连接的所有实例（主从服务器、其他Sentinel）发送PING命令，并通过PING命令的返回判断实例是否在线。</p>
+<ul>
+<li>如果在规定事件没有PING响应，则标记为<strong>主观下线</strong></li>
+<li>因存在网络波动，短时间没有响应，所以为了减少误判，设计了<strong>客观下线</strong>（客观下线只针对主服务器）</li>
+<li>客观下线规则：需要3台以上的已经与该主服务器建立连接的Sentinel集群一起判断。
+<ul>
+<li>Sentinel1将主服务器标记主观下线，同时通过该主服务器的频道询问其他Sentinel，看他们是否标记主观下线</li>
+<li>当Sentinel1接收到足够多的已下线判断后（数量由Sentinel中的<code>quorum</code>属性，设置为Sentinel个数/2+1，如3个Sentinel设置为2），Sentinel1判断该主服务器客观下线，并对该主服务器进行故障转移。</li>
+</ul>
+</li>
+</ul>
+<h2 id="选举领头哨兵由领头哨兵进行故障转移">选举领头哨兵（由领头哨兵进行故障转移）<a hidden class="anchor" aria-hidden="true" href="#选举领头哨兵由领头哨兵进行故障转移">#</a></h2>
+<p>从监视该主服务器的Sentinel中协商选举领头哨兵进行故障转移。</p>
+<p>选择规则：</p>
+<ol>
+<li>每次进行领头哨兵选举时，所有的哨兵<code>配置纪元</code>（内置的计数器）的值都自增1。</li>
+<li>在一个配置纪元里，所有的哨兵都有一次设置某个哨兵为局部领头的机会，一旦设置成功，在该设置纪元无法更改。
+<ul>
+<li>每个发现主服务器客观下线的哨兵都会要求其他哨兵把自己设置为局部领头</li>
+<li>哨兵局部领头的设置规则为<strong>先到先得</strong>，最先要求设置的设置成功，后面再要求的一律失败。</li>
+<li>如果某个哨兵被<strong>半数</strong>以上（n/2+1）的哨兵设置为局部领头，那么该哨兵称为领头。</li>
+</ul>
+</li>
+<li>如果在规定时间里没有选举出，那么将在一段时间后继续选举。</li>
+</ol>
+<blockquote>
+<p>该算法是基于<strong>Raft算法</strong>的领头选举方法</p>
+</blockquote>
+<h2 id="为什么哨兵集群最少3个">为什么哨兵集群最少3个<a hidden class="anchor" aria-hidden="true" href="#为什么哨兵集群最少3个">#</a></h2>
+<p>因为在进行领头选举的时候，如果只有2个哨兵。要获得半数以上的票，就要<code>2/2+1=2</code>票，而不是1票。</p>
+<p>如果哨兵集群中有哨兵下线，那么只有1票，永远无法选出领头哨兵，无法进行主从节点切换。</p>
+<p>所以通常配置3个哨兵以上。</p>
+<h2 id="故障转移">故障转移<a hidden class="anchor" aria-hidden="true" href="#故障转移">#</a></h2>
+<p>步骤：</p>
+<ol>
+<li>选出新的主服务器</li>
+<li>通知从服务器修改复制目标</li>
+<li>将旧主服务器降级成从服务器</li>
+</ol>
+<h1 id="集群cluster">集群(Cluster)<a hidden class="anchor" aria-hidden="true" href="#集群cluster">#</a></h1>
+<h2 id="什么是集群">什么是集群<a hidden class="anchor" aria-hidden="true" href="#什么是集群">#</a></h2>
+<p>Redis提供的分布式数据库方案，通过<strong>分片</strong>进行数据共享，提供复制和故障转移功能。</p>
+<p>集群里的每个Redis服务器表示为一个<strong>节点</strong></p>
+<p>每个节点存在两个结构：</p>
+<ol>
+<li><code>clusterNode</code>：保存节点当前的状态</li>
+<li><code>clusterState </code>：<strong>保存当前节点视角下，集群的状态</strong>，如集群的状态、配置纪元、节点数等</li>
+</ol>
+<p><img loading="lazy" src="%e9%9b%86%e7%be%a4%e7%bb%93%e6%9e%84%e5%9b%be.png" alt="集群结构图"  />
+</p>
+<p>节点初始为单个节点，通过<code>CLUSTER MEET</code>命令将节点与节点连接，组成集群。</p>
+<p>命令格式：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>    CLUSTER MEET &lt;ip&gt; &lt;port&gt;
+</span></span></code></pre></div><p>示例：现有三个节点，<code>127.0.0.1:7000</code> <code>127.0.0.1:7001</code> <code>127.0.0.1:7002</code>。</p>
+<ol>
+<li>使用客户端连接<code>7000</code>发送<code>cluster node</code>命令查看<code>7000</code>节点当前端口</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>$ redis-cli -c -p 7000
+</span></span><span style="display:flex;"><span>127.0.0.1:7000&gt; CLUSTER NODES
+</span></span><span style="display:flex;"><span>51549e625cfda318ad27423a31e7476fe3cd2939 :0 myself,master - 0 0 0 connected
+</span></span></code></pre></div><ol start="2">
+<li>发送命令将<code>7001</code>与<code>7002</code>加入<code>7000</code>所在集群</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>127.0.0.1:7000&gt; CLUSTER MEET 127.0.0.1 7001
+</span></span><span style="display:flex;"><span>OK
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>127.0.0.1:7000&gt; CLUSTER NODES
+</span></span><span style="display:flex;"><span>68eef66df23420a5862208ef5b1a7005b806f2ff 127.0.0.1:7001 master - 0 1388204746210 0 connected
+</span></span><span style="display:flex;"><span>51549e625cfda318ad27423a31e7476fe3cd2939 :0 myself,master - 0 0 0 connected
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>127.0.0.1:7000&gt; CLUSTER MEET 127.0.0.1 7002
+</span></span><span style="display:flex;"><span>OK
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>127.0.0.1:7000&gt; CLUSTER NODES
+</span></span><span style="display:flex;"><span>68eef66df23420a5862208ef5b1a7005b806f2ff 127.0.0.1:7001 master - 0 1388204848376 0 connected
+</span></span><span style="display:flex;"><span>9dfb4c4e016e627d9769e4c9bb0d4fa208e65c26 127.0.0.1:7002 master - 0 1388204847977 0 connected
+</span></span><span style="display:flex;"><span>51549e625cfda318ad27423a31e7476fe3cd2939 :0 myself,master - 0 0 0 connected
+</span></span></code></pre></div><p>图片理解，节点之间握手连接：<br>
+<img loading="lazy" src="%e9%9b%86%e7%be%a4%e7%bb%84%e6%88%901.png" alt="集群组成"  />
+<br>
+<img loading="lazy" src="%e9%9b%86%e7%be%a4%e7%bb%84%e6%88%902.png" alt="集群组成"  />
+<br>
+<img loading="lazy" src="%e9%9b%86%e7%be%a4%e7%bb%84%e6%88%903.png" alt="集群组成"  />
+<br>
+<img loading="lazy" src="%e9%9b%86%e7%be%a4%e7%bb%84%e6%88%904.png" alt="集群组成"  />
+<br>
+<img loading="lazy" src="%e9%9b%86%e7%be%a4%e7%bb%84%e6%88%905.png" alt="集群组成"  />
+</p>
+<h2 id="槽指派">槽指派<a hidden class="anchor" aria-hidden="true" href="#槽指派">#</a></h2>
+<h3 id="什么是槽">什么是槽<a hidden class="anchor" aria-hidden="true" href="#什么是槽">#</a></h3>
+<p>集群通过分片来保存数据库中的键值对。</p>
+<p>集群的整个数据库被分为2^14个槽，数据库中的每个键都属于一个槽，每个节点可以处理若干个槽。</p>
+<p>集群使用<strong>哈希槽</strong>，方便添加和删除节点，只要把槽挪到新节点即可。</p>
+<p><strong>集群状态判断：</strong></p>
+<ul>
+<li>上线状态：所有的槽都有节点在处理</li>
+<li>下线状态：只要有槽未被分配到节点处理</li>
+</ul>
+<h3 id="记录节点的槽指派信息">记录节点的槽指派信息<a hidden class="anchor" aria-hidden="true" href="#记录节点的槽指派信息">#</a></h3>
+<p>槽指派就是通过节点<code>clusterNode</code>的<code>slot</code> <code>numslot</code>属性指派该节点负责处理的槽。<br>
+<img loading="lazy" src="%e9%9b%86%e7%be%a4%e6%a7%bd%e6%8c%87%e6%b4%be.png" alt="集群槽指派"  />
+</p>
+<h3 id="传播节点的槽指派信息">传播节点的槽指派信息<a hidden class="anchor" aria-hidden="true" href="#传播节点的槽指派信息">#</a></h3>
+<p>节点会把自己的<code>slot</code>数组通过消息发送给集群里的其他节点，告诉他们自己负责处理的槽。<br>
+<img loading="lazy" src="%e9%9b%86%e7%be%a4%e4%bc%a0%e6%92%ad%e6%a7%bd%e6%8c%87%e6%b4%be.png" alt="集群传播槽指派"  />
+</p>
+<p>节点<code>7001</code> <code>7002</code>接收到<code>7000</code>的<code>slot</code>数组后，对自己的<code>clusterState.slot</code>数组进行更新。</p>
+<p><code>clusterState.slot</code>记录的集群中所有的槽指派信息。<br>
+<img loading="lazy" src="%e9%9b%86%e7%be%a4%e6%a7%bd%e6%8c%87%e6%b4%be%e4%bf%a1%e6%81%af%e8%a1%a8.png" alt="集群槽指派信息"  />
+</p>
+<h3 id="槽的数量为什么是214">槽的数量为什么是2^14<a hidden class="anchor" aria-hidden="true" href="#槽的数量为什么是214">#</a></h3>
+<p><code>slot</code>数组是一个二进制数组，长度为<code>2^14/8=2048</code>字节（2KB）<br>
+<img loading="lazy" src="%e9%9b%86%e7%be%a4%e6%a7%bd%e6%95%b0%e7%bb%84.png" alt="集群槽数组"  />
+</p>
+<p>从业务层面，Redis不太可能扩展1000+主节点，节点越多，携带数据也越多，网络就会越拥堵，Redis不建议扩展超过1000节点。</p>
+<h3 id="在集群中执行命令moved错误">在集群中执行命令(moved错误)<a hidden class="anchor" aria-hidden="true" href="#在集群中执行命令moved错误">#</a></h3>
+<p>在客户端连接的当前节点执行命令时，如果键所在槽没有在指派在当前节点就会报<code>moved</code>错误。</p>
+<p>引导客户端转向正确的节点，并发送命令。<br>
+<img loading="lazy" src="%e9%9b%86%e7%be%a4moved%e9%94%99%e8%af%af.png" alt="集群moved错误"  />
+</p>
+<h2 id="重新分片">重新分片<a hidden class="anchor" aria-hidden="true" href="#重新分片">#</a></h2>
+<h3 id="什么是重新分片">什么是重新分片<a hidden class="anchor" aria-hidden="true" href="#什么是重新分片">#</a></h3>
+<p>把已经交给节点的槽，重新指派到另一个节点。并且槽所属的键也一同过去。</p>
+<p>集群可以<strong>在线</strong>进行重新分片，源节点和目标节点都可以继续接收命令操作。</p>
+<h3 id="重新分片原理">重新分片原理<a hidden class="anchor" aria-hidden="true" href="#重新分片原理">#</a></h3>
+<p>由Redis集群管理软件<strong>redis-trib</strong>执行。</p>
+<p>步骤：</p>
+<ol>
+<li>目标节点准备好从源节点导入键值对</li>
+<li>源节点准备好把键值对迁移</li>
+<li>获得若干个属于槽的键值对的键名</li>
+<li>根据键名，将键<strong>原子性</strong>的迁移到目标节点</li>
+<li>重复3、4步骤，直到2准备的键全部迁移。</li>
+<li>槽指派给目标节点</li>
+</ol>
+<p><img loading="lazy" src="%e9%9b%86%e7%be%a4%e9%87%8d%e6%96%b0%e5%88%86%e7%89%87.png" alt="集群重新分片"  />
+</p>
+<h3 id="ask错误">ASK错误<a hidden class="anchor" aria-hidden="true" href="#ask错误">#</a></h3>
+<p>在进行3、4步骤进行槽迁移的时候，一部分键值对在源节点，一部分键值对在目标节点。这时对源节点发送命令，操作的键值对就是正在迁移的键：</p>
+<ul>
+<li>源节点找到键 -&gt; 直接执行命令</li>
+<li>源节点未找到键 -&gt; 可能被迁至目标节点了，返回ASK错误，并引导客户端转向目标节点，再次发送命令。</li>
+</ul>
+<p><img loading="lazy" src="%e9%9b%86%e7%be%a4ASK%e9%94%99%e8%af%af.png" alt="集群ASK错误"  />
+</p>
+<p>引导转向并发送<strong>ASKING 命令</strong>   ，然后再执行命令。
+<img loading="lazy" src="%e9%9b%86%e7%be%a4ASK%e9%94%99%e8%af%af%e8%bd%ac%e5%90%91.png" alt="集群ASK错误转向"  />
+</p>
+<p>注意：<em>如果没有发送ASKING，直接执行命令，因为槽指派还是源节点，那么就会返回moved错误。</em></p>
+<p><img loading="lazy" src="%e9%9b%86%e7%be%a4%e9%87%8d%e6%96%b0%e5%88%86%e7%89%87%e6%a7%bd%e6%8c%87%e6%b4%be.png" alt="集群重分片槽指派"  />
+</p>
+<blockquote>
+<p>moved错误和ASK错误区别</p>
+<ul>
+<li>moved代表槽指派已经更变，在第一次报出moved错误转向目标节点后，以后所有都会直接把命令发送到目标节点。</li>
+<li>ask错误只是在迁移发生的时候使用的临时措施。不会因报出一次ASK错误下次就会改变发送对象。</li>
+</ul>
+</blockquote>
+<h2 id="集群中的主从复制">集群中的主从复制<a hidden class="anchor" aria-hidden="true" href="#集群中的主从复制">#</a></h2>
+<p>主节点处理槽，从节点复制主节点。如果主节点下线，代替成为主节点继续接收命令。</p>
+<h3 id="集群中如何判断节点是否下线">集群中如何判断节点是否下线<a hidden class="anchor" aria-hidden="true" href="#集群中如何判断节点是否下线">#</a></h3>
+<p>集群里每个节点定期向其他节点发送<code>PING</code>，检测对方是否在线。</p>
+<ul>
+<li>如果<code>PING</code>无返回，或者返回超时。那么发送<code>PING</code>的节点就会把接收<code>PING</code>的节点标记<strong>疑似下线</strong>。
+<blockquote>
+<p>当A节点通过消息得知B节点标记了C节点为疑似下线。就会在自己的<code>clusterState.nodes</code>里找到C节点的结构，并在结构里的<code>fail_reports</code>链表里添加<strong>下线报告</strong>。<br>
+<img loading="lazy" src="%e9%9b%86%e7%be%a4%e4%b8%8b%e7%ba%bf%e6%8a%a5%e5%91%8a.png" alt="下线报告"  />
+</p>
+</blockquote>
+</li>
+<li>如果<strong>半数以上</strong>的<strong>操作槽的主</strong>节点都标记为疑似下线，那么就会被标记为<strong>已下线</strong>。<br>
+将主节点标记为已下线的节点会向集群广播节点下线。所有收到广播的节点都把节点标记为已下线。<br>
+<img loading="lazy" src="%e9%9b%86%e7%be%a4%e8%8a%82%e7%82%b9%e4%b8%8b%e7%ba%bf.png" alt="节点下线"  />
+</li>
+</ul>
+<h3 id="故障转移-1">故障转移<a hidden class="anchor" aria-hidden="true" href="#故障转移-1">#</a></h3>
+<p>从节点发现主节点下线，对主节点进行故障转移。</p>
+<p>步骤：</p>
+<ol>
+<li>选出新的主服务器成为主节点
+<blockquote>
+<p>基于Raft算法的领头选举</p>
+<ol>
+<li>开始故障转移，节点配置纪元+1</li>
+<li>每个纪元里，负责处理槽的主节点都有一次投票
+<ul>
+<li>从节点发现主节点下线，广播让有投票权的主节点为自己投票</li>
+<li>投票规则：先到先得。</li>
+<li>如果有半数以上的票，则成为主节点。</li>
+</ul>
+</li>
+<li>如果该纪元选举失败，那么集群进入新纪元，重新选举，直到选出新主节点。</li>
+</ol>
+</blockquote>
+</li>
+<li>新主节点撤销所有旧主节点的槽指派并把槽指派指向自己</li>
+<li>新主节点向集群广播自己成为主节点操作处理槽</li>
+<li>新主节点接收命令处理操作负责的槽</li>
+</ol>
+<h2 id="一致性哈希">一致性哈希<a hidden class="anchor" aria-hidden="true" href="#一致性哈希">#</a></h2>
+<p>Redis中引用的一致性哈希思想，但是没有直接引用，而是引入了哈希槽的概念。</p>
+<h3 id="简单哈希">简单哈希<a hidden class="anchor" aria-hidden="true" href="#简单哈希">#</a></h3>
+<p>问题在于，集群扩容的时候，length发生变化，大部分数据重新hash导致被分配到其他机器上，这样操作导致服务器在一定时间不可用，每次扩容都会存在这个问题。导致缓存雪崩。</p>
+<h3 id="一致性哈希-1">一致性哈希<a hidden class="anchor" aria-hidden="true" href="#一致性哈希-1">#</a></h3>
+<p>一致性hash算法主要应用于分布式存储系统。</p>
+<p>一致性hash算法构建了一个虚拟的哈希环。<br>
+<img loading="lazy" src="%e5%93%88%e5%b8%8c%e7%8e%af.png" alt="哈希环"  />
+<br>
+按顺时针方向从0开始到2^32-1。</p>
+<p>将各个服务器进行哈希，<strong>具体使用服务器主机名，作为key进行哈希</strong>，确定在哈希环上的位置。<br>
+<img loading="lazy" src="%e5%93%88%e5%b8%8c%e7%8e%af%e8%8a%82%e7%82%b9.png" alt="哈希环节点"  />
+</p>
+<p>插入key-value数据的时候，对key进行哈希，然后放入对应位置，顺时针找到第一个服务器存储。<br>
+<img loading="lazy" src="%e5%93%88%e5%b8%8c%e7%8e%af%e5%82%a8%e5%ad%98.png" alt="哈希环存储"  />
+</p>
+<h4 id="容错性和可扩展性">容错性和可扩展性<a hidden class="anchor" aria-hidden="true" href="#容错性和可扩展性">#</a></h4>
+<p>假设node2宕机，只有key-b受到影响，会接着顺时针找到第一个服务器node3进行存储。</p>
+<p>假设新增一台node4服务器，受影响的只有node1和node4之间的key-b。
+<img loading="lazy" src="%e5%93%88%e5%b8%8c%e7%8e%af%e5%88%a0%e9%99%a4%e8%8a%82%e7%82%b9.png" alt="哈希环删除"  />
+</p>
+<p>总结：在一致性哈希中，新增或者下机一台服务器，受影响的只有该服务器和前一服务器之间的数据。具有较好的容错性和可扩展性。</p>
+<h4 id="数据倾斜">数据倾斜<a hidden class="anchor" aria-hidden="true" href="#数据倾斜">#</a></h4>
+<p>一致性哈希在服务器数很少的时候，容易因为节点分布不均导致有的服务器数据量很大，而有的服务器仅仅只有少量数据。</p>
+<p>示例：node2数据量很大，而node1很小。<br>
+<img loading="lazy" src="%e5%93%88%e5%b8%8c%e7%8e%af%e6%95%b0%e6%8d%ae%e5%80%be%e6%96%9c.png" alt="哈希环数据倾斜"  />
+</p>
+<p>为了解决，一致性哈希引入了虚拟节点机制：为每个服务器计算多个哈希，每个计算的位置都放一个虚拟节点。可用node#1来表示。如图：<br>
+<img loading="lazy" src="%e5%93%88%e5%b8%8c%e7%8e%af%e6%95%b0%e6%8d%ae%e5%80%be%e6%96%9c1.png" alt="哈希环数据倾斜"  />
+</p>
+<p>这样只是多了一个对实际节点的映射。</p>
+<h4 id="redis为什么不用一致性哈希缓存雪崩">Redis为什么不用一致性哈希（缓存雪崩）<a hidden class="anchor" aria-hidden="true" href="#redis为什么不用一致性哈希缓存雪崩">#</a></h4>
+<ul>
+<li>无法很好的手动设置数据分布，哈希槽则可以灵活的配置每个节占用的哈希槽数量。</li>
+<li>缓存雪崩：一致性哈希环里如果有节点承受不住数据量，就会宕机，数据传给下一个节点，下一节点也承受不住宕机，数据就滚雪球越来越大，最终集群雪崩。</li>
+<li>一致性哈希比哈希槽更复杂。</li>
+</ul>
+<h2 id="如何解决集群数据丢失问题">如何解决集群数据丢失问题<a hidden class="anchor" aria-hidden="true" href="#如何解决集群数据丢失问题">#</a></h2>
+<h3 id="redis数据丢失的两种情况">Redis数据丢失的两种情况<a hidden class="anchor" aria-hidden="true" href="#redis数据丢失的两种情况">#</a></h3>
+<ol>
+<li><strong>异步复制</strong>导致丢失</li>
+<li><strong>集群脑裂</strong>导致丢失
+<ul>
+<li>主节点发生了<strong>假故障</strong>，与哨兵失联，但是客户端正常。这时客户端发送命令，因网络问题无法同步给从服务器。</li>
+<li>哨兵选举新主服务器，集群有两个主服务器——<strong>集群脑裂</strong></li>
+<li>网络好了，旧主服务器降级，清空自己的数据，复制新主服务器的数据，但是，在一开始客户端写入的命令就会丢失，导致数据丢失。</li>
+</ul>
+</li>
+</ol>
+<h3 id="解决方法">解决方法<a hidden class="anchor" aria-hidden="true" href="#解决方法">#</a></h3>
+<p>通过参数设置，限制主服务器在假故障的时候接收客户端命令。</p>
+<h1 id="主从复制哨兵集群的区别">主从复制、哨兵、集群的区别<a hidden class="anchor" aria-hidden="true" href="#主从复制哨兵集群的区别">#</a></h1>
+<p><strong>主从复制为了数据备份</strong><br>
+<strong>哨兵为了高可用</strong><br>
+<strong>集群为了在单实例环境下，分散压力</strong></p>
+<ul>
+<li>主从模式：备份数据，负载均衡，读写分离，主服务器可以有多个从服务器。</li>
+<li>哨兵模式：监控，故障转移，哨兵发现主服务器挂了，就会在从服务器中重新选举主服务器。</li>
+<li>集群模式：解决单机Redis容量有限问题，将数据分给多个服务器。</li>
+</ul>
+
+
+        </div>
+
+        <footer class="post-footer">
+            
+<nav class="paginav">
+  <a class="prev" href="https://zhoujze.github.io/en/posts/tech/redis-04-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E5%AE%9E%E7%8E%B0/">
+    <span class="title">« 上一页</span>
+    <br>
+    <span>Redis 04-独立功能实现</span>
+  </a>
+  <a class="next" href="https://zhoujze.github.io/en/posts/tech/redis-02-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/">
+    <span class="title">下一页 »</span>
+    <br>
+    <span>Redis 02-单机数据库的实现</span>
+  </a>
+</nav>
+
+
+<div class="share-buttons">
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Redis 03-多机数据库的实现 on twitter"
+       href="https://twitter.com/intent/tweet/?text=Redis%2003-%e5%a4%9a%e6%9c%ba%e6%95%b0%e6%8d%ae%e5%ba%93%e7%9a%84%e5%ae%9e%e7%8e%b0&amp;url=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fredis-03-%25E5%25A4%259A%25E6%259C%25BA%25E6%2595%25B0%25E6%258D%25AE%25E5%25BA%2593%25E7%259A%2584%25E5%25AE%259E%25E7%258E%25B0%2f&amp;hashtags=Redis%2cRedis%e5%a4%9a%e6%9c%ba%e6%95%b0%e6%8d%ae%e5%ba%93%e7%9a%84%e5%ae%9e%e7%8e%b0">
+    <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-253.927,424.544c135.939,0 210.268,-112.643 210.268,-210.268c0,-3.218 0,-6.437 -0.153,-9.502c14.406,-10.421 26.973,-23.448 36.935,-38.314c-13.18,5.824 -27.433,9.809 -42.452,11.648c15.326,-9.196 26.973,-23.602 32.49,-40.92c-14.252,8.429 -30.038,14.56 -46.896,17.931c-13.487,-14.406 -32.644,-23.295 -53.946,-23.295c-40.767,0 -73.87,33.104 -73.87,73.87c0,5.824 0.613,11.494 1.992,16.858c-61.456,-3.065 -115.862,-32.49 -152.337,-77.241c-6.284,10.881 -9.962,23.601 -9.962,37.088c0,25.594 13.027,48.276 32.95,61.456c-12.107,-0.307 -23.448,-3.678 -33.41,-9.196l0,0.92c0,35.862 25.441,65.594 59.311,72.49c-6.13,1.686 -12.72,2.606 -19.464,2.606c-4.751,0 -9.348,-0.46 -13.946,-1.38c9.349,29.426 36.628,50.728 68.965,51.341c-25.287,19.771 -57.164,31.571 -91.8,31.571c-5.977,0 -11.801,-0.306 -17.625,-1.073c32.337,21.15 71.264,33.41 112.95,33.41Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Redis 03-多机数据库的实现 on linkedin"
+       href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fredis-03-%25E5%25A4%259A%25E6%259C%25BA%25E6%2595%25B0%25E6%258D%25AE%25E5%25BA%2593%25E7%259A%2584%25E5%25AE%259E%25E7%258E%25B0%2f&amp;title=Redis%2003-%e5%a4%9a%e6%9c%ba%e6%95%b0%e6%8d%ae%e5%ba%93%e7%9a%84%e5%ae%9e%e7%8e%b0&amp;summary=Redis%2003-%e5%a4%9a%e6%9c%ba%e6%95%b0%e6%8d%ae%e5%ba%93%e7%9a%84%e5%ae%9e%e7%8e%b0&amp;source=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fredis-03-%25E5%25A4%259A%25E6%259C%25BA%25E6%2595%25B0%25E6%258D%25AE%25E5%25BA%2593%25E7%259A%2584%25E5%25AE%259E%25E7%258E%25B0%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Redis 03-多机数据库的实现 on reddit"
+       href="https://reddit.com/submit?url=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fredis-03-%25E5%25A4%259A%25E6%259C%25BA%25E6%2595%25B0%25E6%258D%25AE%25E5%25BA%2593%25E7%259A%2584%25E5%25AE%259E%25E7%258E%25B0%2f&title=Redis%2003-%e5%a4%9a%e6%9c%ba%e6%95%b0%e6%8d%ae%e5%ba%93%e7%9a%84%e5%ae%9e%e7%8e%b0">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Redis 03-多机数据库的实现 on facebook"
+       href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fredis-03-%25E5%25A4%259A%25E6%259C%25BA%25E6%2595%25B0%25E6%258D%25AE%25E5%25BA%2593%25E7%259A%2584%25E5%25AE%259E%25E7%258E%25B0%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Redis 03-多机数据库的实现 on whatsapp"
+       href="https://api.whatsapp.com/send?text=Redis%2003-%e5%a4%9a%e6%9c%ba%e6%95%b0%e6%8d%ae%e5%ba%93%e7%9a%84%e5%ae%9e%e7%8e%b0%20-%20https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fredis-03-%25E5%25A4%259A%25E6%259C%25BA%25E6%2595%25B0%25E6%258D%25AE%25E5%25BA%2593%25E7%259A%2584%25E5%25AE%259E%25E7%258E%25B0%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Redis 03-多机数据库的实现 on telegram"
+       href="https://telegram.me/share/url?text=Redis%2003-%e5%a4%9a%e6%9c%ba%e6%95%b0%e6%8d%ae%e5%ba%93%e7%9a%84%e5%ae%9e%e7%8e%b0&amp;url=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fredis-03-%25E5%25A4%259A%25E6%259C%25BA%25E6%2595%25B0%25E6%258D%25AE%25E5%25BA%2593%25E7%259A%2584%25E5%25AE%259E%25E7%258E%25B0%2f">
+        <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28">
+            <path
+                    d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+        </svg>
+    </a>
+</div>
+
+        </footer>
+    </div>
+
+<style>
+    .comments_details summary::marker {
+        font-size: 20px;
+        content: '👉展开评论';
+        color: var(--content);
+    }
+    .comments_details[open] summary::marker{
+        font-size: 20px;
+        content: '👇关闭评论';
+        color: var(--content);
+    }
+</style>
+
+
+<div>
+    
+    <script src="https://cdn.staticfile.org/twikoo/1.4.11/twikoo.all.min.js">
+    </script>
+    <script>
+        twikoo.init({
+            envId:  null ,
+        el: "#tcomment",
+            lang: 'zh-CN',
+            region:  null ,
+        path: window.TWIKOO_MAGIC_PATH||window.location.pathname,
+        })
+    </script>
+</div>
+</article>
+</main>
+
+<footer class="footer">
+    <span>
+        Copyright
+        &copy;
+        2023-2023
+        <a href="https://zhoujze.github.io/en/" style="color:#939393;">ZhouJz&#39;s blog</a>
+        All Rights Reserved
+    </span>
+    <a href="https://beian.miit.gov.cn/" target="_blank" style="color:#939393;"></a>&nbsp;
+    <span>
+        <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=null"
+           style="display:inline-block;text-decoration:none;height:20px;color:#939393;">
+            <img src="" style="float:left;margin: 0px 5px 0px 0px;"/>
+            
+        </a>
+    </span>
+    <span id="busuanzi_container">
+        <span class="fa fa-user"></span> <span id="busuanzi_value_site_uv"></span>
+        <span class="fa fa-eye"></span> <span id="busuanzi_value_site_pv"></span>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <span class="topInner">
+        <svg class="topSvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+            <path d="M12 6H0l6-6z"/>
+        </svg>
+        <span id="read_progress"></span>
+    </span>
+</a>
+
+<script>
+    document.addEventListener('scroll', function (e) {
+        const readProgress = document.getElementById("read_progress");
+        const scrollHeight = document.documentElement.scrollHeight;
+        const clientHeight = document.documentElement.clientHeight;
+        const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        readProgress.innerText = ((scrollTop / (scrollHeight - clientHeight)).toFixed(2) * 100).toFixed(0);
+    })
+</script>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+</script>
+<script>
+    let mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        (function() {
+            document.cookie = "change-themes" + "="+ escape ("false");
+        })()
+
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    });
+</script>
+
+<script>
+    document.body.addEventListener('copy', function (e) {
+        if (window.getSelection().toString() && window.getSelection().toString().length > 50) {
+            let clipboardData = e.clipboardData || window.clipboardData;
+            if (clipboardData) {
+                e.preventDefault();
+                let htmlData = window.getSelection().toString() +
+                    '\r\n\n————————————————\r\n' +
+                    '版权声明：本文为「'+"ZhouJz's blog"+'」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。' +
+                '\r\n原文链接：' + location.href;
+                let textData = window.getSelection().toString() +
+                    '\r\n\n————————————————\r\n' +
+                    '版权声明：本文为「'+"ZhouJz's blog"+'」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。' +
+                '\r\n原文链接：' + location.href;
+                clipboardData.setData('text/html', htmlData);
+                clipboardData.setData('text/plain', textData);
+            }
+        }
+    });
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerText = '📄复制';
+
+        function copyingDone() {
+            copybutton.innerText = '👌🏻已复制!';
+            setTimeout(() => {
+                copybutton.innerText = '📄复制';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                let text = codeblock.textContent +
+                    '\r\n————————————————\r\n' +
+                    '版权声明：本文为「'+"ZhouJz's blog"+'」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。' +
+                '\r\n原文链接：' + location.href;
+                navigator.clipboard.writeText(text);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) {}
+            selection.removeRange(range);
+        });
+
+        let language = codeblock.className.replaceAll("language-", "")
+        let macTool = document.createElement("div")
+        let macTool1 = document.createElement("div")
+        let macTool2 = document.createElement("div")
+        let macTool3 = document.createElement("div")
+        let languageType = document.createElement("div")
+        languageType.innerText = language
+        macTool.setAttribute('class', 'mac-tool')
+        macTool1.setAttribute('class', 'mac bb1')
+        macTool2.setAttribute('class', 'mac bb2')
+        macTool3.setAttribute('class', 'mac bb3')
+        languageType.setAttribute('class', 'language-type')
+        macTool.appendChild(macTool1)
+        macTool.appendChild(macTool2)
+        macTool.appendChild(macTool3)
+        macTool.appendChild(languageType)
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+            container.appendChild(macTool)
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+            container.appendChild(macTool)
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+            container.appendChild(macTool)
+        }
+    });
+</script>
+</body>
+
+</html>

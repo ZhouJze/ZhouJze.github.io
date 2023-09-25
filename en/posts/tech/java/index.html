@@ -1,0 +1,1981 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Java | ZhouJz&#39;s blog</title>
+<meta name="keywords" content="Java, 基础知识, 多线程, GC回收, JVM">
+<meta name="description" content="Java基础入门">
+<meta name="author" content="ZhouJze">
+<link rel="canonical" href="https://zhoujze.github.io/en/posts/tech/java/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.1d3401cbcdd2f10bdb5198bcf67bd24686c4792045e0991c052459ef4196f5cf.css" integrity="" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/assets/js/highlight.f413e19d0714851f6474e7ee9632408e58ac146fbdbe62747134bea2fa3415e0.js" integrity="sha256-9BPhnQcUhR9kdOfuljJAjlisFG&#43;9vmJ0cTS&#43;ovo0FeA="
+        onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://zhoujze.github.io/img/Q.jpg">
+<link rel="icon" type="image/png" sizes="16x16" href="https://zhoujze.github.io/img/Q.jpg">
+<link rel="icon" type="image/png" sizes="32x32" href="https://zhoujze.github.io/img/Q.jpg">
+<link rel="apple-touch-icon" href="https://zhoujze.github.io/Q.jpg">
+<link rel="mask-icon" href="https://zhoujze.github.io/Q.jpg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.3/dist/jquery.min.js"></script>
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = ""; 
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<meta property="og:title" content="Java" />
+<meta property="og:description" content="Java基础入门" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://zhoujze.github.io/en/posts/tech/java/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2023-08-07T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-08-07T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Java"/>
+<meta name="twitter:description" content="Java基础入门"/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+
+        {
+          "@type": "ListItem",
+          "position":  1 ,
+          "name": "📚文章",
+          "item": "https://zhoujze.github.io/en/posts/"
+        },
+
+        {
+          "@type": "ListItem",
+          "position":  2 ,
+          "name": "👨🏻‍💻 技术",
+          "item": "https://zhoujze.github.io/en/posts/tech/"
+        }, 
+    {
+      "@type": "ListItem",
+      "position":  3 ,
+      "name": "Java",
+      "item": "https://zhoujze.github.io/en/posts/tech/java/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Java",
+  "name": "Java",
+  "description": "Java基础入门",
+  "keywords": [
+    "Java", "基础知识", "多线程", "GC回收", "JVM"
+  ],
+  "articleBody": "Java基础知识点汇总 0. Java语言特性 简单易学 具有面向对象三大特性：继承、封装、多态 平台无关性（由JVM虚拟机实现与平台无关） 可靠性 安全性 支持多线程 支持网络编程 编译与解释并存 与C++相比： 都是面向对象的语言，都支持继承封装多态 Java不提供指针来直接访问内存，更加安全 Java支持单继承，C++支持多重继承，但是Java中接口支持多重继承 Java有自动内存管理机制，不用程序员手动释放无用内存 1. 面向对象和面向过程区别 面向对象：易复用、易维护、易扩展。因为面向对象有继承、封装、多态的特性，实现的代码的低耦合度，使系统更加灵活、便于维护。 面向过程：性能要比面向对象高。因为类的调用需要实例化，消耗资源。所以当性能是首要选择的时候，我们常常选择面向过程开发。如单片机、嵌入式等。 总结：面向对象低耦合便于维护、易复用、易维护，但是性能没有面向过程高。 2. 面向对象的三大特性 继承： 是什么：继承是以已有的类为基础，扩展新类的技术。新类可以增加新的数据或者新的功能，他也可以复用父类的功能，但是不能选择性的继承父类，要继承父类的全部。 有什么用：通过使用继承我们可以很方便的复用以前的代码。 总结： 子类拥有父类的所有方法和属性，包括私有的方法和属性，但是私有的方法和属性子类无法直接调用，需要父类提供特定的方法去调用。 子类可以有自己的属性和方法。实现对父类的扩展。 子类可以用自己的方式实现父类的方法。即使用对父类方法的重写。 封装：把一个对象的属性进行私有化，然后提供可以被外界访问的属性的方法。典型就是实体类的标准JavaBean。 多态： 什么是多态：就是多种形态，具体来说就是同一件事情，发生在不同对象身上，就会产生不同的结果。 多态实现条件： 继承体系下 子类对父类方法的重写 通过父类的引用调用重写的方法 多态的体现：在代码运行的时候，传递不同类对现象的时候，会调用对应类中的方法 public class Main { public static void main(String[] args) { //向上转型 Animal dog = new Dog(); dog.eat(); // dog.dogShow;//编译看左边 在编译的时候animal类没有.dogShow方法，编译就会报错 Animal cat = new Cat(); cat.eat(); // cat.catShow; //结论：编译看左边，发生向上转型的时候只能调用父类有的成员和方法，不能调用子类特有的 //向下转型 Animal animal = dog; Dog dog1 = (Dog) animal;//animal本来就是dog，所以强制转换后不会抛出异常； // Cat cat1 = (Cat) animal;//强制将狗转换成猫，运行时抛出异常：ClassCastException //引入instanceof对类型进行判断，如果安全则为true if (animal instanceof Cat){ Cat cat2 = (Cat) animal; cat2.catShow(); } if (animal instanceof Dog){ Dog dog2 = (Dog) animal; dog2.dogShow(); } //sout //吃骨头 //吃猫粮 //汪汪汪 } } class Animal{ public void eat(){ System.out.println(\"吃饭\"); } } class Dog extends Animal{ @Override //@Override重写注解，用于对重写的方法进行检查，重写的方法名返回值和方法的参数列表一定要相同，且对访问修饰符不能做更严格的限制。 public void eat() { System.out.println(\"吃骨头\"); } public void dogShow(){ System.out.println(\"汪汪汪\"); } } class Cat extends Animal{ @Override public void eat() { System.out.println(\"吃猫粮\"); } public void catShow(){ System.out.println(\"喵喵喵\"); } } 重写涉及到动态绑定机制： 静态绑定(前期绑定):编译器在编译的时候就可以确定调用的方法\nfinal、static、private修饰的方法和构造函数为静态绑定 动态绑定(后期绑定):编译器在运行时才可以确定调用的方法 Java动态绑定机制 当调用对象方法时，该方法会和该对象的内存地址绑定。 当调用对象属性时，没有动态绑定，哪里声明哪里使用。 动态绑定的发生条件： 向上转型 Animal dog = new Dog(); 重写 class Dog extends Animal{ @Override public void eat() { System.out.println(\"吃骨头\"); } } 通过父类引用调用子类重写的父类方法。 dog.eat(); 向上转型特点： 可以调用父类里的所有成员 不能调用子类所特有的成员和方法。 运行时要看子类的具体表现，也就是子类所重写的父类方法。然后调用。 优点：让代码实现更加简单灵活。 缺点：不能调用子类所特有的成员和方法。 向下转型特点： 向下转型本质是在堆上创建了一个子类的对象赋值给父类的引用然后在回到子类的引用，可以使用子类所特有的方法。 因为在对上创建的子类对象不同，所以在最后回到子类的引用的时候可能是不安全的。有可能出现子类猫的堆赋值给了狗的引用，这是不安全的。因此Java引入了instanceof来判断是否安全 if (animal instanceof Cat){ Cat cat2 = (Cat) animal; cat2.catShow(); } 总结多态优缺点： 优点：降低圈复杂度，就是减少大量使用if-else，只需要在父类里定义方法，然后子类重写该方法，最后在使用的时候进行向上转型即可。可扩展能力强，只需创建继承父类的子类然后在重写方法即可。对于调用者来说只要创建新类的实例就可以了。 缺点：代码的运行效率低。属性没有多态，当父类和子类有同名的属性时，通过父类引用，只能引用到父类的成员属性。构造方法没有多态。 3. 抽象类 是什么：类中存在仅定义而未实现的方法 类中只要包含仅定义的方法均为抽象类 若子类未实现父类的全部方法，则也需要定义为抽象类 抽象类不可实例化 抽象类的定义格式 class abstract 类名 extends 父类{ 权限修饰符 属性1 权限修饰符 属性N 权限修饰符 类名1//构造器 权限修饰符 类名N 权限修饰符 方法1 权限修饰符 abstract 方法N } * 可以通过default指定默认的实现方法\r* 抽象类可以定义多个不需要实现的方法（用abstract修饰）\r* 可以定义抽象类型的变量\r4. 接口 定义：只有定义没有方法体的方法和全局常量组成的类。 接口的特性： 接口不可以被实例化，接口中不能有构造方法。 不可在接口里定义变量，接口里的变量都自动被public static final修饰 接口里的方法都自动被public abstract修饰，即接口中所有的方法都是抽象方法。 接口的实现类必须实现接口的全部方法，否则必须定义为抽象类 作用：实现多重继承的效果，同时避免复杂度和低效性。 接口的定义 访问修饰符 interface 接口名 extends 父接口1,父接口2,...{ 常量 方法 default 方法N(参数){ //提供默认实现方法 } } 接口的实现 访问修饰符 class 类名 extends 父类名 implements 接口1,接口2,...{ 自定义程序 实现接口方法 } 类可以同时实现多个接口，如果接口有冲突，需要在类里解决 如果父类继承的方法和接口的方法冲突则默认接口的方法被省略 接口规范（SPI）：接口和实现类的解耦 本质：应用程序根据接口调用实现类 实现徐奥引入依赖的java.util.ServiceLoader SPI需遍历并加载所有的实现类（无法做到按需加载） SPI调用流程 接口优点： 可实现一个类多个接口，打破了类继承的局限性 对外提供规则接口 降低了程序的耦合性，可实现模块化开发，定义好规则，提高了开发的效率 5. 抽象类和接口的区别 共性：不断抽取共性，没有具体的实现方法，都不能实例化。 区别 接口没有构造方法，抽象类有。 接口是对行为的抽象，是行为规范。抽象类是对类的抽象，是一种模板设计。 接口不能有具体的方法体，java1.8中可以定义default默认方法体，抽象类中可以有抽象方法也可以有普通带方法体的方法。 接口的实现类可以多接口实现，抽象类只能单继承。 接口成员变量和方法默认会被修饰，抽象类中有普通的方法，必须有被abstract修饰的抽象方法。 JVM知识点 1. JVM基础知识 1. JVM类文件结构 Java程序(.java)通过Java编译器(javac)编译成字节码文件(.class)以供Java虚拟机(JVM)解释成计算器可以识别的语言。 .class字节码文件是不同语言在Java虚拟机沟通的桥梁，同时也是Java可以跨平台的重要原因 字节码文件结构 魔数 确定一个文件是否是可以被JVM接收的Class文件 版本号（副版本号、主版本号） 在实际开发中开发和生产的JDK环境要一致 Java虚拟机可以执行低版本编译器生成的Class文件，反之不行 常量池（常量池计数器、常量池数据区） 常量池计数器 访问标志 类索引 父类索引 接口（接口计数器、接口数据区） 字段（字段计数器、字段数据区） 方法（方法计数器、方法数据区） 属性（属性计数器、属性方法区） 2. Java类的加载机制 作用：实现从二进制的数据文件到JVM虚拟机的内存中以供使用 加载过程：加载、连接、初始化 在类的加载过程中需要遵守JVM规范实现。 类的生命周期 加载：将源码转换为JVM字节流\n通过全限定名获取对应类的二进制字节流 把二进制字节流的静态存储结构转换为方法区的运行时数据结构 在堆中创建代表这个类的Java.lang.Class对象，作为方法区的运行时数据结构的访问入口。 验证：验证获取的字节流是否符合JVM规范\n文件格式：验证字节流是否符合Class文件格式规范。 元数据：分析字节码语义是否符合Java语言规范。 字节码：分析控制流和数据流，确保语义合法符合逻辑。 符号引用：验证类合法性，确保解析能正常执行。 准备：为类的静态变量分配内存，初始化为默认值\n为被static修饰的静态变量在方法区中分配内存 被分配内存的静态变量默认设置初始值为零值（0，0L，null，false等），在初始化阶段才去赋值。 如果类字段的字段属性中存在ConstantValue属性也就是，变量被static和final修饰，则一定要在准备阶段进行赋予ConstantVa属性的指定的值。 解析：JVM将常量池中的符号引用转换为直接引用\n作用：将类中特定的符号标记转换为实际储存的地址信息 解析主要针对：类、接口、字段、类方法、接口方法、方法类型、方法句柄、调用点限定符 符号引用：用特定的符号来描述目标\n直接引用：直接指向目标的指针、定位目标的句柄\n初始化：JVM对类变量进行初始化，静态变量赋予初始值。\nJVM初始化步骤： 如果类没有被加载、连接，则先对类进行加载、连接。 如果该类的直接父类没有被初始化，则先初始化直接父类。 如果有初始化语句，则顺序执行初始化语句。 执行初始化方法（clinit()方法） clinit()方法线程安全，多线程下存在堵塞风险。 clinit()方法是编译器自动生成的。 JVM初始化的触发条件： 创建类的实例，new操作 直接父类没有初始化先初始化直接父类 调用类或接口的静态变量或者对静态常量的赋值 调用类的静态方法 反射 Java虚拟机设置默认启动类的类 卸载：将字节流对象回收GC\n回收类中所有实例化对象 回收类的ClassLoader 回收没有被对象引用的类 类加载器（ClassLoader）:实现类的加载 本质：将源码转化为JVM中的字节流 每一个类都有对应的ClassLoader 数组类通过JVM创建，获取ClassLoader会基于元素的数据类型判断 ClassLoader加载类的流程 BootstrapClassLoader（启动类加载器）: 加载JDK内部核心库 ExtClassLoader（扩展类加载类）：加载JDK扩展库 AppClassLoader（应用程序类加载器）：用户类路径（ClassPath）所指定的类 BootstrapClassLoader是由C++实现的属于虚拟机的一部分，无法Java程序直接引用。其他类加载器都是继承自java.lang.ClassLoader 抽象类，这些类加载器需要由启动类加载器加载到内存中后才能去加载其它类。 自定义ClassLoader需要实现loadClass()或findClass()： loadClass()：加载指定二进制名称的类（打破双亲委派机制） findClass()：查找指定二进制名称的类 双亲委派：当ClassLoader加载时先交给其父加载器加载。最终由BootstrapClassLoader加载，如未找到再往下尝试加载类。 所有的ClassLoader都要遵循双亲委派（BootstrapClassLoader除外） 父ClassLoader不仅尝试加载类，还会查找相关类的相关资源 双亲委派不是强制约束，仅时JDK建议的方式 优点： 避免类被重复加载和核心库被修改 通过责任链设计模式实现类加载器的高扩展和解耦性。 2. JVM内存结构 运行时数据区 Java虚拟机在执行Java程序的过程中会把它管理的内存划分成不同的数据区域。\nJDK 1.8和之前版本略有不同。\nJDK 1.8之前：\nJDK 1.8：\n线程私有：\n程序计数器 本地方法栈 程序计数器 线程共享：\n堆 方法区 直接内存 程序计数器 字节码解释器通过改变程序计数器依次读取指令，从而实现代码的流程控制。 在多线程下，程序计数器记录当前线程的执行位置，当进行线程切换，再切换回来的时候，通过程序计数器可以继续当前线程的工作。 虚拟机栈 执行Java方法，生成栈帧用于储存局部变量表，操作数栈，常量池引用等。\n本地方法栈 虚拟机使用到的 Native 方法服务。\n堆 用来储存对象实例和数组。\n同时也是GC垃圾回收的主要管理区域。\n方法区 可认为是堆的一部分，在JDK1.8的时候合并在直接内存的元空间里。\n用来储存已经被虚拟机加载的信息，常量、静态变量、即时编译器编译后的代码。\n运行时常量池 运行时常量池是方法区的一部分，JDK1.8的时候从方法区移出，放到堆内存中。\n直接内存 本机直接分配的内存，会受到本机总内存大小的限制。直接内存并不是虚拟机运行时数据区的一部分，但是也经常被使用。\n虚拟机创建对象全过程 对象的创建 类加载器检查 虚拟机收到new指令，首先去常量池中查找有无对应的符号引用以及符号引用所代表的类是否被加载、解析、初始化过。如果没有，要先进行类的加载过程。\n分配内存 在堆内存中为其分配内存空间。\n分配方式有两种：\n指针碰撞 空闲列表 选择哪种分配方式由Java堆是否规整决定，Java堆是否规整由垃圾收集器是否带有压缩功能决定。\n初始化零值 内存分配完成后，虚拟机需要将分配到的内存空间初始化为零值，这样在对象实例化字段没有赋初始值的时候，也可以被程序访问到对应的零值。\n设置对象头 虚拟机要堆对象进行必要的设置，例如对象时哪个类的实例、对象的哈希码、GC分代年龄信息等。这些信息存放在对象头中。\n执行init方法 以上步骤执行完成后，从虚拟机角度看完成了对象的创建，但是从Java程序角度看，对象创建才刚刚开始。init字段没有执行，所有字段都还为零值。在new之后执行init方法，把对象按照程序员意愿初始化，才算对象完成创建。\n对象的内存布局 对象内存分为三部分：对象头、实例数据、对齐填充\n对象头：对象头分为两部分 储存自身的自身运行时数据（哈希码、GC年龄、锁状态等） 类型指针，通过指针确定对象是哪个类的实例 实例数据：对象真正储存的有效数据 对齐填充：占位作用（对象头必须为8字节的整数倍） 对象的访问定位 对象的访问方式由虚拟机决定，有两种：\n句柄：在Java堆中划分内存作为句柄池。拥有稳定的句柄池地址。 直接指针：包含在对象实例数据里。拥有较快的访问速度。 重点补充 String和常量池 String str1 = \"abcd\";//先检查字符串常量池中有没有\"abcd\"，如果字符串常量池中没有，则创建一个，然后 str1 指向字符串常量池中的对象，如果有，则直接将 str1 指向\"abcd\"\" String str2 = new String(\"abcd\");//堆中创建一个新的对象 String str3 = new String(\"abcd\");//堆中创建一个新的对象 System.out.println(str1==str2);//false System.out.println(str2==str3);//false String创建方式有两种：\n方式是在常量池中拿对象； 方式是直接在堆内存空间创建一个新的对象。 只要new就创建新的对象（新的内存地址）\nString s1 = new String(\"计算机\"); String s2 = s1.intern(); String s3 = \"计算机\"; System.out.println(s2);//计算机 System.out.println(s1 == s2);//false，因为一个是堆内存中的 String 对象一个是常量池中的 String 对象， System.out.println(s3 == s2);//true，因为两个都是常量池中的 String 对象 双引号声明的String，直接储存在常量池中 new 声明的String，先从常量池中查有无，如有则直接在堆空间创建。如无则现在常量池中创建，再在堆空间创建。 字符串拼接：\nString str1 = \"str\"; String str2 = \"ing\"; String str3 = \"str\" + \"ing\";//常量池中的对象 String str4 = str1 + str2; //在堆上创建的新的对象 String str5 = \"string\";//常量池中的对象 System.out.println(str3 == str4);//false System.out.println(str3 == str5);//true System.out.println(str4 == str5);//false 字符串拼接优先使用StringBuild和StringBuffer\n8种基本数据类型的包装类和常量池 Java基本类型的包装类大部分都实现了常量池技术，即Byte,Short,Integer,Long,Character,Boolean；这五种包装类默认在常量池创建了[-128,127]区间的缓存数据。 两种浮点数类型的包装类Float,Double并没有实现常量池技术。 Integer i1 = 33; Integer i2 = 33; System.out.println(i1 == i2);// 输出 true Integer i11 = 333; Integer i22 = 333; System.out.println(i11 == i22);// 输出 false Double i3 = 1.2; Double i4 = 1.2; System.out.println(i3 == i4);// 输出 false 示例：\nInteger i1 = 40; Integer i2 = 40; Integer i3 = 0; Integer i4 = new Integer(40); Integer i5 = new Integer(40); Integer i6 = new Integer(0); System.out.println(\"i1=i2 \" + (i1 == i2)); //true System.out.println(\"i1=i2+i3 \" + (i1 == i2 + i3)); //true System.out.println(\"i1=i4 \" + (i1 == i4)); //false System.out.println(\"i4=i5 \" + (i4 == i5)); //false System.out.println(\"i4=i5+i6 \" + (i4 == i5 + i6)); //true System.out.println(\"40=i5+i6 \" + (40 == i5 + i6)); //true 解释：\n语句 i4 == i5 + i6，因为+这个操作符不适用于 Integer 对象。\n首先 i5 和 i6 进行自动拆箱操作，进行数值相加，即 i4 == 40。\n然后 Integer 对象无法与数值进行直接比较，所以 i4 自动拆箱转为 int 值 40，最终这条语句转为 40 == 40 进行数值比较。\n3. 垃圾回收——GC机制 什么是GC：GC是一种自动的存储管理机制，当程序分配内存使用完成后，这部分内存就会成为垃圾，需要释放。这种存储资源管理就称为垃圾回收。对于Java而言就是，自动进行垃圾回收的机制。\n什么是JVM垃圾回收 Java的自动内存管理主要是针对对象的内存分配与回收。\n核心功能：堆内存中对象的内存分配与回收。\nJava堆是垃圾收集器管理的主要区域，也被称为GC堆。\n垃圾收集器采用分代垃圾收集算法，把Java堆细分为新生代和老年代。再次细分为Eden空间、From Survivor、To Survivor 空间等。\n进一步划分的目的是更好地回收内存，或者更快地分配内存。\n堆的基本结构：\n新生代：eden 区、s0(“From”) 区、s1(“To”) 区 老年代：tentired 区 在一次新生代垃圾回收后，如果对象依旧存活，则会进入s1，年龄+1(Eden 区-\u003eSurvivor 区后对象的初始年龄变为 1)\n当年龄到一定程度(默认15岁), 晋级到老年代\n经过这次GC，eden区和From区被清空，然后From区和To区交换角色。\n不论怎么样，都会保证新的To区域是空的，然后当To区被填满，所有To区对象转入老年代。\n对象优先分配在eden区 主流的垃圾回收器都采用分代回收算法，因此需要将堆内存分为新生代和老年代。根据年代特性选择相应的垃圾收集算法。\n多数情况下，对象分配在eden区分配，当eden区没有足够空间分配的时候，虚拟机将发起一次MinorGC。\nMinor GC 和 Full GC 有什么不同呢？\n新生代GC Minor GC：新生代的垃圾收集动作，非常频繁，回收速度较快 老年代GC Full GC Major GC： 老年代的垃圾收集动作，出现Major GC 绝大多数情况下会出现一次Minor GC，Major GC速度比Minor GC 慢10倍以上 分配担保机制：\n有一个对象1占据了大部分的eden区，对象2在eden区没有足够的内存分配。\n虚拟机将发起一次Minor GC。GC期间发现对象1太大了无法存入Survivor区。\n通过分配担保机制直接把对象1转移到老年代，老年代区有足够的空间存放对象1，所以不会出现Full GC。\n大对象直接进入老年代 大对象：在内存上大量连续储存的对象（如字符串、数组）\n为什么直接进入老年代：\n因为大对象会占据大部分eden区，触发分配担保机制进行复制存入老年代区，降低效率。\n长期存活的对象进入老年代 虚拟机通过对象年龄计数器判断新生代和老年代。\n对象出生就会放在eden区，经过一次Minor GC，如果能够被survivor区容纳，那么年龄初始化为1，然后移入Survivor区。每次Minor GC年龄+1，当年龄增加到一定程度（默认为15岁），移入老年代区。\n动态的对象年龄判断 为了更好的适应不同程序的内存情况，虚拟机不是定死必须要达到某个年龄。\n当Survivor区相同年龄对象的内存总和大于Survivor区总内存的一半，那么将直接把比这部分对象大或者这部分对象，直接移入老年代区。\n对象死亡判断 1. 引用计数法 给对象添加一个引用计数器，每当对象被引用计数器+1，引用失效计数器-1。任何时候当计数器为0，则不会再被使用。\n简单高效，但是无法处理对象间相互引用的问题。\n如，对象1和对象2相互引用，但是除此之外无任何引用。因为引用计数器的值一直不为0，所以引用计数算法没办法通知GC回收器回收他们。\n2. 可达性分析算法 引入GC Roots，把每个对象都称为GC Roots，从这个节点开始往下搜索，节点走过的路径称为引用链。当GC Roots没有任何引用链，那么此对象不可用。\n3. 再谈引用 对象存活判断都与 引用 有关。jdk1.2之后对引用进行了分类。\n强引用\n相当于必不可少的生活品。是我们最常用的引用，这种引用绝对不会被虚拟机回收。\n软引用\n相当于可有可无的生活品。内存空间足够，不会回收；内存空间不够，回收对象。可用来实现内存敏感的高速缓存。\n弱引用\n相当于可有可无的生活品。弱引用和软引用的区别在于：弱引用具有更短的生命周期，只要被垃圾回收器发现，不论内存空间是否足够，直接回收。\n虚引用\n形同虚设，在任何时候都可能被垃圾回收器回收。 虚引用主要用来跟踪垃圾回收的活动\n程序中软引用用到较多，因为软引用可以加速JVM对垃圾回收器的回收速度，可以维护系统运行安全，防止内存泄漏等问题。\n4. 不可达的对象并非“非死不可” 可达性分析后，不可达的对象处于“缓刑阶段”。需要经过两次标记，才会真正死亡。\n第一次：可达性分析后，不可达的对象被第一次标记，并且进行筛选。筛选条件是对象有无必要执行finalize方法，当对象没有覆盖finalize方法，或者虚拟机已经执行过一次方法，那么虚拟机认为没必要执行。 第二次：被判定为需要执行的对象，放入一个队列里进行第二次标记，如果对象没有任何关连对象，那么就真的被回收。 5. 如何判断一个常量是废弃常量 运行时常量池内主要回收废弃常量。\n如何判断：\n假设有个字符串常量\"abc\"，如果没有任何的String对象引用该字符串。那就说明该字符串常量为废弃常量。在下次内存回收的时候，\"abc\"就会被回收。\n6. 如何判断一个类是无用的类 方法区主要回收无用类。\n如何判断，满足一下三个条件：\n该类的所有实例都被回收。 加载类的ClassLoader 被回收 该类对应的java.lang.Class没有任何引用，并且没有反射。 垃圾收集算法 1. 标记-清除算法 分类两个步骤，先标记所有需要回收的对象，然后统一回收对象。\n该算法是最基础的算法，后续算法都是依据该算法改善。\n带来了两个问题：\n效率问题 回收后，内存会出现大量不连续的碎片空间。 2. 复制算法 为了解决效率问题衍生出的算法。\n该算法把内存分为两相等个部分，每次使用其中一部分，当这部分使用完后，将还存活的对象复制到另一部分，接着把这部分空间清空。这样每次回收都是一半内存。\n3. 标记-整理算法 根据老年代提出的一种标记算法。\n标记过程与标记-清除算法一样，在整理的时候让所有存活的对象向一端移动。接着清理这个端边界以外的内存。\n4. 分代收集算法 当前虚拟机的垃圾收集都采用垃圾收集算法。\n根据对象的存活周期，划分几个不同的内存块。将java堆分为新生代和老年代，根据年龄特点，选择不同的垃圾收集算法。\n如：\n新生代中：每次收集都会有大量对象死去，所以可以原则复制算法。 老年代中：老年代中都是存活率很高的对象，并且没有额外的空间对它进行分配担保，就需要采用标记-清除算法，标记-整理算法。 垃圾收集器 垃圾收集算法是 方法，垃圾收集器是 实现。\n没有最好的垃圾收集器，根据场景选择适合的垃圾收集器\n1. Serial收集器 Serial（串行）收集器，最基本、久远的垃圾收集器。\n单线程收集器。它在垃圾收集工作的时候，必须暂停别的所有工作线程。\n新生代采用复制算法，老年代采用标记-整理算法。\n优点：简单高效。\n2. ParNew收集器 Serial收集器的多线程版本。算法和它一样。\n并行：多条垃圾收集线程一起处理，用户线程等待。 并发：用户线程和垃圾收集线程同时执行，（不一定并行，可能交替），用户程序继续执行，垃圾收集在另外CPU上。 3. Parallel Scavenge收集器 基本和ParNew收集器差不多，但是该收集器更注重吞吐量（高效利用CPU）。\n4. Serial Old收集器 Serial收集器的老年代版本。同样是单线程。\n5. Parallel Old收集器 Parallel Scavenge收集器的老年版本。\n4. CMS收集器 CMS（Concurrent Mark Sweep）收集器以获取最短回收停顿时间为目标的收集器，注重用户体验。\n真正意义上的并发收集器，实现垃圾收集线程和用户线程同时工作。\n标记-清除算法的实现。分为四个部分：\n初始标记 并发标记 重新标记 并发清除 优点：并发处理、低停顿\n缺点：\n对CPU资源敏感 无法处理浮动垃圾 清除后会出现大量碎片空间。 5. G1收集器 面向服务器的收集器，以极高的概率满足GC低停顿和高吞吐量。\n标记-收集算法\n特点：\n并行和并发 分代收集 空间整理 可预测停顿 实现步骤：\n初始标记 并发标记 最终标记 筛选回收 4. JVM调优 GC性能指标和基本调优策略 GC性能衡量指标 吞吐量 停顿时间 垃圾回收频率 GC调优策略 降低 Minor GC 频率 因新生代空间较小，eden区很快被填满，导致的频繁Minor GC。\n通过增大新生代空间来降低Minor GC频率。\n因空间增大导致的Minor GC时间增加问题：\n通常在虚拟机中复制的成本远大于扫描。\n如果在堆内存中存在较多的长期存活对象，此时增加新生代空间，由于要复制的存活对象增对，反而会导致Minor GC时间增加。 如果堆内存中短期对象很多，那么扩容后，单次Minor GC时间不会显著增加。 所以，单次Minor GC的时长取决于GC后存活的对象数量，而非eden区大小。\n降低 Full GC 频率 由于堆内存不足，或者老年代对象太多导致Full GC。\n减少创建大对象 增大堆内存空间 选择合适的GC回收器 当我们以用户体验为第一的时候，一般选择CMS收集器，或者G1收集器。\n当我们对吞吐量有要求的时候，可选择Parallel Scavenge回收器来提高系统的吞吐量。\nJVM调优实例 1 ：线上CPU100%怎么排查 JVM调优实例 2 ：偏向锁导致Minor GC频繁问题 JVM调优实例 3 ：-Xmm参数设置错误导致的OMM JVM调优实例 4 ：连接池和Mybatis导致的OMM 多线程 1. 线程和进程 进程：进程是程序一次执行的过程，是系统运行的基本单位。系统运行就是一次进程创建运行消亡的过程。 线程：线程是比进程更小的执行单位，可多个存在在进程里。线程共享进程的堆内存和方法区，又有自己独立的虚拟机栈，本地方法栈和程序计数器。\n程序计数器： 字节码解释器通过程序计数器来依次读取命令。 多线程下，记录当前线程执行到的位置，以便线程切换回来时知道执行到哪里。 为什么私有：为了切换回当前线程时恢复到正确的执行位置。 虚拟机栈和本地方法栈： 虚拟机栈：执行Java方法，生成栈帧用于储存局部变量表，操作数栈，常量池引用等。 本地方法栈：虚拟机使用到的 Native 方法服务。 为什么私有：为了保证线程中的局部变量不被别的线程访问。 堆：储存新创建的对象。 方法区：存放编译器编译后的数据，如类信息，常量，静态变量。 2. 并行和并发 并行：同一时间点，多个线程同时执行。 并发：同一时间段内，多个线程执行（可能不在统一时间点）。 3. 为什么使用多线程： 总体：线程是程序执行的最小单位，多线程切换和调度成本远小于进程。多线程执行减少了线程上下文切换的时间。 入微：单核多线程可以提高效率，比如当一个线程先要使用cpu再使用IO，另一个线程先使用IO再使用cpu，当两个线程同时进行的时候效率都是百分百的。多核多线程提高了cpu的利用率，一个线程只被一个cpu核心利用，那么多个线程就可被多个cpu核心利用，大大提高了cpu利用率。 上下文切换：当前任务执行完cpu时间片会先保存当前状态，然后再切换到别的任务，当再切换回来时，还可以加载当前状态。概述:任务从保存到再加载还可以回到当前状态的过程\n4. 多线程存在的问题： 可能出现内存泄漏、上下文切换、死锁等问题。 5. 线程的生命周期 新建(new)：创建线程 可运行(runnable)：准备和运行两种状态的统称 阻塞(blocked)：线程阻塞于锁 等待(waiting)：线程进入等待状态，等待其他线程中断或者通知 超时等待(timed_waiting)：不是一直等待，超过指定时间自行返回 终止(terminated)：线程执行完毕\n6. 线程状态迁变图 经典五态模型\n7. 创建线程 线程类Thread，任务类Runnable Callable 线程是载体，任务才是线程具体做的事情。 Thread 线程创建的三种方式 直接继承Thread类 // 自定义线程对象 class Thread1 extends Thread { @Override public void run() { // 线程需要执行的任务 ...... } } // 创建线程对象 Thread1 t1 = new Thread1(); Thread+Runnable接口实现类（无返回值）\n有多个线程执行的任务是一样的。 我们可以把任务体和线程分开。\nThread中提供了包含Runnable类型参数的构造方法。 class MyRunnable implements Runnable { @Override public void run() { // 线程需要执行的任务 ...... } } // 创建任务类对象 MyRunnable runnable = new MyRunnable(); // 创建线程对象 Thread t2 = new Thread(runnable); 简化版 // 创建任务类对象 Runnable runnable = new Runnable() { public void run(){ // 要执行的任务 ...... } }; // 创建线程对象 Thread t2 = new Thread(runnable); Thread+Callable接口实现类（有返回值） class MyCallable implements Callable\u003cInteger\u003e { @Override public Integer call() throws Exception { // 要执行的任务 ...... return 100; } } // 将 Callable 包装成 FutureTask MyCallable callable = new MyCallable(); FutureTask\u003cInteger\u003e task = new FutureTask\u003c\u003e(callable); // 创建线程对象 Thread t3 = new Thread(task); 8. 启动线程为什么用start()而不用run() new一个Thread，就会新建一个线程。 调用start()，执行线程准备工作，自动调用run()。线程进入就绪状态，分配到时间片就执行。 如果直接调用run()，执行的是main线程下的一个普通方法体，不会在线程中去执行。 总结：\n调用start方法可以启动线程，并进入就绪状态。而调用run方法进入的是Thread中的一个普通方法，是在主线程中执行的。 9. 死锁 是什么：死锁是多个线程同时被堵塞，他们都在等一个资源被释放，大家都在在等，就形成了无限期堵塞，程序无法正常终止，形成死锁。 举例：线程A持有资源2想要获取资源1，线程B持有资源1想要获取资源B，他们都在等待对方释放资源，形成死锁。\n解决方案： 让线程A或者线程B通过Thread.sleep(1000)来释放资源，解决死锁。 死锁形成的四个条件： 互斥：资源只被一个线程占有。 请求与保持：线程请求资源而堵塞，以获得资源保持占有。 不剥夺：线程以获得的资源在没有释放前不能被其他线程剥夺。 循环等待：进程与进程之间形成首位相连的循环等待关系。 避免死锁： 破坏互斥：无法破坏 破坏请求与保持：一次性获取所有资源，再释放所有资源 破坏不剥夺：线程申请不到资源的时候主动释放自己的资源 破坏循环等待：按序申请资源访问 10. sleep()和wait()的区别和共同点 区别： sleep()没有释放锁，wait()方法释放了锁。 sleep()常用于暂停线程，wait()常用于线程之间通信 sleep()执行完成会自动苏醒，wait()不会自动苏醒，需要其它线程调用同一对象上的notify() notifyAll()方法苏醒。 共同点： 两者都可以暂停线程的执行 11. 锁的概念 乐观锁 | 悲观锁 悲观锁：获取数据先加锁，确保数据不会被修改 乐观锁：获取不加锁，更新的时候校验数据是否已经被修改，底层采用CAS算法实现。 自旋锁 | 自适应自旋锁 自旋锁： 在获取锁失败时自动进入阻塞队列，假设线程刚进入阻塞，别的线程就释放了锁，这样再去唤醒线程再去获取锁，就会造成系统性能了浪费。 自旋锁就是通过在获取锁失败的时候，不进入堵塞队列，多获取几遍锁，统称就是自旋。 底层源码层面就是利用了do while进行重试。 自适应自旋锁： 自旋锁会在获取锁失败的时候多重复获取锁，但是如果一直获取不到锁，就会造成系统性能浪费，还不如进入堵塞队列，等待唤醒。 自适应自旋锁就是代表获取的次数不再固定，而是通过规则来就决定 规则1：如果同一个锁上的对象刚刚成功获取了锁，那么系统就会认为很有可能再次获取成功，会多自旋等待。 规则2：如果对于一个锁，他很少有线程成功共获取锁，那么系统就会认为不能再获取锁，就会直接进入堵塞队列。 公平锁 | 非公平锁 公平锁：对于线程获取锁，遵守锁的申请顺序，按序获得锁。 非公平锁：线程获取先直接试着获取锁，如果获取不到，再采用公平锁进行排队获取。 通俗说：公平锁需要排队，非公平锁先插队，插队失败再排队。\n优缺点：\n公平锁：\n优点：线程不会一直堵塞。\n缺点：整体效率比非公平锁低，每个堵塞的线程都需要唤醒，造成系统性能消耗过大。\n非公平锁:\n优点：线程有几率可以直接获取锁，减少系统性能开销，提高性能。\n缺点：可能会造成有的线程会一直堵塞。\n可重入锁 | 不可重入锁 可重入锁：也称递归锁，一个线程可以重复获取同一锁。优点可一定程度上避免死锁。 不可重入锁：一个线程不能重复获取同一锁，即如果一个线程获取了一个锁，然后想要再次获取这个锁，就要先释放再重新获取。 以 synchronized 举例：\nsynchronized 是可重入锁，同一线程调用func1可以直接获得当前对象的锁，进入func2操作。\n如果时不可重入锁，那么线程在调用func1的时候需要把func1的锁释放掉才能进入func2，但是该对象锁又正在被当前线程持有，无法释放，形成死锁。\n共享锁 | 排它锁 共享锁：即读锁，可以被多个线程持有。如果线程A对数据1加共享锁，那么别的线程只能对数据1加共享锁，且只能读数据，不能修改数据。 排它锁：即读写锁，只能被一个线程持有，如果线程A对数据1加排它锁，那么别的线程就不能对数据1添加任何锁，且线程A可以对数据1进行读写操作。 Java 中的 synchronized 和 ReentrantLock 就是排他锁。\n",
+  "wordCount" : "13720",
+  "inLanguage": "en",
+  "datePublished": "2023-08-07T00:00:00Z",
+  "dateModified": "2023-08-07T00:00:00Z",
+  "author":{
+    "@type": "Person",
+    "name": "ZhouJze"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://zhoujze.github.io/en/posts/tech/java/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "ZhouJz's blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://zhoujze.github.io/img/Q.jpg"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    (function () {
+        let  arr,reg = new RegExp("(^| )"+"change-themes"+"=([^;]*)(;|$)");
+        if(arr = document.cookie.match(reg)) {
+        } else {
+            if (new Date().getHours() >= 19 || new Date().getHours() < 6) {
+                document.body.classList.add('dark');
+                localStorage.setItem("pref-theme", 'dark');
+            } else {
+                document.body.classList.remove('dark');
+                localStorage.setItem("pref-theme", 'light');
+            }
+        }
+    })()
+
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://zhoujze.github.io/en/" accesskey="h" title="ZhouJze&#39;s Blog (Alt + H)">
+            <img src="https://zhoujze.github.io/img/Q.jpg" alt="logo" aria-label="logo"
+                 height="35">ZhouJze&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                         stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                         stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://zhoujze.github.io/en/search" title="🔍搜索 (Alt &#43; /)" accesskey=/>
+                <span>🔍搜索</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zhoujze.github.io/en/" title="🏠主页">
+                <span>🏠主页</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zhoujze.github.io/en/archives/" title="⏱时间轴">
+                <span>⏱时间轴</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zhoujze.github.io/en/tags" title="🔖标签">
+                <span>🔖标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zhoujze.github.io/en/about" title="🙋🏻‍♂️关于">
+                <span>🙋🏻‍♂️关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main page">
+<style>
+    i[id*="post_meta_style"] {
+        display: flex;
+        align-items: center;
+        margin: 0 0 10px 0;
+    }
+</style>
+
+<article class="post-single">
+    <div id="single-content">
+        <header class="post-header">
+            <div class="breadcrumbs"><a href="https://zhoujze.github.io/en/">🏠 主页</a>&nbsp;»&nbsp;<a href="https://zhoujze.github.io/en/posts/">📚文章</a>&nbsp;»&nbsp;<a href="https://zhoujze.github.io/en/posts/tech/">👨🏻‍💻 技术</a></div>
+            <h1 class="post-title">
+                Java
+            </h1>
+            <div class="post-description">
+                Java基础入门
+            </div>
+            <div class="post-meta">
+
+<style>
+    i[id*="post_meta_style"] {
+        display: flex;
+        align-items: center;
+        margin: 0 0 10px 0;
+    }
+
+    .parent-post-meta {
+        display: flex;
+        flex-wrap: wrap;
+        opacity: 0.8;
+    }
+</style>
+
+<span class="parent-post-meta">
+    <span id="post_meta_style_1">
+        <span class="fa fa-calendar-check-o"></span>
+        <span>2023-08-07
+            &nbsp;&nbsp;
+        </span>
+    </span>
+    
+    
+    
+    
+    
+    
+    
+    <span id="post_meta_style_3">
+        <span class="fa fa-file-word-o"></span>
+        <span>13720字
+            &nbsp;&nbsp;
+        </span>
+    </span>
+    <span id="post_meta_style_4">
+        <span class="fa fa-clock-o"></span>
+        <span>28分钟
+            &nbsp;&nbsp;
+        </span>
+    </span>
+    <span id="post_meta_style_5">
+        <span class="fa fa-user-o"></span>
+        <span>ZhouJze
+            &nbsp;&nbsp;
+        </span>
+    </span>
+    <span id="post_meta_style_6">
+        <span class="fa fa-tags" style="opacity: 0.8"></span>
+        <span>
+            <span class="post-tags-meta">
+                <a href="https://zhoujze.github.io/en/tags/java/" style="color: var(--secondary)!important;">Java</a>
+                &nbsp;<a href="https://zhoujze.github.io/en/tags/%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" style="color: var(--secondary)!important;">基础知识</a>
+                &nbsp;<a href="https://zhoujze.github.io/en/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" style="color: var(--secondary)!important;">多线程</a>
+                &nbsp;<a href="https://zhoujze.github.io/en/tags/gc%E5%9B%9E%E6%94%B6/" style="color: var(--secondary)!important;">GC回收</a>
+                &nbsp;<a href="https://zhoujze.github.io/en/tags/jvm/" style="color: var(--secondary)!important;">JVM</a>
+            </span>
+        </span>
+    </span>
+</span>
+<span style="opacity: 0.8;">
+                    <span id="post_meta_style_7">
+                        &nbsp;&nbsp;
+                        <span class="fa fa-eye" ></span>
+                        <span>
+                            <span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span></span>
+                            &nbsp;&nbsp;
+                        </span>
+                    </span>
+                    <span id="post_meta_style_8">
+                        <span class="fa fa-commenting-o"></span>
+                        <span>
+                            <script src="https://cdn.staticfile.org/twikoo/1.4.11/twikoo.all.min.js"></script>
+                            <script>
+                                let url = document.documentURI
+                                
+                                let dnsUrl = "https://zhoujze.github.io/"
+                                let urlSplit = url.split(dnsUrl)
+                                let finalUrl = urlSplit[1]
+                                if (finalUrl[0] !== '/') {
+                                    finalUrl = '/'+finalUrl
+                                }
+                                twikoo.getCommentsCount({
+                                    envId:  null , 
+                                region:  null , 
+                                urls: [ 
+                                    
+                                    finalUrl,
+                                ],
+                                    includeReply: false 
+                                }).then(function (res) {
+                                    let count = res[0].count
+                                    const obj = document.getElementById("comment_count");
+                                    obj.innerText = count
+                                    
+                                    
+                                    
+                                }).catch(function (err) {
+                                    
+                                    console.error(err);
+                                });
+                            </script>
+                            <span id="comment_count"></span>
+                        </span>
+                    </span>
+                </span>
+
+</div>
+        </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">文章目录</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#java%e5%9f%ba%e7%a1%80%e7%9f%a5%e8%af%86%e7%82%b9%e6%b1%87%e6%80%bb" aria-label="Java基础知识点汇总">Java基础知识点汇总</a><ul>
+                        
+                <li>
+                    <a href="#0-java%e8%af%ad%e8%a8%80%e7%89%b9%e6%80%a7" aria-label="0. Java语言特性">0. Java语言特性</a></li>
+                <li>
+                    <a href="#1-%e9%9d%a2%e5%90%91%e5%af%b9%e8%b1%a1%e5%92%8c%e9%9d%a2%e5%90%91%e8%bf%87%e7%a8%8b%e5%8c%ba%e5%88%ab" aria-label="1. 面向对象和面向过程区别">1. 面向对象和面向过程区别</a></li>
+                <li>
+                    <a href="#2-%e9%9d%a2%e5%90%91%e5%af%b9%e8%b1%a1%e7%9a%84%e4%b8%89%e5%a4%a7%e7%89%b9%e6%80%a7" aria-label="2. 面向对象的三大特性">2. 面向对象的三大特性</a></li>
+                <li>
+                    <a href="#3-%e6%8a%bd%e8%b1%a1%e7%b1%bb" aria-label="3. 抽象类">3. 抽象类</a></li>
+                <li>
+                    <a href="#4-%e6%8e%a5%e5%8f%a3" aria-label="4. 接口">4. 接口</a></li>
+                <li>
+                    <a href="#5-%e6%8a%bd%e8%b1%a1%e7%b1%bb%e5%92%8c%e6%8e%a5%e5%8f%a3%e7%9a%84%e5%8c%ba%e5%88%ab" aria-label="5. 抽象类和接口的区别">5. 抽象类和接口的区别</a></li></ul>
+                </li>
+                <li>
+                    <a href="#jvm%e7%9f%a5%e8%af%86%e7%82%b9" aria-label="JVM知识点">JVM知识点</a><ul>
+                        
+                <li>
+                    <a href="#1-jvm%e5%9f%ba%e7%a1%80%e7%9f%a5%e8%af%86" aria-label="1. JVM基础知识">1. JVM基础知识</a><ul>
+                        
+                <li>
+                    <a href="#1-jvm%e7%b1%bb%e6%96%87%e4%bb%b6%e7%bb%93%e6%9e%84" aria-label="1. JVM类文件结构">1. JVM类文件结构</a></li>
+                <li>
+                    <a href="#2-java%e7%b1%bb%e7%9a%84%e5%8a%a0%e8%bd%bd%e6%9c%ba%e5%88%b6" aria-label="2. Java类的加载机制">2. Java类的加载机制</a></li>
+                <li>
+                    <a href="#%e7%b1%bb%e7%9a%84%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f" aria-label="类的生命周期">类的生命周期</a></li>
+                <li>
+                    <a href="#%e7%b1%bb%e5%8a%a0%e8%bd%bd%e5%99%a8font-colorredclassloaderfont%e5%ae%9e%e7%8e%b0%e7%b1%bb%e7%9a%84%e5%8a%a0%e8%bd%bd" aria-label="类加载器（ClassLoader）:实现类的加载">类加载器（<font color="red">ClassLoader</font>）:实现类的加载</a></li></ul>
+                </li>
+                <li>
+                    <a href="#2-jvm%e5%86%85%e5%ad%98%e7%bb%93%e6%9e%84" aria-label="2. JVM内存结构">2. JVM内存结构</a><ul>
+                        
+                <li>
+                    <a href="#%e8%bf%90%e8%a1%8c%e6%97%b6%e6%95%b0%e6%8d%ae%e5%8c%ba" aria-label="运行时数据区">运行时数据区</a><ul>
+                        
+                <li>
+                    <a href="#%e7%a8%8b%e5%ba%8f%e8%ae%a1%e6%95%b0%e5%99%a8" aria-label="程序计数器">程序计数器</a></li>
+                <li>
+                    <a href="#%e8%99%9a%e6%8b%9f%e6%9c%ba%e6%a0%88" aria-label="虚拟机栈">虚拟机栈</a></li>
+                <li>
+                    <a href="#%e6%9c%ac%e5%9c%b0%e6%96%b9%e6%b3%95%e6%a0%88" aria-label="本地方法栈">本地方法栈</a></li>
+                <li>
+                    <a href="#%e5%a0%86" aria-label="堆">堆</a></li>
+                <li>
+                    <a href="#%e6%96%b9%e6%b3%95%e5%8c%ba" aria-label="方法区">方法区</a></li>
+                <li>
+                    <a href="#%e8%bf%90%e8%a1%8c%e6%97%b6%e5%b8%b8%e9%87%8f%e6%b1%a0" aria-label="运行时常量池">运行时常量池</a></li>
+                <li>
+                    <a href="#%e7%9b%b4%e6%8e%a5%e5%86%85%e5%ad%98" aria-label="直接内存">直接内存</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e8%99%9a%e6%8b%9f%e6%9c%ba%e5%88%9b%e5%bb%ba%e5%af%b9%e8%b1%a1%e5%85%a8%e8%bf%87%e7%a8%8b" aria-label="虚拟机创建对象全过程">虚拟机创建对象全过程</a><ul>
+                        
+                <li>
+                    <a href="#%e5%af%b9%e8%b1%a1%e7%9a%84%e5%88%9b%e5%bb%ba" aria-label="对象的创建">对象的创建</a><ul>
+                        
+                <li>
+                    <a href="#%e7%b1%bb%e5%8a%a0%e8%bd%bd%e5%99%a8%e6%a3%80%e6%9f%a5" aria-label="类加载器检查">类加载器检查</a></li>
+                <li>
+                    <a href="#%e5%88%86%e9%85%8d%e5%86%85%e5%ad%98" aria-label="分配内存">分配内存</a></li>
+                <li>
+                    <a href="#%e5%88%9d%e5%a7%8b%e5%8c%96%e9%9b%b6%e5%80%bc" aria-label="初始化零值">初始化零值</a></li>
+                <li>
+                    <a href="#%e8%ae%be%e7%bd%ae%e5%af%b9%e8%b1%a1%e5%a4%b4" aria-label="设置对象头">设置对象头</a></li>
+                <li>
+                    <a href="#%e6%89%a7%e8%a1%8cinit%e6%96%b9%e6%b3%95" aria-label="执行init方法">执行init方法</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e5%af%b9%e8%b1%a1%e7%9a%84%e5%86%85%e5%ad%98%e5%b8%83%e5%b1%80" aria-label="对象的内存布局">对象的内存布局</a></li>
+                <li>
+                    <a href="#%e5%af%b9%e8%b1%a1%e7%9a%84%e8%ae%bf%e9%97%ae%e5%ae%9a%e4%bd%8d" aria-label="对象的访问定位">对象的访问定位</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e9%87%8d%e7%82%b9%e8%a1%a5%e5%85%85" aria-label="重点补充">重点补充</a><ul>
+                        
+                <li>
+                    <a href="#string%e5%92%8c%e5%b8%b8%e9%87%8f%e6%b1%a0" aria-label="String和常量池">String和常量池</a></li>
+                <li>
+                    <a href="#8%e7%a7%8d%e5%9f%ba%e6%9c%ac%e6%95%b0%e6%8d%ae%e7%b1%bb%e5%9e%8b%e7%9a%84%e5%8c%85%e8%a3%85%e7%b1%bb%e5%92%8c%e5%b8%b8%e9%87%8f%e6%b1%a0" aria-label="8种基本数据类型的包装类和常量池">8种基本数据类型的包装类和常量池</a></li></ul>
+                </li></ul>
+                </li>
+                <li>
+                    <a href="#3-%e5%9e%83%e5%9c%be%e5%9b%9e%e6%94%b6gc%e6%9c%ba%e5%88%b6" aria-label="3. 垃圾回收——GC机制">3. 垃圾回收——GC机制</a><ul>
+                        
+                <li>
+                    <a href="#%e4%bb%80%e4%b9%88%e6%98%afjvm%e5%9e%83%e5%9c%be%e5%9b%9e%e6%94%b6" aria-label="什么是JVM垃圾回收">什么是JVM垃圾回收</a><ul>
+                        
+                <li>
+                    <a href="#%e5%af%b9%e8%b1%a1%e4%bc%98%e5%85%88%e5%88%86%e9%85%8d%e5%9c%a8eden%e5%8c%ba" aria-label="对象优先分配在eden区">对象优先分配在eden区</a></li>
+                <li>
+                    <a href="#%e5%a4%a7%e5%af%b9%e8%b1%a1%e7%9b%b4%e6%8e%a5%e8%bf%9b%e5%85%a5%e8%80%81%e5%b9%b4%e4%bb%a3" aria-label="大对象直接进入老年代">大对象直接进入老年代</a></li>
+                <li>
+                    <a href="#%e9%95%bf%e6%9c%9f%e5%ad%98%e6%b4%bb%e7%9a%84%e5%af%b9%e8%b1%a1%e8%bf%9b%e5%85%a5%e8%80%81%e5%b9%b4%e4%bb%a3" aria-label="长期存活的对象进入老年代">长期存活的对象进入老年代</a></li>
+                <li>
+                    <a href="#%e5%8a%a8%e6%80%81%e7%9a%84%e5%af%b9%e8%b1%a1%e5%b9%b4%e9%be%84%e5%88%a4%e6%96%ad" aria-label="动态的对象年龄判断">动态的对象年龄判断</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e5%af%b9%e8%b1%a1%e6%ad%bb%e4%ba%a1%e5%88%a4%e6%96%ad" aria-label="对象死亡判断">对象死亡判断</a><ul>
+                        
+                <li>
+                    <a href="#1-%e5%bc%95%e7%94%a8%e8%ae%a1%e6%95%b0%e6%b3%95" aria-label="1. 引用计数法">1. 引用计数法</a></li>
+                <li>
+                    <a href="#2-%e5%8f%af%e8%be%be%e6%80%a7%e5%88%86%e6%9e%90%e7%ae%97%e6%b3%95" aria-label="2. 可达性分析算法">2. 可达性分析算法</a></li>
+                <li>
+                    <a href="#3-%e5%86%8d%e8%b0%88%e5%bc%95%e7%94%a8" aria-label="3. 再谈引用">3. 再谈引用</a></li>
+                <li>
+                    <a href="#4-%e4%b8%8d%e5%8f%af%e8%be%be%e7%9a%84%e5%af%b9%e8%b1%a1%e5%b9%b6%e9%9d%9e%e9%9d%9e%e6%ad%bb%e4%b8%8d%e5%8f%af" aria-label="4. 不可达的对象并非“非死不可”">4. 不可达的对象并非“非死不可”</a></li>
+                <li>
+                    <a href="#5-%e5%a6%82%e4%bd%95%e5%88%a4%e6%96%ad%e4%b8%80%e4%b8%aa%e5%b8%b8%e9%87%8f%e6%98%af%e5%ba%9f%e5%bc%83%e5%b8%b8%e9%87%8f" aria-label="5. 如何判断一个常量是废弃常量">5. 如何判断一个常量是废弃常量</a></li>
+                <li>
+                    <a href="#6-%e5%a6%82%e4%bd%95%e5%88%a4%e6%96%ad%e4%b8%80%e4%b8%aa%e7%b1%bb%e6%98%af%e6%97%a0%e7%94%a8%e7%9a%84%e7%b1%bb" aria-label="6. 如何判断一个类是无用的类">6. 如何判断一个类是无用的类</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e5%9e%83%e5%9c%be%e6%94%b6%e9%9b%86%e7%ae%97%e6%b3%95" aria-label="垃圾收集算法">垃圾收集算法</a><ul>
+                        
+                <li>
+                    <a href="#1-%e6%a0%87%e8%ae%b0-%e6%b8%85%e9%99%a4%e7%ae%97%e6%b3%95" aria-label="1. 标记-清除算法">1. 标记-清除算法</a></li>
+                <li>
+                    <a href="#2-%e5%a4%8d%e5%88%b6%e7%ae%97%e6%b3%95" aria-label="2. 复制算法">2. 复制算法</a></li>
+                <li>
+                    <a href="#3-%e6%a0%87%e8%ae%b0-%e6%95%b4%e7%90%86%e7%ae%97%e6%b3%95" aria-label="3. 标记-整理算法">3. 标记-整理算法</a></li>
+                <li>
+                    <a href="#4-%e5%88%86%e4%bb%a3%e6%94%b6%e9%9b%86%e7%ae%97%e6%b3%95" aria-label="4. 分代收集算法">4. 分代收集算法</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e5%9e%83%e5%9c%be%e6%94%b6%e9%9b%86%e5%99%a8" aria-label="垃圾收集器">垃圾收集器</a><ul>
+                        
+                <li>
+                    <a href="#1-serial%e6%94%b6%e9%9b%86%e5%99%a8" aria-label="1. Serial收集器">1. Serial收集器</a></li>
+                <li>
+                    <a href="#2-parnew%e6%94%b6%e9%9b%86%e5%99%a8" aria-label="2. ParNew收集器">2. ParNew收集器</a></li>
+                <li>
+                    <a href="#3-parallel-scavenge%e6%94%b6%e9%9b%86%e5%99%a8" aria-label="3. Parallel Scavenge收集器">3. Parallel Scavenge收集器</a></li>
+                <li>
+                    <a href="#4-serial-old%e6%94%b6%e9%9b%86%e5%99%a8" aria-label="4. Serial Old收集器">4. Serial Old收集器</a></li>
+                <li>
+                    <a href="#5-parallel-old%e6%94%b6%e9%9b%86%e5%99%a8" aria-label="5. Parallel Old收集器">5. Parallel Old收集器</a></li>
+                <li>
+                    <a href="#4-cms%e6%94%b6%e9%9b%86%e5%99%a8" aria-label="4. CMS收集器">4. CMS收集器</a></li>
+                <li>
+                    <a href="#5-g1%e6%94%b6%e9%9b%86%e5%99%a8" aria-label="5. G1收集器">5. G1收集器</a></li></ul>
+                </li></ul>
+                </li>
+                <li>
+                    <a href="#4-jvm%e8%b0%83%e4%bc%98" aria-label="4. JVM调优">4. JVM调优</a><ul>
+                        
+                <li>
+                    <a href="#gc%e6%80%a7%e8%83%bd%e6%8c%87%e6%a0%87%e5%92%8c%e5%9f%ba%e6%9c%ac%e8%b0%83%e4%bc%98%e7%ad%96%e7%95%a5" aria-label="GC性能指标和基本调优策略">GC性能指标和基本调优策略</a><ul>
+                        
+                <li>
+                    <a href="#gc%e6%80%a7%e8%83%bd%e8%a1%a1%e9%87%8f%e6%8c%87%e6%a0%87" aria-label="GC性能衡量指标">GC性能衡量指标</a></li>
+                <li>
+                    <a href="#gc%e8%b0%83%e4%bc%98%e7%ad%96%e7%95%a5" aria-label="GC调优策略">GC调优策略</a><ul>
+                        
+                <li>
+                    <a href="#%e9%99%8d%e4%bd%8e-minor-gc-%e9%a2%91%e7%8e%87" aria-label="降低 Minor GC 频率">降低 Minor GC 频率</a></li>
+                <li>
+                    <a href="#%e9%99%8d%e4%bd%8e-full-gc-%e9%a2%91%e7%8e%87" aria-label="降低 Full GC 频率">降低 Full GC 频率</a></li>
+                <li>
+                    <a href="#%e9%80%89%e6%8b%a9%e5%90%88%e9%80%82%e7%9a%84gc%e5%9b%9e%e6%94%b6%e5%99%a8" aria-label="选择合适的GC回收器">选择合适的GC回收器</a></li></ul>
+                </li></ul>
+                </li>
+                <li>
+                    <a href="#jvm%e8%b0%83%e4%bc%98%e5%ae%9e%e4%be%8b-1-%e7%ba%bf%e4%b8%8acpu100%e6%80%8e%e4%b9%88%e6%8e%92%e6%9f%a5" aria-label="JVM调优实例 1 ：线上CPU100%怎么排查">JVM调优实例 1 ：线上CPU100%怎么排查</a></li>
+                <li>
+                    <a href="#jvm%e8%b0%83%e4%bc%98%e5%ae%9e%e4%be%8b-2-%e5%81%8f%e5%90%91%e9%94%81%e5%af%bc%e8%87%b4minor-gc%e9%a2%91%e7%b9%81%e9%97%ae%e9%a2%98" aria-label="JVM调优实例 2 ：偏向锁导致Minor GC频繁问题">JVM调优实例 2 ：偏向锁导致Minor GC频繁问题</a></li>
+                <li>
+                    <a href="#jvm%e8%b0%83%e4%bc%98%e5%ae%9e%e4%be%8b-3--xmm%e5%8f%82%e6%95%b0%e8%ae%be%e7%bd%ae%e9%94%99%e8%af%af%e5%af%bc%e8%87%b4%e7%9a%84omm" aria-label="JVM调优实例 3 ：-Xmm参数设置错误导致的OMM">JVM调优实例 3 ：-Xmm参数设置错误导致的OMM</a></li>
+                <li>
+                    <a href="#jvm%e8%b0%83%e4%bc%98%e5%ae%9e%e4%be%8b-4-%e8%bf%9e%e6%8e%a5%e6%b1%a0%e5%92%8cmybatis%e5%af%bc%e8%87%b4%e7%9a%84omm" aria-label="JVM调优实例 4 ：连接池和Mybatis导致的OMM">JVM调优实例 4 ：连接池和Mybatis导致的OMM</a></li></ul>
+                </li></ul>
+                </li>
+                <li>
+                    <a href="#%e5%a4%9a%e7%ba%bf%e7%a8%8b" aria-label="多线程">多线程</a><ul>
+                        
+                <li>
+                    <a href="#1-%e7%ba%bf%e7%a8%8b%e5%92%8c%e8%bf%9b%e7%a8%8b" aria-label="1. 线程和进程">1. 线程和进程</a></li>
+                <li>
+                    <a href="#2-%e5%b9%b6%e8%a1%8c%e5%92%8c%e5%b9%b6%e5%8f%91" aria-label="2. 并行和并发">2. 并行和并发</a></li>
+                <li>
+                    <a href="#3-%e4%b8%ba%e4%bb%80%e4%b9%88%e4%bd%bf%e7%94%a8%e5%a4%9a%e7%ba%bf%e7%a8%8b" aria-label="3. 为什么使用多线程：">3. 为什么使用多线程：</a></li>
+                <li>
+                    <a href="#4-%e5%a4%9a%e7%ba%bf%e7%a8%8b%e5%ad%98%e5%9c%a8%e7%9a%84%e9%97%ae%e9%a2%98" aria-label="4. 多线程存在的问题：">4. 多线程存在的问题：</a></li>
+                <li>
+                    <a href="#5-%e7%ba%bf%e7%a8%8b%e7%9a%84%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f" aria-label="5. 线程的生命周期">5. 线程的生命周期</a></li>
+                <li>
+                    <a href="#6-%e7%ba%bf%e7%a8%8b%e7%8a%b6%e6%80%81%e8%bf%81%e5%8f%98%e5%9b%be" aria-label="6. 线程状态迁变图">6. 线程状态迁变图</a></li>
+                <li>
+                    <a href="#7-%e5%88%9b%e5%bb%ba%e7%ba%bf%e7%a8%8b" aria-label="7. 创建线程">7. 创建线程</a></li>
+                <li>
+                    <a href="#8-%e5%90%af%e5%8a%a8%e7%ba%bf%e7%a8%8b%e4%b8%ba%e4%bb%80%e4%b9%88%e7%94%a8start%e8%80%8c%e4%b8%8d%e7%94%a8run" aria-label="8. 启动线程为什么用start()而不用run()">8. 启动线程为什么用<code>start()</code>而不用<code>run()</code></a></li>
+                <li>
+                    <a href="#9-%e6%ad%bb%e9%94%81" aria-label="9. 死锁">9. 死锁</a></li>
+                <li>
+                    <a href="#10-sleep%e5%92%8cwait%e7%9a%84%e5%8c%ba%e5%88%ab%e5%92%8c%e5%85%b1%e5%90%8c%e7%82%b9" aria-label="10. sleep()和wait()的区别和共同点">10. <code>sleep()</code>和<code>wait()</code>的区别和共同点</a></li>
+                <li>
+                    <a href="#11-%e9%94%81%e7%9a%84%e6%a6%82%e5%bf%b5" aria-label="11. 锁的概念">11. 锁的概念</a><ul>
+                        
+                <li>
+                    <a href="#%e4%b9%90%e8%a7%82%e9%94%81--%e6%82%b2%e8%a7%82%e9%94%81" aria-label="乐观锁 | 悲观锁">乐观锁 | 悲观锁</a></li>
+                <li>
+                    <a href="#%e8%87%aa%e6%97%8b%e9%94%81--%e8%87%aa%e9%80%82%e5%ba%94%e8%87%aa%e6%97%8b%e9%94%81" aria-label="自旋锁 | 自适应自旋锁">自旋锁 | 自适应自旋锁</a></li>
+                <li>
+                    <a href="#%e5%85%ac%e5%b9%b3%e9%94%81--%e9%9d%9e%e5%85%ac%e5%b9%b3%e9%94%81" aria-label="公平锁 | 非公平锁">公平锁 | 非公平锁</a></li>
+                <li>
+                    <a href="#%e5%8f%af%e9%87%8d%e5%85%a5%e9%94%81--%e4%b8%8d%e5%8f%af%e9%87%8d%e5%85%a5%e9%94%81" aria-label="可重入锁 | 不可重入锁">可重入锁 | 不可重入锁</a></li>
+                <li>
+                    <a href="#%e5%85%b1%e4%ba%ab%e9%94%81--%e6%8e%92%e5%ae%83%e9%94%81" aria-label="共享锁 | 排它锁">共享锁 | 排它锁</a>
+                </li>
+            </ul>
+            </li>
+            </ul>
+            </li>
+            </ul>
+        </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+        
+        activeElement = elements[0];
+        const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+        document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+    }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        if (elements) {
+            activeElement = Array.from(elements).find((element) => {
+                if ((getOffsetTop(element) - window.pageYOffset) > 0 &&
+                    (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                    return element;
+                }
+            }) || activeElement
+
+            elements.forEach(element => {
+                const id = encodeURI(element.getAttribute('id')).toLowerCase();
+                if (element === activeElement){
+                    document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+                } else {
+                    document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+                }
+            })
+        }
+    }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;
+    }
+</script>
+        <div class="post-content"><h1 id="java基础知识点汇总">Java基础知识点汇总<a hidden class="anchor" aria-hidden="true" href="#java基础知识点汇总">#</a></h1>
+<h2 id="0-java语言特性">0. Java语言特性<a hidden class="anchor" aria-hidden="true" href="#0-java语言特性">#</a></h2>
+<ul>
+<li>简单易学</li>
+<li>具有面向对象三大特性：继承、封装、多态</li>
+<li>平台无关性（由JVM虚拟机实现与平台无关）</li>
+<li>可靠性</li>
+<li>安全性</li>
+<li>支持多线程</li>
+<li>支持网络编程</li>
+<li>编译与解释并存</li>
+<li>与C++相比：
+<ul>
+<li>都是面向对象的语言，都支持继承封装多态</li>
+<li>Java不提供指针来直接访问内存，更加安全</li>
+<li>Java支持单继承，C++支持多重继承，但是Java中接口支持多重继承</li>
+<li>Java有自动内存管理机制，不用程序员手动释放无用内存</li>
+</ul>
+</li>
+</ul>
+<h2 id="1-面向对象和面向过程区别">1. 面向对象和面向过程区别<a hidden class="anchor" aria-hidden="true" href="#1-面向对象和面向过程区别">#</a></h2>
+<ul>
+<li>面向对象：易复用、易维护、易扩展。因为面向对象有继承、封装、多态的特性，实现的代码的低耦合度，使系统更加灵活、便于维护。</li>
+<li>面向过程：性能要比面向对象高。因为类的调用需要实例化，消耗资源。所以当性能是首要选择的时候，我们常常选择面向过程开发。如单片机、嵌入式等。</li>
+<li>总结：面向对象低耦合便于维护、易复用、易维护，但是性能没有面向过程高。</li>
+</ul>
+<h2 id="2-面向对象的三大特性">2. 面向对象的三大特性<a hidden class="anchor" aria-hidden="true" href="#2-面向对象的三大特性">#</a></h2>
+<ul>
+<li>继承：
+<ul>
+<li>是什么：继承是以已有的类为基础，扩展新类的技术。新类可以增加新的数据或者新的功能，他也可以复用父类的功能，但是不能选择性的继承父类，要继承父类的全部。</li>
+<li>有什么用：通过使用继承我们可以很方便的复用以前的代码。</li>
+<li>总结：
+<ul>
+<li>子类拥有父类的所有方法和属性，包括私有的方法和属性，但是私有的方法和属性子类无法直接调用，需要父类提供特定的方法去调用。</li>
+<li>子类可以有自己的属性和方法。实现对父类的扩展。</li>
+<li>子类可以用自己的方式实现父类的方法。即使用对父类方法的重写。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>封装：把一个对象的属性进行私有化，然后提供可以被外界访问的属性的方法。典型就是实体类的标准JavaBean。</li>
+<li>多态：
+<ul>
+<li>什么是多态：就是多种形态，具体来说就是同一件事情，发生在不同对象身上，就会产生不同的结果。</li>
+<li>多态实现条件：
+<ul>
+<li>继承体系下</li>
+<li>子类对父类方法的重写</li>
+<li>通过父类的引用调用重写的方法</li>
+</ul>
+</li>
+<li>多态的体现：在代码运行的时候，传递不同类对现象的时候，会调用对应类中的方法</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Main</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">main</span><span style="color:#f92672">(</span>String<span style="color:#f92672">[]</span> args<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">//向上转型
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        Animal dog <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Dog<span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>        dog<span style="color:#f92672">.</span><span style="color:#a6e22e">eat</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//        dog.dogShow;//编译看左边 在编译的时候animal类没有.dogShow方法，编译就会报错
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        Animal cat <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Cat<span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>        cat<span style="color:#f92672">.</span><span style="color:#a6e22e">eat</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//        cat.catShow;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#75715e">//结论：编译看左边，发生向上转型的时候只能调用父类有的成员和方法，不能调用子类特有的
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">//向下转型
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        Animal animal <span style="color:#f92672">=</span> dog<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>        Dog dog1 <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>Dog<span style="color:#f92672">)</span> animal<span style="color:#f92672">;</span><span style="color:#75715e">//animal本来就是dog，所以强制转换后不会抛出异常；
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//        Cat cat1 = (Cat) animal;//强制将狗转换成猫，运行时抛出异常：ClassCastException
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">//引入instanceof对类型进行判断，如果安全则为true
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>animal <span style="color:#66d9ef">instanceof</span> Cat<span style="color:#f92672">){</span>
+</span></span><span style="display:flex;"><span>            Cat cat2 <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>Cat<span style="color:#f92672">)</span> animal<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>            cat2<span style="color:#f92672">.</span><span style="color:#a6e22e">catShow</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>animal <span style="color:#66d9ef">instanceof</span> Dog<span style="color:#f92672">){</span>
+</span></span><span style="display:flex;"><span>            Dog dog2 <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>Dog<span style="color:#f92672">)</span> animal<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>            dog2<span style="color:#f92672">.</span><span style="color:#a6e22e">dogShow</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">//sout
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#75715e">//吃骨头
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#75715e">//吃猫粮
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#75715e">//汪汪汪
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Animal</span><span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">eat</span><span style="color:#f92672">(){</span>
+</span></span><span style="display:flex;"><span>        System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;吃饭&#34;</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Dog</span> <span style="color:#66d9ef">extends</span> Animal<span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Override</span>  <span style="color:#75715e">//@Override重写注解，用于对重写的方法进行检查，重写的方法名返回值和方法的参数列表一定要相同，且对访问修饰符不能做更严格的限制。
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">eat</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;吃骨头&#34;</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">dogShow</span><span style="color:#f92672">(){</span>
+</span></span><span style="display:flex;"><span>        System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;汪汪汪&#34;</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Cat</span> <span style="color:#66d9ef">extends</span> Animal<span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Override</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">eat</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;吃猫粮&#34;</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">catShow</span><span style="color:#f92672">(){</span>
+</span></span><span style="display:flex;"><span>        System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;喵喵喵&#34;</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><ul>
+<li>重写涉及到动态绑定机制：
+<ul>
+<li>静态绑定(前期绑定):编译器在编译的时候就可以确定调用的方法<br>
+final、static、private修饰的方法和构造函数为静态绑定</li>
+<li>动态绑定(后期绑定):编译器在<font color="red">运行时</font>才可以确定调用的方法</li>
+<li>Java动态绑定机制
+<ol>
+<li>当调用对象方法时，该方法会和该对象的内存地址绑定。</li>
+<li>当调用对象属性时，没有动态绑定，哪里声明哪里使用。</li>
+</ol>
+</li>
+<li>动态绑定的发生条件：
+<ol>
+<li>向上转型
+<code>Animal dog = new Dog();</code></li>
+<li>重写
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Dog</span> <span style="color:#66d9ef">extends</span> Animal<span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">@Override</span>  
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">eat</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;吃骨头&#34;</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div></li>
+<li>通过父类引用调用子类重写的父类方法。
+<code>dog.eat();</code></li>
+</ol>
+</li>
+</ul>
+</li>
+<li>向上转型特点：
+<ul>
+<li>可以调用父类里的所有成员</li>
+<li>不能调用子类所特有的成员和方法。</li>
+<li>运行时要看子类的具体表现，也就是子类所重写的父类方法。然后调用。</li>
+<li>优点：让代码实现更加简单灵活。</li>
+<li>缺点：不能调用子类所特有的成员和方法。</li>
+</ul>
+</li>
+<li>向下转型特点：
+<ul>
+<li>向下转型本质是在堆上创建了一个子类的对象赋值给父类的引用然后在回到子类的引用，可以使用子类所特有的方法。</li>
+<li>因为在对上创建的子类对象不同，所以在最后回到子类的引用的时候可能是不安全的。有可能出现子类猫的堆赋值给了狗的引用，这是不安全的。因此Java引入了instanceof来判断是否安全</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>animal <span style="color:#66d9ef">instanceof</span> Cat<span style="color:#f92672">){</span>
+</span></span><span style="display:flex;"><span>     Cat cat2 <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>Cat<span style="color:#f92672">)</span> animal<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>     cat2<span style="color:#f92672">.</span><span style="color:#a6e22e">catShow</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span> <span style="color:#f92672">}</span>
+</span></span></code></pre></div></li>
+<li>总结多态优缺点：
+<ul>
+<li>优点：降低圈复杂度，就是减少大量使用if-else，只需要在父类里定义方法，然后子类重写该方法，最后在使用的时候进行向上转型即可。可扩展能力强，只需创建继承父类的子类然后在重写方法即可。对于调用者来说只要创建新类的实例就可以了。</li>
+<li>缺点：代码的运行效率低。属性没有多态，当父类和子类有同名的属性时，通过父类引用，只能引用到父类的成员属性。构造方法没有多态。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="3-抽象类">3. 抽象类<a hidden class="anchor" aria-hidden="true" href="#3-抽象类">#</a></h2>
+<ul>
+<li>是什么：类中存在仅定义而未实现的方法</li>
+<li>类中只要包含<font color="red">仅定义的方法</font>均为抽象类</li>
+<li>若子类未实现父类的全部方法，则也需要定义为抽象类</li>
+<li><font color="red">抽象类不可实例化</font></li>
+<li>抽象类的定义格式</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>class abstract 类名 extends 父类{
+</span></span><span style="display:flex;"><span> 权限修饰符 属性1
+</span></span><span style="display:flex;"><span> 权限修饰符 属性N
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span> 权限修饰符 类名1//构造器
+</span></span><span style="display:flex;"><span> 权限修饰符 类名N
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span> 权限修饰符 方法1
+</span></span><span style="display:flex;"><span> 权限修饰符 abstract 方法N
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><pre><code> * 可以通过&lt;font color=&quot;red&quot;&gt;default&lt;/font&gt;指定默认的实现方法
+ * 抽象类可以定义多个不需要实现的方法（用abstract修饰）
+ * 可以定义抽象类型的变量
+</code></pre>
+<h2 id="4-接口">4. 接口<a hidden class="anchor" aria-hidden="true" href="#4-接口">#</a></h2>
+<ul>
+<li>定义：只有定义没有方法体的方法和全局常量组成的类。</li>
+<li>接口的特性：
+<ul>
+<li>接口不可以被实例化，接口中不能有构造方法。</li>
+<li>不可在接口里定义变量，接口里的变量都自动被<code>public static final</code>修饰</li>
+<li>接口里的方法都自动被<code>public abstract</code>修饰，即接口中所有的方法都是抽象方法。</li>
+<li>接口的实现类必须实现接口的全部方法，否则必须定义为抽象类</li>
+</ul>
+</li>
+<li>作用：实现多重继承的效果，同时避免复杂度和低效性。</li>
+<li>接口的定义</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span>访问修饰符 <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">接口名</span> <span style="color:#66d9ef">extends</span> 父接口1<span style="color:#f92672">,</span>父接口2<span style="color:#f92672">,...{</span>
+</span></span><span style="display:flex;"><span> 常量
+</span></span><span style="display:flex;"><span> 方法
+</span></span><span style="display:flex;"><span> <span style="color:#66d9ef">default</span> <span style="color:#a6e22e">方法N</span><span style="color:#f92672">(</span>参数<span style="color:#f92672">){</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#75715e">//提供默认实现方法
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><ul>
+<li>接口的实现</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>访问修饰符 class 类名 extends 父类名 implements 接口1,接口2,...{
+</span></span><span style="display:flex;"><span> 自定义程序
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span> 实现接口方法
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><ul>
+<li>类可以同时实现多个接口，如果接口有冲突，需要在类里解决</li>
+<li>如果父类继承的方法和接口的方法冲突则默认接口的方法被省略</li>
+<li>接口规范（<font color="red">SPI</font>）：接口和实现类的解耦
+<ul>
+<li>本质：应用程序根据接口调用实现类</li>
+<li>实现徐奥引入依赖的<code>java.util.ServiceLoader</code></li>
+<li>SPI需遍历并加载所有的实现类（无法做到按需加载）</li>
+<li>SPI调用流程
+<img loading="lazy" src="%e6%8e%a5%e5%8f%a3SPI.png" alt="流程图"  />
+</li>
+</ul>
+</li>
+<li>接口优点：
+<ul>
+<li>可实现一个类多个接口，打破了类继承的局限性</li>
+<li>对外提供规则接口</li>
+<li>降低了程序的耦合性，可实现模块化开发，定义好规则，提高了开发的效率</li>
+</ul>
+</li>
+</ul>
+<h2 id="5-抽象类和接口的区别">5. 抽象类和接口的区别<a hidden class="anchor" aria-hidden="true" href="#5-抽象类和接口的区别">#</a></h2>
+<ul>
+<li>共性：不断抽取共性，没有具体的实现方法，都不能实例化。</li>
+<li>区别
+<ul>
+<li>接口没有构造方法，抽象类有。</li>
+<li>接口是对行为的抽象，是行为规范。抽象类是对类的抽象，是一种模板设计。</li>
+<li>接口不能有具体的方法体，java1.8中可以定义default默认方法体，抽象类中可以有抽象方法也可以有普通带方法体的方法。</li>
+<li>接口的实现类可以多接口实现，抽象类只能单继承。</li>
+<li>接口成员变量和方法默认会被修饰，抽象类中有普通的方法，必须有被abstract修饰的抽象方法。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h1 id="jvm知识点">JVM知识点<a hidden class="anchor" aria-hidden="true" href="#jvm知识点">#</a></h1>
+<p><img loading="lazy" src="JVM.png" alt="JVM知识图汇总"  />
+</p>
+<h2 id="1-jvm基础知识">1. JVM基础知识<a hidden class="anchor" aria-hidden="true" href="#1-jvm基础知识">#</a></h2>
+<h3 id="1-jvm类文件结构">1. JVM类文件结构<a hidden class="anchor" aria-hidden="true" href="#1-jvm类文件结构">#</a></h3>
+<ul>
+<li>Java程序(.java)通过Java编译器(javac)编译成<font color="red">字节码文件(.class)</font>以供Java虚拟机(JVM)解释成计算器可以识别的语言。</li>
+<li>.class字节码文件是不同语言在Java虚拟机沟通的桥梁，同时也是Java可以跨平台的重要原因
+<ul>
+<li><img loading="lazy" src="desktop%e7%b1%bb%e6%96%87%e4%bb%b6%e7%bb%93%e6%9e%84%e6%a6%82%e8%a7%88.png" alt="图"  />
+</li>
+<li>字节码文件结构
+<img loading="lazy" src="%e7%b1%bb%e6%96%87%e4%bb%b6%e5%ad%97%e8%8a%82%e7%a0%81%e7%bb%93%e6%9e%84%e7%bb%84%e7%bb%87%e7%a4%ba%e6%84%8f%e5%9b%be.png" alt="字节码文件结构"  />
+
+<ol>
+<li>魔数
+<ol>
+<li>确定一个文件是否是可以被JVM接收的Class文件</li>
+</ol>
+</li>
+<li>版本号（副版本号、主版本号）
+<ol>
+<li>在实际开发中开发和生产的JDK环境要一致</li>
+<li>Java虚拟机可以执行低版本编译器生成的Class文件，反之不行</li>
+</ol>
+</li>
+<li>常量池（常量池计数器、常量池数据区）
+<ol>
+<li>常量池计数器</li>
+</ol>
+</li>
+<li>访问标志</li>
+<li>类索引</li>
+<li>父类索引</li>
+<li>接口（接口计数器、接口数据区）</li>
+<li>字段（字段计数器、字段数据区）</li>
+<li>方法（方法计数器、方法数据区）</li>
+<li>属性（属性计数器、属性方法区）</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-java类的加载机制">2. Java类的加载机制<a hidden class="anchor" aria-hidden="true" href="#2-java类的加载机制">#</a></h3>
+<ul>
+<li>作用：实现从二进制的数据文件到JVM虚拟机的内存中以供使用</li>
+<li>加载过程：<font color="red">加载、连接、初始化</font></li>
+<li>在类的加载过程中需要遵守JVM规范实现。</li>
+</ul>
+<h3 id="类的生命周期">类的生命周期<a hidden class="anchor" aria-hidden="true" href="#类的生命周期">#</a></h3>
+<p><img loading="lazy" src="%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f.png" alt="生命周期"  />
+</p>
+<ol>
+<li>
+<p>加载：将源码转换为JVM字节流</p>
+<ol>
+<li>通过全限定名获取对应类的二进制字节流</li>
+<li>把二进制字节流的静态存储结构转换为方法区的运行时数据结构</li>
+<li>在堆中创建代表这个类的<code>Java.lang.Class</code>对象，作为方法区的运行时数据结构的访问入口。</li>
+</ol>
+</li>
+<li>
+<p>验证：验证获取的字节流是否符合JVM规范</p>
+<ol>
+<li>文件格式：验证字节流是否符合Class文件格式规范。</li>
+<li>元数据：分析字节码语义是否符合Java语言规范。</li>
+<li>字节码：分析控制流和数据流，确保语义合法符合逻辑。</li>
+<li>符号引用：验证类合法性，确保解析能正常执行。</li>
+</ol>
+</li>
+<li>
+<p>准备：为类的静态变量分配内存，初始化为默认值</p>
+<ol>
+<li>为被<code>static</code>修饰的静态变量在方法区中分配内存</li>
+<li>被分配内存的静态变量默认设置初始值为零值（0，0L，null，false等），在初始化阶段才去赋值。</li>
+<li>如果类字段的字段属性中存在<font color="red"><code>ConstantValue</code></font>属性也就是，变量被static和final修饰，则一定要在准备阶段进行赋予ConstantVa属性的指定的值。</li>
+</ol>
+</li>
+<li>
+<p>解析：JVM将常量池中的符号引用转换为直接引用</p>
+<ol>
+<li>作用：将类中特定的符号标记转换为实际储存的地址信息</li>
+<li>解析主要针对：类、接口、字段、类方法、接口方法、方法类型、方法句柄、调用点限定符</li>
+</ol>
+<blockquote>
+<p>符号引用：用特定的符号来描述目标</p>
+</blockquote>
+<blockquote>
+<p>直接引用：直接指向目标的指针、定位目标的句柄</p>
+</blockquote>
+</li>
+<li>
+<p>初始化：JVM对类变量进行初始化，静态变量赋予初始值。</p>
+<ol>
+<li>JVM初始化步骤：
+<ol>
+<li>如果类没有被加载、连接，则先对类进行加载、连接。</li>
+<li>如果该类的直接父类没有被初始化，则先初始化直接父类。</li>
+<li>如果有初始化语句，则顺序执行初始化语句。</li>
+</ol>
+</li>
+<li>执行初始化方法（<font color="red">clinit()方法</font>）
+<ol>
+<li>clinit()方法线程安全，多线程下存在堵塞风险。</li>
+<li>clinit()方法是编译器自动生成的。</li>
+</ol>
+</li>
+<li>JVM初始化的触发条件：
+<ol>
+<li>创建类的实例，new操作</li>
+<li>直接父类没有初始化先初始化直接父类</li>
+<li>调用类或接口的静态变量或者对静态常量的赋值</li>
+<li>调用类的静态方法</li>
+<li>反射</li>
+<li>Java虚拟机设置默认启动类的类</li>
+</ol>
+</li>
+</ol>
+</li>
+<li>
+<p>卸载：将字节流对象回收GC</p>
+<ol>
+<li>回收类中所有实例化对象</li>
+<li>回收类的ClassLoader</li>
+<li>回收没有被对象引用的类</li>
+</ol>
+</li>
+</ol>
+<h3 id="类加载器font-colorredclassloaderfont实现类的加载">类加载器（<font color="red">ClassLoader</font>）:实现类的加载<a hidden class="anchor" aria-hidden="true" href="#类加载器font-colorredclassloaderfont实现类的加载">#</a></h3>
+<ol>
+<li>本质：将源码转化为JVM中的字节流</li>
+<li>每一个类都有对应的ClassLoader</li>
+<li>数组类通过JVM创建，获取ClassLoader会基于元素的数据类型判断</li>
+<li>ClassLoader加载类的流程
+<img loading="lazy" src="%e7%b1%bb%e5%8a%a0%e8%bd%bd%e5%99%a8.png" alt="ClassLoader流程图"  />
+</li>
+</ol>
+<ul>
+<li>BootstrapClassLoader（启动类加载器）: 加载JDK内部核心库</li>
+<li>ExtClassLoader（扩展类加载类）：加载JDK扩展库</li>
+<li>AppClassLoader（应用程序类加载器）：用户类路径（ClassPath）所指定的类</li>
+</ul>
+<ol>
+<li>BootstrapClassLoader是由C++实现的属于虚拟机的一部分，无法Java程序直接引用。其他类加载器都是继承自<code>java.lang.ClassLoader</code> 抽象类，这些类加载器需要由启动类加载器加载到内存中后才能去加载其它类。</li>
+<li>自定义ClassLoader需要实现loadClass()或findClass()：</li>
+<li>loadClass()：加载指定二进制名称的类（<font color="red">打破双亲委派机制</font>）</li>
+<li>findClass()：查找指定二进制名称的类</li>
+<li><font color="red">双亲委派</font>：当ClassLoader加载时先交给其父加载器加载。最终由BootstrapClassLoader加载，如未找到再往下尝试加载类。</li>
+<li>所有的ClassLoader都要遵循双亲委派（BootstrapClassLoader除外）</li>
+<li>父ClassLoader不仅尝试加载类，还会查找相关类的相关资源</li>
+<li>双亲委派不是强制约束，仅时JDK建议的方式</li>
+<li>优点：
+<ol>
+<li>避免类被重复加载和核心库被修改</li>
+<li>通过<font color="red">责任链</font>设计模式实现类加载器的高扩展和解耦性。</li>
+</ol>
+</li>
+</ol>
+<h2 id="2-jvm内存结构">2. JVM内存结构<a hidden class="anchor" aria-hidden="true" href="#2-jvm内存结构">#</a></h2>
+<h3 id="运行时数据区">运行时数据区<a hidden class="anchor" aria-hidden="true" href="#运行时数据区">#</a></h3>
+<p>Java虚拟机在执行Java程序的过程中会把它管理的内存划分成不同的数据区域。</p>
+<p>JDK 1.8和之前版本略有不同。</p>
+<p>JDK 1.8之前：<br>
+<img loading="lazy" src="image-1.png" alt="1，8之前运行时数据区"  />
+</p>
+<p>JDK 1.8：<br>
+<img loading="lazy" src="image-2.png" alt="1，8运行时数据区"  />
+</p>
+<p>线程私有：</p>
+<ol>
+<li>程序计数器</li>
+<li>本地方法栈</li>
+<li>程序计数器</li>
+</ol>
+<p>线程共享：</p>
+<ol>
+<li>堆</li>
+<li>方法区</li>
+<li>直接内存</li>
+</ol>
+<h4 id="程序计数器">程序计数器<a hidden class="anchor" aria-hidden="true" href="#程序计数器">#</a></h4>
+<ol>
+<li>字节码解释器通过改变程序计数器依次读取指令，从而实现代码的流程控制。</li>
+<li>在多线程下，程序计数器记录当前线程的执行位置，当进行线程切换，再切换回来的时候，通过程序计数器可以继续当前线程的工作。</li>
+</ol>
+<h4 id="虚拟机栈">虚拟机栈<a hidden class="anchor" aria-hidden="true" href="#虚拟机栈">#</a></h4>
+<p>执行Java方法，生成栈帧用于储存局部变量表，操作数栈，常量池引用等。</p>
+<h4 id="本地方法栈">本地方法栈<a hidden class="anchor" aria-hidden="true" href="#本地方法栈">#</a></h4>
+<p>虚拟机使用到的 Native 方法服务。</p>
+<h4 id="堆">堆<a hidden class="anchor" aria-hidden="true" href="#堆">#</a></h4>
+<p>用来储存对象实例和数组。</p>
+<p>同时也是GC垃圾回收的主要管理区域。</p>
+<h4 id="方法区">方法区<a hidden class="anchor" aria-hidden="true" href="#方法区">#</a></h4>
+<p>可认为是堆的一部分，在JDK1.8的时候合并在直接内存的元空间里。</p>
+<p>用来储存已经被虚拟机加载的信息，常量、静态变量、即时编译器编译后的代码。</p>
+<h4 id="运行时常量池">运行时常量池<a hidden class="anchor" aria-hidden="true" href="#运行时常量池">#</a></h4>
+<p><img loading="lazy" src="image-3.png" alt="运行时常量池"  />
+</p>
+<p>运行时常量池是方法区的一部分，JDK1.8的时候从方法区移出，放到堆内存中。</p>
+<h4 id="直接内存">直接内存<a hidden class="anchor" aria-hidden="true" href="#直接内存">#</a></h4>
+<p>本机直接分配的内存，会受到本机总内存大小的限制。直接内存并不是虚拟机运行时数据区的一部分，但是也经常被使用。</p>
+<h3 id="虚拟机创建对象全过程">虚拟机创建对象全过程<a hidden class="anchor" aria-hidden="true" href="#虚拟机创建对象全过程">#</a></h3>
+<h4 id="对象的创建">对象的创建<a hidden class="anchor" aria-hidden="true" href="#对象的创建">#</a></h4>
+<p><img loading="lazy" src="image-4.png" alt="对象创建"  />
+</p>
+<h5 id="类加载器检查">类加载器检查<a hidden class="anchor" aria-hidden="true" href="#类加载器检查">#</a></h5>
+<p>虚拟机收到new指令，首先去常量池中查找有无对应的符号引用以及符号引用所代表的类是否被加载、解析、初始化过。如果没有，要先进行类的加载过程。</p>
+<h5 id="分配内存">分配内存<a hidden class="anchor" aria-hidden="true" href="#分配内存">#</a></h5>
+<p>在堆内存中为其分配内存空间。</p>
+<p><strong>分配方式</strong>有两种：</p>
+<ol>
+<li><strong>指针碰撞</strong></li>
+<li><strong>空闲列表</strong></li>
+</ol>
+<p><img loading="lazy" src="image-5.png" alt="堆分配空间方式"  />
+</p>
+<p>选择哪种分配方式由Java堆是否规整决定，Java堆是否规整由垃圾收集器是否带有压缩功能决定。</p>
+<h5 id="初始化零值">初始化零值<a hidden class="anchor" aria-hidden="true" href="#初始化零值">#</a></h5>
+<p>内存分配完成后，虚拟机需要将分配到的内存空间初始化为零值，这样在对象实例化字段没有赋初始值的时候，也可以被程序访问到对应的零值。</p>
+<h5 id="设置对象头">设置对象头<a hidden class="anchor" aria-hidden="true" href="#设置对象头">#</a></h5>
+<p>虚拟机要堆对象进行必要的设置，例如对象时哪个类的实例、对象的哈希码、GC分代年龄信息等。这些信息存放在对象头中。</p>
+<h5 id="执行init方法">执行init方法<a hidden class="anchor" aria-hidden="true" href="#执行init方法">#</a></h5>
+<p>以上步骤执行完成后，从虚拟机角度看完成了对象的创建，但是从Java程序角度看，对象创建才刚刚开始。<code>init</code>字段没有执行，所有字段都还为零值。在new之后执行<code>init</code>方法，把对象按照程序员意愿初始化，才算对象完成创建。</p>
+<h4 id="对象的内存布局">对象的内存布局<a hidden class="anchor" aria-hidden="true" href="#对象的内存布局">#</a></h4>
+<p>对象内存分为三部分：<strong>对象头、实例数据、对齐填充</strong></p>
+<ul>
+<li>对象头：对象头分为两部分
+<ul>
+<li>储存自身的自身运行时数据（哈希码、GC年龄、锁状态等）</li>
+<li>类型指针，通过指针确定对象是哪个类的实例</li>
+</ul>
+</li>
+<li>实例数据：对象真正储存的有效数据</li>
+<li>对齐填充：占位作用（对象头必须为8字节的整数倍）</li>
+</ul>
+<h4 id="对象的访问定位">对象的访问定位<a hidden class="anchor" aria-hidden="true" href="#对象的访问定位">#</a></h4>
+<p>对象的访问方式由虚拟机决定，有两种：</p>
+<ol>
+<li>句柄：在Java堆中划分内存作为句柄池。拥有稳定的句柄池地址。</li>
+</ol>
+<p><img loading="lazy" src="image-6.png" alt="句柄池"  />
+</p>
+<ol start="2">
+<li>直接指针：包含在对象实例数据里。拥有较快的访问速度。</li>
+</ol>
+<p><img loading="lazy" src="image-7.png" alt="直接指针"  />
+</p>
+<h3 id="重点补充">重点补充<a hidden class="anchor" aria-hidden="true" href="#重点补充">#</a></h3>
+<h4 id="string和常量池">String和常量池<a hidden class="anchor" aria-hidden="true" href="#string和常量池">#</a></h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span>String str1 <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;abcd&#34;</span><span style="color:#f92672">;</span><span style="color:#75715e">//先检查字符串常量池中有没有&#34;abcd&#34;，如果字符串常量池中没有，则创建一个，然后 str1 指向字符串常量池中的对象，如果有，则直接将 str1 指向&#34;abcd&#34;&#34; 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>String str2 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> String<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;abcd&#34;</span><span style="color:#f92672">);</span><span style="color:#75715e">//堆中创建一个新的对象 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>String str3 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> String<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;abcd&#34;</span><span style="color:#f92672">);</span><span style="color:#75715e">//堆中创建一个新的对象 System.out.println(str1==str2);//false System.out.println(str2==str3);//false
+</span></span></span></code></pre></div><p>String创建方式有两种：</p>
+<ol>
+<li>方式是在常量池中拿对象；</li>
+<li>方式是直接在堆内存空间创建一个新的对象。</li>
+</ol>
+<p><img loading="lazy" src="image-8.png" alt="String创建方式"  />
+</p>
+<p><strong>只要new就创建新的对象（新的内存地址）</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span>String s1 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> String<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;计算机&#34;</span><span style="color:#f92672">);</span> 
+</span></span><span style="display:flex;"><span>String s2 <span style="color:#f92672">=</span> s1<span style="color:#f92672">.</span><span style="color:#a6e22e">intern</span><span style="color:#f92672">();</span> 
+</span></span><span style="display:flex;"><span>String s3 <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;计算机&#34;</span><span style="color:#f92672">;</span> 
+</span></span><span style="display:flex;"><span>System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span>s2<span style="color:#f92672">);</span><span style="color:#75715e">//计算机 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span>s1 <span style="color:#f92672">==</span> s2<span style="color:#f92672">);</span><span style="color:#75715e">//false，因为一个是堆内存中的 String 对象一个是常量池中的 String 对象， 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span>s3 <span style="color:#f92672">==</span> s2<span style="color:#f92672">);</span><span style="color:#75715e">//true，因为两个都是常量池中的 String 对象
+</span></span></span></code></pre></div><ul>
+<li>双引号声明的String，直接储存在常量池中</li>
+<li>new 声明的String，先从常量池中查有无，如有则直接在堆空间创建。如无则现在常量池中创建，再在堆空间创建。</li>
+</ul>
+<p>字符串拼接：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span>String str1 <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;str&#34;</span><span style="color:#f92672">;</span> String str2 <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;ing&#34;</span><span style="color:#f92672">;</span> 
+</span></span><span style="display:flex;"><span>String str3 <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;str&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;ing&#34;</span><span style="color:#f92672">;</span><span style="color:#75715e">//常量池中的对象 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>String str4 <span style="color:#f92672">=</span> str1 <span style="color:#f92672">+</span> str2<span style="color:#f92672">;</span> <span style="color:#75715e">//在堆上创建的新的对象 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>String str5 <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;string&#34;</span><span style="color:#f92672">;</span><span style="color:#75715e">//常量池中的对象 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span>str3 <span style="color:#f92672">==</span> str4<span style="color:#f92672">);</span><span style="color:#75715e">//false 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span>str3 <span style="color:#f92672">==</span> str5<span style="color:#f92672">);</span><span style="color:#75715e">//true 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span>str4 <span style="color:#f92672">==</span> str5<span style="color:#f92672">);</span><span style="color:#75715e">//false
+</span></span></span></code></pre></div><p><img loading="lazy" src="image-9.png" alt="字符串拼接"  />
+</p>
+<p>字符串拼接优先使用StringBuild和StringBuffer</p>
+<h4 id="8种基本数据类型的包装类和常量池">8种基本数据类型的包装类和常量池<a hidden class="anchor" aria-hidden="true" href="#8种基本数据类型的包装类和常量池">#</a></h4>
+<ul>
+<li>Java基本类型的包装类大部分都实现了常量池技术，即<strong>Byte,Short,Integer,Long,Character,Boolean</strong>；这五种包装类默认在常量池创建了[-128,127]区间的缓存数据。</li>
+<li>两种浮点数类型的包装类<strong>Float,Double</strong>并没有实现常量池技术。</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span>Integer i1 <span style="color:#f92672">=</span> 33<span style="color:#f92672">;</span> 
+</span></span><span style="display:flex;"><span>Integer i2 <span style="color:#f92672">=</span> 33<span style="color:#f92672">;</span> 
+</span></span><span style="display:flex;"><span>System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span>i1 <span style="color:#f92672">==</span> i2<span style="color:#f92672">);</span><span style="color:#75715e">// 输出 true 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>Integer i11 <span style="color:#f92672">=</span> 333<span style="color:#f92672">;</span> 
+</span></span><span style="display:flex;"><span>Integer i22 <span style="color:#f92672">=</span> 333<span style="color:#f92672">;</span> 
+</span></span><span style="display:flex;"><span>System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span>i11 <span style="color:#f92672">==</span> i22<span style="color:#f92672">);</span><span style="color:#75715e">// 输出 false 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>Double i3 <span style="color:#f92672">=</span> 1<span style="color:#f92672">.</span><span style="color:#a6e22e">2</span><span style="color:#f92672">;</span> 
+</span></span><span style="display:flex;"><span>Double i4 <span style="color:#f92672">=</span> 1<span style="color:#f92672">.</span><span style="color:#a6e22e">2</span><span style="color:#f92672">;</span> 
+</span></span><span style="display:flex;"><span>System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span>i3 <span style="color:#f92672">==</span> i4<span style="color:#f92672">);</span><span style="color:#75715e">// 输出 false
+</span></span></span></code></pre></div><p>示例：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span>Integer i1 <span style="color:#f92672">=</span> 40<span style="color:#f92672">;</span> 
+</span></span><span style="display:flex;"><span>Integer i2 <span style="color:#f92672">=</span> 40<span style="color:#f92672">;</span> 
+</span></span><span style="display:flex;"><span>Integer i3 <span style="color:#f92672">=</span> 0<span style="color:#f92672">;</span> 
+</span></span><span style="display:flex;"><span>Integer i4 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Integer<span style="color:#f92672">(</span>40<span style="color:#f92672">);</span> 
+</span></span><span style="display:flex;"><span>Integer i5 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Integer<span style="color:#f92672">(</span>40<span style="color:#f92672">);</span> 
+</span></span><span style="display:flex;"><span>Integer i6 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Integer<span style="color:#f92672">(</span>0<span style="color:#f92672">);</span> 
+</span></span><span style="display:flex;"><span>System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;i1=i2 &#34;</span> <span style="color:#f92672">+</span> <span style="color:#f92672">(</span>i1 <span style="color:#f92672">==</span> i2<span style="color:#f92672">));</span> <span style="color:#75715e">//true
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;i1=i2+i3 &#34;</span> <span style="color:#f92672">+</span> <span style="color:#f92672">(</span>i1 <span style="color:#f92672">==</span> i2 <span style="color:#f92672">+</span> i3<span style="color:#f92672">));</span> <span style="color:#75715e">//true
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;i1=i4 &#34;</span> <span style="color:#f92672">+</span> <span style="color:#f92672">(</span>i1 <span style="color:#f92672">==</span> i4<span style="color:#f92672">));</span> <span style="color:#75715e">//false
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;i4=i5 &#34;</span> <span style="color:#f92672">+</span> <span style="color:#f92672">(</span>i4 <span style="color:#f92672">==</span> i5<span style="color:#f92672">));</span> <span style="color:#75715e">//false
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;i4=i5+i6 &#34;</span> <span style="color:#f92672">+</span> <span style="color:#f92672">(</span>i4 <span style="color:#f92672">==</span> i5 <span style="color:#f92672">+</span> i6<span style="color:#f92672">));</span> <span style="color:#75715e">//true 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;40=i5+i6 &#34;</span> <span style="color:#f92672">+</span> <span style="color:#f92672">(</span>40 <span style="color:#f92672">==</span> i5 <span style="color:#f92672">+</span> i6<span style="color:#f92672">));</span> <span style="color:#75715e">//true
+</span></span></span></code></pre></div><p>解释：</p>
+<p>语句 i4 == i5 + i6，因为+这个操作符不适用于 Integer 对象。<br>
+首先 i5 和 i6 进行自动拆箱操作，进行数值相加，即 i4 == 40。<br>
+然后 Integer 对象无法与数值进行直接比较，所以 i4 自动拆箱转为 int 值 40，最终这条语句转为 40 == 40 进行数值比较。</p>
+<h2 id="3-垃圾回收gc机制">3. 垃圾回收——GC机制<a hidden class="anchor" aria-hidden="true" href="#3-垃圾回收gc机制">#</a></h2>
+<blockquote>
+<p>什么是GC：GC是一种自动的存储管理机制，当程序分配内存使用完成后，这部分内存就会成为垃圾，需要释放。这种存储资源管理就称为垃圾回收。对于Java而言就是，自动进行垃圾回收的机制。</p>
+</blockquote>
+<p><img loading="lazy" src="image.png" alt="垃圾回收导火索"  />
+</p>
+<h3 id="什么是jvm垃圾回收">什么是JVM垃圾回收<a hidden class="anchor" aria-hidden="true" href="#什么是jvm垃圾回收">#</a></h3>
+<p>Java的自动内存管理主要是针对对象的内存分配与回收。</p>
+<p>核心功能：<strong>堆内存</strong>中对象的内存分配与回收。</p>
+<p>Java堆是垃圾收集器管理的主要区域，也被称为<strong>GC堆</strong>。</p>
+<p>垃圾收集器采用分代垃圾收集算法，把Java堆细分为新生代和老年代。再次细分为Eden空间、From Survivor、To Survivor 空间等。</p>
+<p><strong>进一步划分的目的是更好地回收内存，或者更快地分配内存。</strong></p>
+<p>堆的基本结构：</p>
+<p><img loading="lazy" src="image-10.png" alt="GC堆结构"  />
+</p>
+<ul>
+<li>新生代：eden 区、s0(“From”) 区、s1(“To”) 区</li>
+<li>老年代：tentired 区</li>
+</ul>
+<p>在一次新生代垃圾回收后，如果对象依旧存活，则会进入<code>s1</code>，年龄+1(Eden 区-&gt;Survivor 区后对象的初始年龄变为 1)</p>
+<p>当年龄到一定程度(默认15岁), 晋级到老年代</p>
+<p>经过这次GC，eden区和From区被清空，然后From区和To区交换角色。</p>
+<p>不论怎么样，都会保证新的To区域是空的，然后当To区被填满，所有To区对象转入老年代。</p>
+<p><img loading="lazy" src="image-11.png" alt="堆内存常见分配策略"  />
+</p>
+<h4 id="对象优先分配在eden区">对象优先分配在eden区<a hidden class="anchor" aria-hidden="true" href="#对象优先分配在eden区">#</a></h4>
+<p>主流的垃圾回收器都采用分代回收算法，因此需要将堆内存分为新生代和老年代。根据年代特性选择相应的垃圾收集算法。</p>
+<p>多数情况下，对象分配在eden区分配，当eden区没有足够空间分配的时候，虚拟机将发起一次MinorGC。</p>
+<blockquote>
+<p><strong>Minor GC 和 Full GC 有什么不同呢？</strong></p>
+<ul>
+<li>新生代GC <code>Minor GC</code>：新生代的垃圾收集动作，非常频繁，回收速度较快</li>
+<li>老年代GC <code>Full GC</code> <code>Major GC</code>： 老年代的垃圾收集动作，出现Major GC 绝大多数情况下会出现一次Minor GC，Major GC速度比Minor GC 慢10倍以上</li>
+</ul>
+</blockquote>
+<p><strong>分配担保机制</strong>：<br>
+有一个对象1占据了大部分的eden区，对象2在eden区没有足够的内存分配。</p>
+<p>虚拟机将发起一次Minor GC。GC期间发现对象1太大了无法存入Survivor区。</p>
+<p>通过<strong>分配担保机制</strong>直接把对象1转移到老年代，老年代区有足够的空间存放对象1，所以不会出现Full GC。</p>
+<h4 id="大对象直接进入老年代">大对象直接进入老年代<a hidden class="anchor" aria-hidden="true" href="#大对象直接进入老年代">#</a></h4>
+<blockquote>
+<p>大对象：在内存上大量连续储存的对象（如字符串、数组）</p>
+</blockquote>
+<p>为什么直接进入老年代：<br>
+因为大对象会占据大部分eden区，触发分配担保机制进行复制存入老年代区，降低效率。</p>
+<h4 id="长期存活的对象进入老年代">长期存活的对象进入老年代<a hidden class="anchor" aria-hidden="true" href="#长期存活的对象进入老年代">#</a></h4>
+<p>虚拟机通过<strong>对象年龄计数器</strong>判断新生代和老年代。</p>
+<p>对象出生就会放在eden区，经过一次Minor GC，如果能够被survivor区容纳，那么年龄初始化为1，然后移入Survivor区。每次Minor GC年龄+1，当年龄增加到一定程度（默认为15岁），移入老年代区。</p>
+<h4 id="动态的对象年龄判断">动态的对象年龄判断<a hidden class="anchor" aria-hidden="true" href="#动态的对象年龄判断">#</a></h4>
+<p>为了更好的适应不同程序的内存情况，虚拟机不是定死必须要达到某个年龄。</p>
+<p>当Survivor区相同年龄对象的内存总和大于Survivor区总内存的一半，那么将直接把比这部分对象大或者这部分对象，直接移入老年代区。</p>
+<h3 id="对象死亡判断">对象死亡判断<a hidden class="anchor" aria-hidden="true" href="#对象死亡判断">#</a></h3>
+<p><img loading="lazy" src="image-12.png" alt="对象死亡判断"  />
+</p>
+<h4 id="1-引用计数法">1. 引用计数法<a hidden class="anchor" aria-hidden="true" href="#1-引用计数法">#</a></h4>
+<p>给对象添加一个引用计数器，每当对象被引用计数器+1，引用失效计数器-1。任何时候当计数器为0，则不会再被使用。</p>
+<p><strong>简单高效，但是无法处理对象间相互引用的问题。</strong></p>
+<p>如，对象1和对象2相互引用，但是除此之外无任何引用。因为引用计数器的值一直不为0，所以引用计数算法没办法通知GC回收器回收他们。</p>
+<h4 id="2-可达性分析算法">2. 可达性分析算法<a hidden class="anchor" aria-hidden="true" href="#2-可达性分析算法">#</a></h4>
+<p>引入<code>GC Roots</code>，把每个对象都称为GC Roots，从这个节点开始往下搜索，节点走过的路径称为引用链。当GC Roots没有任何引用链，那么此对象不可用。</p>
+<p><img loading="lazy" src="image-13.png" alt="可达性分析算法"  />
+</p>
+<h4 id="3-再谈引用">3. 再谈引用<a hidden class="anchor" aria-hidden="true" href="#3-再谈引用">#</a></h4>
+<p>对象存活判断都与 引用 有关。jdk1.2之后对引用进行了分类。</p>
+<ol>
+<li>
+<p>强引用<br>
+相当于必不可少的生活品。是我们最常用的引用，这种引用绝对不会被虚拟机回收。</p>
+</li>
+<li>
+<p>软引用<br>
+相当于可有可无的生活品。内存空间足够，不会回收；内存空间不够，回收对象。可用来实现内存敏感的高速缓存。</p>
+</li>
+<li>
+<p>弱引用<br>
+相当于可有可无的生活品。弱引用和软引用的区别在于：弱引用具有更短的生命周期，只要被垃圾回收器发现，不论内存空间是否足够，直接回收。</p>
+</li>
+<li>
+<p>虚引用<br>
+形同虚设，在任何时候都可能被垃圾回收器回收。 <br>
+<strong>虚引用主要用来跟踪垃圾回收的活动</strong></p>
+</li>
+</ol>
+<p>程序中软引用用到较多，<strong>因为软引用可以加速JVM对垃圾回收器的回收速度，可以维护系统运行安全，防止内存泄漏等问题。</strong></p>
+<h4 id="4-不可达的对象并非非死不可">4. 不可达的对象并非“非死不可”<a hidden class="anchor" aria-hidden="true" href="#4-不可达的对象并非非死不可">#</a></h4>
+<p>可达性分析后，不可达的对象处于“缓刑阶段”。需要经过两次标记，才会真正死亡。</p>
+<ul>
+<li>第一次：可达性分析后，不可达的对象被第一次标记，并且进行筛选。筛选条件是对象有无必要执行<code>finalize</code>方法，当对象没有覆盖<code>finalize</code>方法，或者虚拟机已经执行过一次方法，那么虚拟机认为没必要执行。</li>
+<li>第二次：被判定为需要执行的对象，放入一个队列里进行第二次标记，如果对象没有任何关连对象，那么就真的被回收。</li>
+</ul>
+<h4 id="5-如何判断一个常量是废弃常量">5. 如何判断一个常量是废弃常量<a hidden class="anchor" aria-hidden="true" href="#5-如何判断一个常量是废弃常量">#</a></h4>
+<p>运行时常量池内主要回收废弃常量。</p>
+<p>如何判断：<br>
+假设有个字符串常量<code>&quot;abc&quot;</code>，如果没有任何的String对象引用该字符串。那就说明该字符串常量为废弃常量。在下次内存回收的时候，<code>&quot;abc&quot;</code>就会被回收。</p>
+<h4 id="6-如何判断一个类是无用的类">6. 如何判断一个类是无用的类<a hidden class="anchor" aria-hidden="true" href="#6-如何判断一个类是无用的类">#</a></h4>
+<p>方法区主要回收无用类。</p>
+<p>如何判断，满足一下三个条件：</p>
+<ol>
+<li>该类的所有实例都被回收。</li>
+<li>加载类的ClassLoader 被回收</li>
+<li>该类对应的<code>java.lang.Class</code>没有任何引用，并且没有反射。</li>
+</ol>
+<h3 id="垃圾收集算法">垃圾收集算法<a hidden class="anchor" aria-hidden="true" href="#垃圾收集算法">#</a></h3>
+<p><img loading="lazy" src="image-14.png" alt="垃圾收集算法"  />
+</p>
+<h4 id="1-标记-清除算法">1. 标记-清除算法<a hidden class="anchor" aria-hidden="true" href="#1-标记-清除算法">#</a></h4>
+<p>分类两个步骤，先标记所有需要回收的对象，然后统一回收对象。</p>
+<p>该算法是最基础的算法，后续算法都是依据该算法改善。</p>
+<p>带来了两个问题：</p>
+<ol>
+<li>效率问题</li>
+<li>回收后，内存会出现大量不连续的碎片空间。</li>
+</ol>
+<p><img loading="lazy" src="image-15.png" alt="标记-清除算法"  />
+</p>
+<h4 id="2-复制算法">2. 复制算法<a hidden class="anchor" aria-hidden="true" href="#2-复制算法">#</a></h4>
+<p>为了解决效率问题衍生出的算法。</p>
+<p>该算法把内存分为两相等个部分，每次使用其中一部分，当这部分使用完后，将还存活的对象复制到另一部分，接着把这部分空间清空。这样每次回收都是一半内存。</p>
+<p><img loading="lazy" src="image-16.png" alt="复制算法"  />
+</p>
+<h4 id="3-标记-整理算法">3. 标记-整理算法<a hidden class="anchor" aria-hidden="true" href="#3-标记-整理算法">#</a></h4>
+<p>根据老年代提出的一种标记算法。</p>
+<p>标记过程与标记-清除算法一样，在整理的时候让所有存活的对象向一端移动。接着清理这个端边界以外的内存。</p>
+<p><img loading="lazy" src="image-17.png" alt="标记-整理算法"  />
+</p>
+<h4 id="4-分代收集算法">4. 分代收集算法<a hidden class="anchor" aria-hidden="true" href="#4-分代收集算法">#</a></h4>
+<p>当前虚拟机的垃圾收集都采用垃圾收集算法。</p>
+<p>根据对象的存活周期，划分几个不同的内存块。将java堆分为新生代和老年代，根据年龄特点，选择不同的垃圾收集算法。</p>
+<p>如：</p>
+<ul>
+<li>新生代中：每次收集都会有大量对象死去，所以可以原则复制算法。</li>
+<li>老年代中：老年代中都是存活率很高的对象，并且没有额外的空间对它进行分配担保，就需要采用标记-清除算法，标记-整理算法。</li>
+</ul>
+<h3 id="垃圾收集器">垃圾收集器<a hidden class="anchor" aria-hidden="true" href="#垃圾收集器">#</a></h3>
+<p><img loading="lazy" src="image-18.png" alt="垃圾收集器"  />
+</p>
+<p>垃圾收集算法是 方法，垃圾收集器是 实现。</p>
+<p>没有最好的垃圾收集器，根据场景选择适合的垃圾收集器</p>
+<h4 id="1-serial收集器">1. Serial收集器<a hidden class="anchor" aria-hidden="true" href="#1-serial收集器">#</a></h4>
+<p>Serial（串行）收集器，最基本、久远的垃圾收集器。</p>
+<p><strong>单线程</strong>收集器。它在垃圾收集工作的时候，必须暂停别的所有工作线程。</p>
+<p><img loading="lazy" src="image-19.png" alt="单线程收集器"  />
+</p>
+<p><strong>新生代采用复制算法，老年代采用标记-整理算法。</strong></p>
+<p>优点：简单高效。</p>
+<h4 id="2-parnew收集器">2. ParNew收集器<a hidden class="anchor" aria-hidden="true" href="#2-parnew收集器">#</a></h4>
+<p>Serial收集器的多线程版本。算法和它一样。</p>
+<p><img loading="lazy" src="image-20.png" alt="ParNew收集器"  />
+</p>
+<blockquote>
+<ul>
+<li>并行：多条垃圾收集线程一起处理，用户线程等待。</li>
+<li>并发：用户线程和垃圾收集线程同时执行，（不一定并行，可能交替），用户程序继续执行，垃圾收集在另外CPU上。</li>
+</ul>
+</blockquote>
+<h4 id="3-parallel-scavenge收集器">3. Parallel Scavenge收集器<a hidden class="anchor" aria-hidden="true" href="#3-parallel-scavenge收集器">#</a></h4>
+<p>基本和ParNew收集器差不多，但是该收集器更注重<strong>吞吐量（高效利用CPU）</strong>。</p>
+<p><img loading="lazy" src="image-21.png" alt="Parallel Scavenge收集器"  />
+</p>
+<h4 id="4-serial-old收集器">4. Serial Old收集器<a hidden class="anchor" aria-hidden="true" href="#4-serial-old收集器">#</a></h4>
+<p>Serial收集器的老年代版本。同样是单线程。</p>
+<h4 id="5-parallel-old收集器">5. Parallel Old收集器<a hidden class="anchor" aria-hidden="true" href="#5-parallel-old收集器">#</a></h4>
+<p>Parallel Scavenge收集器的老年版本。</p>
+<h4 id="4-cms收集器">4. CMS收集器<a hidden class="anchor" aria-hidden="true" href="#4-cms收集器">#</a></h4>
+<p>CMS（Concurrent Mark Sweep）收集器<strong>以获取最短回收停顿时间为目标</strong>的收集器，注重用户体验。</p>
+<p>真正意义上的并发收集器，实现垃圾收集线程和用户线程同时工作。</p>
+<p><strong>标记-清除算法</strong>的实现。分为四个部分：</p>
+<ol>
+<li>初始标记</li>
+<li>并发标记</li>
+<li>重新标记</li>
+<li>并发清除</li>
+</ol>
+<p><img loading="lazy" src="image-22.png" alt="CMS收集器"  />
+</p>
+<p>优点：<strong>并发处理、低停顿</strong></p>
+<p>缺点：</p>
+<ol>
+<li>对CPU资源敏感</li>
+<li>无法处理浮动垃圾</li>
+<li>清除后会出现大量碎片空间。</li>
+</ol>
+<h4 id="5-g1收集器">5. G1收集器<a hidden class="anchor" aria-hidden="true" href="#5-g1收集器">#</a></h4>
+<p>面向服务器的收集器，以极高的概率满足GC低停顿和高吞吐量。</p>
+<p>标记-收集算法</p>
+<p>特点：</p>
+<ol>
+<li>并行和并发</li>
+<li>分代收集</li>
+<li>空间整理</li>
+<li>可预测停顿</li>
+</ol>
+<p>实现步骤：</p>
+<ol>
+<li>初始标记</li>
+<li>并发标记</li>
+<li>最终标记</li>
+<li>筛选回收</li>
+</ol>
+<h2 id="4-jvm调优">4. JVM调优<a hidden class="anchor" aria-hidden="true" href="#4-jvm调优">#</a></h2>
+<h3 id="gc性能指标和基本调优策略">GC性能指标和基本调优策略<a hidden class="anchor" aria-hidden="true" href="#gc性能指标和基本调优策略">#</a></h3>
+<h4 id="gc性能衡量指标">GC性能衡量指标<a hidden class="anchor" aria-hidden="true" href="#gc性能衡量指标">#</a></h4>
+<ul>
+<li>吞吐量</li>
+<li>停顿时间</li>
+<li>垃圾回收频率</li>
+</ul>
+<h4 id="gc调优策略">GC调优策略<a hidden class="anchor" aria-hidden="true" href="#gc调优策略">#</a></h4>
+<h5 id="降低-minor-gc-频率">降低 Minor GC 频率<a hidden class="anchor" aria-hidden="true" href="#降低-minor-gc-频率">#</a></h5>
+<p>因新生代空间较小，eden区很快被填满，导致的频繁Minor GC。</p>
+<p>通过增大新生代空间来降低Minor GC频率。</p>
+<p>因空间增大导致的Minor GC时间增加问题：<br>
+通常在虚拟机中复制的成本远大于扫描。</p>
+<ul>
+<li>如果在堆内存中存在较多的长期存活对象，此时增加新生代空间，由于要复制的存活对象增对，反而会导致Minor GC时间增加。</li>
+<li>如果堆内存中短期对象很多，那么扩容后，单次Minor GC时间不会显著增加。</li>
+</ul>
+<p>所以，单次Minor GC的时长取决于GC后存活的对象数量，而非eden区大小。</p>
+<h5 id="降低-full-gc-频率">降低 Full GC 频率<a hidden class="anchor" aria-hidden="true" href="#降低-full-gc-频率">#</a></h5>
+<p>由于堆内存不足，或者老年代对象太多导致Full GC。</p>
+<ul>
+<li>减少创建大对象</li>
+<li>增大堆内存空间</li>
+</ul>
+<h5 id="选择合适的gc回收器">选择合适的GC回收器<a hidden class="anchor" aria-hidden="true" href="#选择合适的gc回收器">#</a></h5>
+<p>当我们以用户体验为第一的时候，一般选择CMS收集器，或者G1收集器。</p>
+<p>当我们对吞吐量有要求的时候，可选择Parallel Scavenge回收器来提高系统的吞吐量。</p>
+<h3 id="jvm调优实例-1-线上cpu100怎么排查">JVM调优实例 1 ：线上CPU100%怎么排查<a hidden class="anchor" aria-hidden="true" href="#jvm调优实例-1-线上cpu100怎么排查">#</a></h3>
+<h3 id="jvm调优实例-2-偏向锁导致minor-gc频繁问题">JVM调优实例 2 ：偏向锁导致Minor GC频繁问题<a hidden class="anchor" aria-hidden="true" href="#jvm调优实例-2-偏向锁导致minor-gc频繁问题">#</a></h3>
+<h3 id="jvm调优实例-3--xmm参数设置错误导致的omm">JVM调优实例 3 ：-Xmm参数设置错误导致的OMM<a hidden class="anchor" aria-hidden="true" href="#jvm调优实例-3--xmm参数设置错误导致的omm">#</a></h3>
+<h3 id="jvm调优实例-4-连接池和mybatis导致的omm">JVM调优实例 4 ：连接池和Mybatis导致的OMM<a hidden class="anchor" aria-hidden="true" href="#jvm调优实例-4-连接池和mybatis导致的omm">#</a></h3>
+<h1 id="多线程">多线程<a hidden class="anchor" aria-hidden="true" href="#多线程">#</a></h1>
+<h2 id="1-线程和进程">1. 线程和进程<a hidden class="anchor" aria-hidden="true" href="#1-线程和进程">#</a></h2>
+<ul>
+<li>进程：进程是程序一次执行的过程，是系统运行的基本单位。系统运行就是一次进程创建运行消亡的过程。</li>
+<li>线程：线程是比进程更小的执行单位，可多个存在在进程里。线程共享进程的堆内存和方法区，又有自己独立的虚拟机栈，本地方法栈和程序计数器。<br>
+<img loading="lazy" src="%e7%ba%bf%e7%a8%8b%e5%92%8c%e8%bf%9b%e7%a8%8b%e7%9a%84%e5%8c%ba%e5%88%ab.png" alt="线程和进程"  />
+</li>
+<li>程序计数器：
+<ul>
+<li>字节码解释器通过程序计数器来依次读取命令。</li>
+<li>多线程下，记录当前线程执行到的位置，以便线程切换回来时知道执行到哪里。</li>
+<li>为什么私有：为了切换回当前线程时恢复到正确的执行位置。</li>
+</ul>
+</li>
+<li>虚拟机栈和本地方法栈：
+<ul>
+<li>虚拟机栈：执行Java方法，生成栈帧用于储存局部变量表，操作数栈，常量池引用等。</li>
+<li>本地方法栈：虚拟机使用到的 Native 方法服务。</li>
+<li>为什么私有：为了保证线程中的局部变量不被别的线程访问。</li>
+</ul>
+</li>
+<li>堆：储存新创建的对象。</li>
+<li>方法区：存放编译器编译后的数据，如类信息，常量，静态变量。</li>
+</ul>
+<h2 id="2-并行和并发">2. 并行和并发<a hidden class="anchor" aria-hidden="true" href="#2-并行和并发">#</a></h2>
+<ul>
+<li>并行：同一时间点，多个线程同时执行。</li>
+<li>并发：同一时间段内，多个线程执行（可能不在统一时间点）。</li>
+</ul>
+<h2 id="3-为什么使用多线程">3. 为什么使用多线程：<a hidden class="anchor" aria-hidden="true" href="#3-为什么使用多线程">#</a></h2>
+<ul>
+<li>总体：线程是程序执行的最小单位，多线程切换和调度成本远小于进程。多线程执行减少了线程上下文切换的时间。</li>
+<li>入微：单核多线程可以提高效率，比如当一个线程先要使用cpu再使用IO，另一个线程先使用IO再使用cpu，当两个线程同时进行的时候效率都是百分百的。多核多线程提高了cpu的利用率，一个线程只被一个cpu核心利用，那么多个线程就可被多个cpu核心利用，大大提高了cpu利用率。</li>
+</ul>
+<blockquote>
+<p>上下文切换：当前任务执行完cpu时间片会先保存当前状态，然后再切换到别的任务，当再切换回来时，还可以加载当前状态。概述:<strong><em>任务从保存到再加载还可以回到当前状态的过程</em></strong></p>
+</blockquote>
+<h2 id="4-多线程存在的问题">4. 多线程存在的问题：<a hidden class="anchor" aria-hidden="true" href="#4-多线程存在的问题">#</a></h2>
+<ul>
+<li>可能出现内存泄漏、上下文切换、死锁等问题。</li>
+</ul>
+<h2 id="5-线程的生命周期">5. 线程的生命周期<a hidden class="anchor" aria-hidden="true" href="#5-线程的生命周期">#</a></h2>
+<ol>
+<li>新建(new)：创建线程</li>
+<li>可运行(runnable)：准备和运行两种状态的统称</li>
+<li>阻塞(blocked)：线程阻塞于锁</li>
+<li>等待(waiting)：线程进入等待状态，等待其他线程中断或者通知</li>
+<li>超时等待(timed_waiting)：不是一直等待，超过指定时间自行返回</li>
+<li>终止(terminated)：线程执行完毕<br>
+<img loading="lazy" src="%e7%ba%bf%e7%a8%8b%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f.png" alt="线程生命周期"  />
+</li>
+</ol>
+<h2 id="6-线程状态迁变图">6. 线程状态迁变图<a hidden class="anchor" aria-hidden="true" href="#6-线程状态迁变图">#</a></h2>
+<p><img loading="lazy" src="Java&#43;%e7%ba%bf%e7%a8%8b%e7%8a%b6%e6%80%81%e5%8f%98%e8%bf%81.png" alt="线程状态迁变图"  />
+</p>
+<blockquote>
+<p>经典五态模型<br>
+<img loading="lazy" src="%e7%ba%bf%e7%a8%8b%e4%ba%94%e6%80%81%e6%a8%a1%e5%9e%8b.png" alt="线程五态模型"  />
+</p>
+</blockquote>
+<hr>
+<h2 id="7-创建线程">7. 创建线程<a hidden class="anchor" aria-hidden="true" href="#7-创建线程">#</a></h2>
+<ul>
+<li>线程类<code>Thread</code>，任务类<code>Runnable</code> <code>Callable</code></li>
+<li><em>线程是载体，任务才是线程具体做的事情。</em></li>
+<li><code>Thread</code> 线程创建的三种方式
+<ol>
+<li>直接继承<code>Thread</code>类
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#75715e">// 自定义线程对象
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Thread1</span> <span style="color:#66d9ef">extends</span> Thread <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#a6e22e">@Override</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">run</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">// 线程需要执行的任务
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>      <span style="color:#f92672">......</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 创建线程对象
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>Thread1 t1 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Thread1<span style="color:#f92672">();</span>
+</span></span></code></pre></div></li>
+<li><code>Thread</code>+<code>Runnable</code>接口实现类（无返回值）<br>
+有多个线程执行的任务是一样的。 <br>
+我们可以把任务体和线程分开。<br>
+<code>Thread</code>中提供了包含<code>Runnable</code>类型参数的构造方法。
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyRunnable</span> <span style="color:#66d9ef">implements</span> Runnable <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#a6e22e">@Override</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">run</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">// 线程需要执行的任务
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>      <span style="color:#f92672">......</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 创建任务类对象
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>MyRunnable runnable <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> MyRunnable<span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 创建线程对象
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>Thread t2 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Thread<span style="color:#f92672">(</span>runnable<span style="color:#f92672">);</span>
+</span></span></code></pre></div>简化版
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#75715e">// 创建任务类对象
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>Runnable runnable <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Runnable<span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">run</span><span style="color:#f92672">(){</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">// 要执行的任务
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>      <span style="color:#f92672">......</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">};</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 创建线程对象
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>Thread t2 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Thread<span style="color:#f92672">(</span>runnable<span style="color:#f92672">);</span>
+</span></span></code></pre></div></li>
+<li><code>Thread</code>+<code>Callable</code>接口实现类（有返回值）
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyCallable</span> <span style="color:#66d9ef">implements</span> Callable<span style="color:#f92672">&lt;</span>Integer<span style="color:#f92672">&gt;</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#a6e22e">@Override</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">public</span> Integer <span style="color:#a6e22e">call</span><span style="color:#f92672">()</span> <span style="color:#66d9ef">throws</span> Exception <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">// 要执行的任务
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>      <span style="color:#f92672">......</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">return</span> 100<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 将 Callable 包装成 FutureTask
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>MyCallable callable <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> MyCallable<span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>FutureTask<span style="color:#f92672">&lt;</span>Integer<span style="color:#f92672">&gt;</span> task <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> FutureTask<span style="color:#f92672">&lt;&gt;(</span>callable<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// 创建线程对象
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>Thread t3 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Thread<span style="color:#f92672">(</span>task<span style="color:#f92672">);</span>
+</span></span></code></pre></div></li>
+</ol>
+</li>
+</ul>
+<h2 id="8-启动线程为什么用start而不用run">8. 启动线程为什么用<code>start()</code>而不用<code>run()</code><a hidden class="anchor" aria-hidden="true" href="#8-启动线程为什么用start而不用run">#</a></h2>
+<ul>
+<li>new一个Thread，就会新建一个线程。</li>
+<li>调用start()，执行线程准备工作，自动调用run()。线程进入就绪状态，分配到时间片就执行。</li>
+<li>如果直接调用run()，执行的是main线程下的一个普通方法体，不会在线程中去执行。</li>
+<li>总结：<br>
+调用start方法可以启动线程，并进入就绪状态。而调用run方法进入的是Thread中的一个普通方法，是在主线程中执行的。</li>
+</ul>
+<h2 id="9-死锁">9. 死锁<a hidden class="anchor" aria-hidden="true" href="#9-死锁">#</a></h2>
+<ul>
+<li>是什么：死锁是多个线程同时被堵塞，他们都在等一个资源被释放，大家都在在等，就形成了无限期堵塞，程序无法正常终止，形成死锁。</li>
+<li>举例：线程A持有资源2想要获取资源1，线程B持有资源1想要获取资源B，他们都在等待对方释放资源，形成死锁。<br>
+<img loading="lazy" src="2019-4%e6%ad%bb%e9%94%811.png" alt="死锁"  />
+</li>
+<li>解决方案：
+<ul>
+<li>让线程A或者线程B通过<code>Thread.sleep(1000)</code>来释放资源，解决死锁。</li>
+</ul>
+</li>
+<li>死锁形成的四个条件：
+<ol>
+<li>互斥：资源只被一个线程占有。</li>
+<li>请求与保持：线程请求资源而堵塞，以获得资源保持占有。</li>
+<li>不剥夺：线程以获得的资源在没有释放前不能被其他线程剥夺。</li>
+<li>循环等待：进程与进程之间形成首位相连的循环等待关系。</li>
+</ol>
+</li>
+<li>避免死锁：
+<ol>
+<li><del>破坏互斥</del>：无法破坏</li>
+<li>破坏请求与保持：一次性获取所有资源，再释放所有资源</li>
+<li>破坏不剥夺：线程申请不到资源的时候主动释放自己的资源</li>
+<li>破坏循环等待：按序申请资源访问</li>
+</ol>
+</li>
+</ul>
+<h2 id="10-sleep和wait的区别和共同点">10. <code>sleep()</code>和<code>wait()</code>的区别和共同点<a hidden class="anchor" aria-hidden="true" href="#10-sleep和wait的区别和共同点">#</a></h2>
+<ul>
+<li>区别：
+<ul>
+<li><code>sleep()</code>没有释放锁，<code>wait()</code>方法释放了锁。</li>
+<li><code>sleep()</code>常用于暂停线程，<code>wait()</code>常用于线程之间通信</li>
+<li><code>sleep()</code>执行完成会自动苏醒，<code>wait()</code>不会自动苏醒，需要其它线程调用同一对象上的<code>notify()</code> <code>notifyAll()</code>方法苏醒。</li>
+</ul>
+</li>
+<li>共同点：
+<ul>
+<li>两者都可以暂停线程的执行</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="11-锁的概念">11. 锁的概念<a hidden class="anchor" aria-hidden="true" href="#11-锁的概念">#</a></h2>
+<h3 id="乐观锁--悲观锁">乐观锁 | 悲观锁<a hidden class="anchor" aria-hidden="true" href="#乐观锁--悲观锁">#</a></h3>
+<ul>
+<li>悲观锁：获取数据先加锁，确保数据不会被修改</li>
+<li>乐观锁：获取不加锁，更新的时候校验数据是否已经被修改，底层采用<font color="red">CAS算法实现</font>。</li>
+</ul>
+<h3 id="自旋锁--自适应自旋锁">自旋锁 | 自适应自旋锁<a hidden class="anchor" aria-hidden="true" href="#自旋锁--自适应自旋锁">#</a></h3>
+<ul>
+<li>自旋锁：
+<ul>
+<li>在获取锁失败时自动进入阻塞队列，假设线程刚进入阻塞，别的线程就释放了锁，这样再去唤醒线程再去获取锁，就会造成系统性能了浪费。</li>
+<li>自旋锁就是通过在获取锁失败的时候，不进入堵塞队列，多获取几遍锁，统称就是自旋。</li>
+<li>底层源码层面就是利用了<code>do while</code>进行重试。</li>
+</ul>
+</li>
+<li>自适应自旋锁：
+<ul>
+<li>自旋锁会在获取锁失败的时候多重复获取锁，但是如果一直获取不到锁，就会造成系统性能浪费，还不如进入堵塞队列，等待唤醒。</li>
+<li>自适应自旋锁就是代表获取的次数不再固定，而是通过规则来就决定
+<ul>
+<li>规则1：如果同一个锁上的对象刚刚成功获取了锁，那么系统就会认为很有可能再次获取成功，会多自旋等待。</li>
+<li>规则2：如果对于一个锁，他很少有线程成功共获取锁，那么系统就会认为不能再获取锁，就会直接进入堵塞队列。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="公平锁--非公平锁">公平锁 | 非公平锁<a hidden class="anchor" aria-hidden="true" href="#公平锁--非公平锁">#</a></h3>
+<ul>
+<li>公平锁：对于线程获取锁，遵守锁的申请顺序，按序获得锁。</li>
+<li>非公平锁：线程获取先直接试着获取锁，如果获取不到，再采用公平锁进行排队获取。</li>
+</ul>
+<blockquote>
+<p>通俗说：公平锁需要排队，非公平锁先插队，插队失败再排队。<br>
+优缺点：</p>
+<blockquote>
+<p>公平锁：<br>
+优点：线程不会一直堵塞。<br>
+缺点：整体效率比非公平锁低，每个堵塞的线程都需要唤醒，造成系统性能消耗过大。</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>非公平锁:<br>
+优点：线程有几率可以直接获取锁，减少系统性能开销，提高性能。<br>
+缺点：可能会造成有的线程会一直堵塞。</p>
+</blockquote>
+</blockquote>
+<h3 id="可重入锁--不可重入锁">可重入锁 | 不可重入锁<a hidden class="anchor" aria-hidden="true" href="#可重入锁--不可重入锁">#</a></h3>
+<ul>
+<li>可重入锁：也称递归锁，一个线程可以重复获取同一锁。优点可一定程度上避免死锁。</li>
+<li>不可重入锁：一个线程不能重复获取同一锁，即如果一个线程获取了一个锁，然后想要再次获取这个锁，就要先释放再重新获取。</li>
+</ul>
+<blockquote>
+<p>以 synchronized 举例：<br>
+<img loading="lazy" src="%e9%87%8d%e5%85%a5%e9%94%81.png" alt="重入锁举例"  />
+<br>
+synchronized 是可重入锁，同一线程调用func1可以直接获得当前对象的锁，进入func2操作。<br>
+如果时不可重入锁，那么线程在调用func1的时候需要把func1的锁释放掉才能进入func2，但是该对象锁又正在被当前线程持有，无法释放，形成死锁。</p>
+</blockquote>
+<h3 id="共享锁--排它锁">共享锁 | 排它锁<a hidden class="anchor" aria-hidden="true" href="#共享锁--排它锁">#</a></h3>
+<ul>
+<li>共享锁：即读锁，可以被多个线程持有。如果线程A对数据1加共享锁，那么别的线程只能对数据1加共享锁，且只能读数据，不能修改数据。</li>
+<li>排它锁：即读写锁，只能被一个线程持有，如果线程A对数据1加排它锁，那么别的线程就不能对数据1添加任何锁，且线程A可以对数据1进行读写操作。</li>
+</ul>
+<blockquote>
+<p>Java 中的 synchronized 和 ReentrantLock 就是排他锁。</p>
+</blockquote>
+
+
+        </div>
+
+        <footer class="post-footer">
+            
+<nav class="paginav">
+  <a class="prev" href="https://zhoujze.github.io/en/posts/tech/redis-01-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/">
+    <span class="title">« 上一页</span>
+    <br>
+    <span>Redis 01-数据结构与对象</span>
+  </a>
+  <a class="next" href="https://zhoujze.github.io/en/posts/life/life/">
+    <span class="title">下一页 »</span>
+    <br>
+    <span>Life</span>
+  </a>
+</nav>
+
+
+<div class="share-buttons">
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Java on twitter"
+       href="https://twitter.com/intent/tweet/?text=Java&amp;url=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fjava%2f&amp;hashtags=Java%2c%e5%9f%ba%e7%a1%80%e7%9f%a5%e8%af%86%2c%e5%a4%9a%e7%ba%bf%e7%a8%8b%2cGC%e5%9b%9e%e6%94%b6%2cJVM">
+    <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-253.927,424.544c135.939,0 210.268,-112.643 210.268,-210.268c0,-3.218 0,-6.437 -0.153,-9.502c14.406,-10.421 26.973,-23.448 36.935,-38.314c-13.18,5.824 -27.433,9.809 -42.452,11.648c15.326,-9.196 26.973,-23.602 32.49,-40.92c-14.252,8.429 -30.038,14.56 -46.896,17.931c-13.487,-14.406 -32.644,-23.295 -53.946,-23.295c-40.767,0 -73.87,33.104 -73.87,73.87c0,5.824 0.613,11.494 1.992,16.858c-61.456,-3.065 -115.862,-32.49 -152.337,-77.241c-6.284,10.881 -9.962,23.601 -9.962,37.088c0,25.594 13.027,48.276 32.95,61.456c-12.107,-0.307 -23.448,-3.678 -33.41,-9.196l0,0.92c0,35.862 25.441,65.594 59.311,72.49c-6.13,1.686 -12.72,2.606 -19.464,2.606c-4.751,0 -9.348,-0.46 -13.946,-1.38c9.349,29.426 36.628,50.728 68.965,51.341c-25.287,19.771 -57.164,31.571 -91.8,31.571c-5.977,0 -11.801,-0.306 -17.625,-1.073c32.337,21.15 71.264,33.41 112.95,33.41Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Java on linkedin"
+       href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fjava%2f&amp;title=Java&amp;summary=Java&amp;source=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fjava%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Java on reddit"
+       href="https://reddit.com/submit?url=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fjava%2f&title=Java">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Java on facebook"
+       href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fjava%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Java on whatsapp"
+       href="https://api.whatsapp.com/send?text=Java%20-%20https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fjava%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Java on telegram"
+       href="https://telegram.me/share/url?text=Java&amp;url=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fjava%2f">
+        <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28">
+            <path
+                    d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+        </svg>
+    </a>
+</div>
+
+        </footer>
+    </div>
+
+<style>
+    .comments_details summary::marker {
+        font-size: 20px;
+        content: '👉展开评论';
+        color: var(--content);
+    }
+    .comments_details[open] summary::marker{
+        font-size: 20px;
+        content: '👇关闭评论';
+        color: var(--content);
+    }
+</style>
+
+
+<div>
+    
+    <script src="https://cdn.staticfile.org/twikoo/1.4.11/twikoo.all.min.js">
+    </script>
+    <script>
+        twikoo.init({
+            envId:  null ,
+        el: "#tcomment",
+            lang: 'zh-CN',
+            region:  null ,
+        path: window.TWIKOO_MAGIC_PATH||window.location.pathname,
+        })
+    </script>
+</div>
+</article>
+</main>
+
+<footer class="footer">
+    <span>
+        Copyright
+        &copy;
+        2023-2023
+        <a href="https://zhoujze.github.io/en/" style="color:#939393;">ZhouJz&#39;s blog</a>
+        All Rights Reserved
+    </span>
+    <a href="https://beian.miit.gov.cn/" target="_blank" style="color:#939393;"></a>&nbsp;
+    <span>
+        <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=null"
+           style="display:inline-block;text-decoration:none;height:20px;color:#939393;">
+            <img src="" style="float:left;margin: 0px 5px 0px 0px;"/>
+            
+        </a>
+    </span>
+    <span id="busuanzi_container">
+        <span class="fa fa-user"></span> <span id="busuanzi_value_site_uv"></span>
+        <span class="fa fa-eye"></span> <span id="busuanzi_value_site_pv"></span>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <span class="topInner">
+        <svg class="topSvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+            <path d="M12 6H0l6-6z"/>
+        </svg>
+        <span id="read_progress"></span>
+    </span>
+</a>
+
+<script>
+    document.addEventListener('scroll', function (e) {
+        const readProgress = document.getElementById("read_progress");
+        const scrollHeight = document.documentElement.scrollHeight;
+        const clientHeight = document.documentElement.clientHeight;
+        const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        readProgress.innerText = ((scrollTop / (scrollHeight - clientHeight)).toFixed(2) * 100).toFixed(0);
+    })
+</script>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+</script>
+<script>
+    let mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        (function() {
+            document.cookie = "change-themes" + "="+ escape ("false");
+        })()
+
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    });
+</script>
+
+<script>
+    document.body.addEventListener('copy', function (e) {
+        if (window.getSelection().toString() && window.getSelection().toString().length > 50) {
+            let clipboardData = e.clipboardData || window.clipboardData;
+            if (clipboardData) {
+                e.preventDefault();
+                let htmlData = window.getSelection().toString() +
+                    '\r\n\n————————————————\r\n' +
+                    '版权声明：本文为「'+"ZhouJz's blog"+'」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。' +
+                '\r\n原文链接：' + location.href;
+                let textData = window.getSelection().toString() +
+                    '\r\n\n————————————————\r\n' +
+                    '版权声明：本文为「'+"ZhouJz's blog"+'」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。' +
+                '\r\n原文链接：' + location.href;
+                clipboardData.setData('text/html', htmlData);
+                clipboardData.setData('text/plain', textData);
+            }
+        }
+    });
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerText = '📄复制';
+
+        function copyingDone() {
+            copybutton.innerText = '👌🏻已复制!';
+            setTimeout(() => {
+                copybutton.innerText = '📄复制';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                let text = codeblock.textContent +
+                    '\r\n————————————————\r\n' +
+                    '版权声明：本文为「'+"ZhouJz's blog"+'」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。' +
+                '\r\n原文链接：' + location.href;
+                navigator.clipboard.writeText(text);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) {}
+            selection.removeRange(range);
+        });
+
+        let language = codeblock.className.replaceAll("language-", "")
+        let macTool = document.createElement("div")
+        let macTool1 = document.createElement("div")
+        let macTool2 = document.createElement("div")
+        let macTool3 = document.createElement("div")
+        let languageType = document.createElement("div")
+        languageType.innerText = language
+        macTool.setAttribute('class', 'mac-tool')
+        macTool1.setAttribute('class', 'mac bb1')
+        macTool2.setAttribute('class', 'mac bb2')
+        macTool3.setAttribute('class', 'mac bb3')
+        languageType.setAttribute('class', 'language-type')
+        macTool.appendChild(macTool1)
+        macTool.appendChild(macTool2)
+        macTool.appendChild(macTool3)
+        macTool.appendChild(languageType)
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+            container.appendChild(macTool)
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+            container.appendChild(macTool)
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+            container.appendChild(macTool)
+        }
+    });
+</script>
+</body>
+
+</html>

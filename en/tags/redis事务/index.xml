@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Redis事务 on ZhouJz&#39;s blog</title>
+    <link>https://zhoujze.github.io/en/tags/redis%E4%BA%8B%E5%8A%A1/</link>
+    <description>Recent content in Redis事务 on ZhouJz&#39;s blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    <lastBuildDate>Sat, 19 Aug 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://zhoujze.github.io/en/tags/redis%E4%BA%8B%E5%8A%A1/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Redis 04-独立功能实现</title>
+      <link>https://zhoujze.github.io/en/posts/tech/redis-04-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E5%AE%9E%E7%8E%B0/</link>
+      <pubDate>Sat, 19 Aug 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://zhoujze.github.io/en/posts/tech/redis-04-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E5%AE%9E%E7%8E%B0/</guid>
+      <description>Redis事务、频道</description>
+    </item>
+    
+  </channel>
+</rss>

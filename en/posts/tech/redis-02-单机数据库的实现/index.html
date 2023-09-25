@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Redis 02-单机数据库的实现 | ZhouJz&#39;s blog</title>
+<meta name="keywords" content="Redis, Redis单机数据库">
+<meta name="description" content="Redis单机数据库的具体实现">
+<meta name="author" content="ZhouJze">
+<link rel="canonical" href="https://zhoujze.github.io/en/posts/tech/redis-02-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.1d3401cbcdd2f10bdb5198bcf67bd24686c4792045e0991c052459ef4196f5cf.css" integrity="" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/assets/js/highlight.f413e19d0714851f6474e7ee9632408e58ac146fbdbe62747134bea2fa3415e0.js" integrity="sha256-9BPhnQcUhR9kdOfuljJAjlisFG&#43;9vmJ0cTS&#43;ovo0FeA="
+        onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://zhoujze.github.io/img/Q.jpg">
+<link rel="icon" type="image/png" sizes="16x16" href="https://zhoujze.github.io/img/Q.jpg">
+<link rel="icon" type="image/png" sizes="32x32" href="https://zhoujze.github.io/img/Q.jpg">
+<link rel="apple-touch-icon" href="https://zhoujze.github.io/Q.jpg">
+<link rel="mask-icon" href="https://zhoujze.github.io/Q.jpg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.3/dist/jquery.min.js"></script>
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = ""; 
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<meta property="og:title" content="Redis 02-单机数据库的实现" />
+<meta property="og:description" content="Redis单机数据库的具体实现" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://zhoujze.github.io/en/posts/tech/redis-02-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2023-08-15T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-08-15T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Redis 02-单机数据库的实现"/>
+<meta name="twitter:description" content="Redis单机数据库的具体实现"/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+
+        {
+          "@type": "ListItem",
+          "position":  1 ,
+          "name": "📚文章",
+          "item": "https://zhoujze.github.io/en/posts/"
+        },
+
+        {
+          "@type": "ListItem",
+          "position":  2 ,
+          "name": "👨🏻‍💻 技术",
+          "item": "https://zhoujze.github.io/en/posts/tech/"
+        }, 
+    {
+      "@type": "ListItem",
+      "position":  3 ,
+      "name": "Redis 02-单机数据库的实现",
+      "item": "https://zhoujze.github.io/en/posts/tech/redis-02-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Redis 02-单机数据库的实现",
+  "name": "Redis 02-单机数据库的实现",
+  "description": "Redis单机数据库的具体实现",
+  "keywords": [
+    "Redis", "Redis单机数据库"
+  ],
+  "articleBody": "数据库 数据库键空间 Redis是一个key-value形式的数据服务器，服务器中的每个数据库都是一个redis.h/redisDb结构表示。redisDb中的dict字典属性记录了数据库中的所有键值对，这个字典称为键空间。 typedef struct redisDb { // ... // 数据库键空间，保存着数据库中的所有键值对 dict *dict; // ... } redisDb; 键空间中的键就是数据库的键，每个键都是一个字符串对象 键空间中的值就是数据库的值，每个值都可以是Redis五大基本对象中的一种。 举例 在空白数据库中执行命令 redis\u003e SET message \"hello world\" OK redis\u003e RPUSH alphabet \"a\" \"b\" \"c\" (integer) 3 redis\u003e HSET book name \"Redis in Action\" (integer) 1 redis\u003e HSET book author \"Josiah L. Carlson\" (integer) 1 redis\u003e HSET book publisher \"Manning\" (integer) 1 执行完成后数据库的键空间结构如下\n因数据库的键空间是一个字典结构，所有针对数据库增删改查操作都是对其中的字典进行操作实现。 添加新键 添加新的键值对到数据库中，本质就是对数据库的字典进行新增操作，其中键为字符串对象，值则为Redis五大对象之一。 示例 执行命令 redis\u003e SET date \"2013.12.1\" OK 执行完成后数据库键空间结构图\n删除键 本质就是删除数据库键空间里的键值对对象 示例 执行命令 redis\u003e DEL book (integer) 1 执行完成后数据库键空间结构图\n更新键 本质就是对数据库键空间的键值对对象进行更新，值对象不同，更新的具体方法也不同 示例 执行命令(值为字符串对象) redis\u003e SET message \"blah blah\" OK 执行完成后数据库键空间结构图\n执行命令(值为哈希对象) redis\u003e HSET book page 320 (integer) 1 执行完成后数据库键空间结构图\n对键查值 根据数据库键空间的键取出所对应的值对象，根据值不同，具体取值方法也不同。 示例 执行命令(字符串对象) redis\u003e GET message \"hello world\" 执行完成后数据库键空间结构图\n执行命令(列表对象) redis\u003e LRANGE alphabet 0 -1 1) \"a\" 2) \"b\" 3) \"c\" 执行完成后数据库键空间结构图\n其他键空间操作 除了以上的增删改查操作，还有一些基于Redis数据库本身的操作。 FLUSHDB ：清空数据库，通过删除键空间中所有键值对实现。 RANDOMKEY ：随机返回数据库中某个键，通过在键空间中随机返回一个键实现。 DBSIZE ：返回数据库键数，通过返回键空间中包含键值对的数量来实现。 EXISTS 、 RENAME 、 KEYS等。 读写键空间时的维护操作 当使用Redis命令对数据库进行读写操作的时候，服务器还会执行一些额外的维护操作：\n在读取一个键之后（读操作和写操作都要对键进行读取），服务器会根据键是否存在，以此来更新服务器的键空间命中（hit）次数或键空间不命中（miss）次数，这两个值可以在 INFO stats 命令的 keyspace_hits 属性和 keyspace_misses 属性中查看。 在读取一个键之后，服务器会更新键的 LRU （最后一次使用）时间，这个值可以用于计算键的闲置时间，使用命令 OBJECT idletime 命令可以查看键 key 的闲置时间。 如果服务器在读取一个键时，发现该键已经过期，那么服务器会先删除这个过期键，然后才执行余下的其他操作，本章稍后对过期键的讨论会详细说明这一点。 如果有客户端使用 WATCH 命令监视了某个键，那么服务器在对被监视的键进行修改之后，会将这个键标记为脏（dirty），从而让事务程序注意到这个键已经被修改过，《事务》一章会详细说明这一点。 服务器每次修改一个键之后，都会对脏（dirty）键计数器的值增一，这个计数器会触发服务器的持久化以及复制操作执行，《RDB 持久化》、《AOF 持久化》和《复制》这三章都会说到这一点。 如果服务器开启了数据库通知功能，那么在对键进行修改之后，服务器将按配置发送相应的数据库通知，本章稍后讨论数据库通知功能的实现时会详细说明这一点。 重点回顾 Redis服务器的所有数据库都保存在redisServer.db数组中，数据库的数量由redisServer.dbnum保存。 客户端通过修改目标数据库指针，让他指向redisServer.db数组中不同的元素实现切换数据库。 数据库主要由dict和expires两个字典构成，dict用于保存键空间里的键值对，expires保存键的过期时间。 数据库由字典构成，所有对数据库的操作，实际都是在对字典进行操作。 数据库的键总是一个字符串对象，值可以是Redis五大对象之一。 expires字典键指向数据库中的键，值则为键的过期时间，以毫秒为单位的时间戳。 Redis使用惰性删除和定期删除策略来删除过期键：惰性删除碰到过期键才删除，定期删除则每隔一定时间，主动查找过期键删除。 执行SAVE和BGSAVE命令，产生的新的RDB文件不会存在过期键。 执行BGREWRITEAOF命令，产生的重新AOF文件不存在过期键。 当一个过期键被删除之后，服务器会追加一条DEL命令到现有的AOF文件末尾，显示的删除过期键。 从服务器即使发现过期键，也不会自作主张地删除它，而是等待主节点发来 DEL 命令，这种统一、中心化的过期键删除策略可以保证主从服务器数据的一致性。 当 Redis 命令对数据库进行修改之后，服务器会根据配置，向客户端发送数据库通知。 持久化机制 Redis持久化有两种策略 RDB 快照 AOF 日志 RDB快照 RDB持久化就是将Redis在内存中的数据库状态保存到磁盘里，以RDB持久化生成的RDB二进制文件。通过该文件可以还原生成RDB文件时候的数据库状态。\n创建RDB文件 执行SAVE、BGSAVE 命令： SAVE会堵塞Redis服务器进程，一直到RDB文件生成完毕，期间服务器无法进行任何操作 BGSAVE：创建了一个子进程负责生成RDB文件，主进程继续处理命令 加载RDB文件 RDB文件在服务器启动的时候自动加载，在加载的时候Redis服务器会被堵塞。如果服务器开启了AOF持久化，那么服务器在启动的时候优先使用AOF还原数据库状态。 AOF日志 AOF通过保存Redis服务器执行的写命令来记录服务器状态。 AOF持久化功能的实现可以分为命令追加、文件写入、文件同步三个步骤 创建AOF日志 当AOF持久化功能打开的时候，服务器在执行完写命令之后，会以协议格式将被执行的写命令追加到服务器状态的aof_buf缓冲区末尾。 struct redisServer { // ... // AOF 缓冲区 sds aof_buf; // ... }; 示例 执行写命令 redis\u003e SET KEY VALUE OK 服务器在执行命令之后,将以下协议内容追加到 aof_buf 缓冲区的末尾： *3\\r\\n$3\\r\\nSET\\r\\n$3\\r\\nKEY\\r\\n$5\\r\\nVALUE\\r\\n AOF文件的写入与同步 文件写入：为了提高文件的写入效率，在实际操作中，当用户调用write函数，将数据写入文件的时候，系统会暂时保存在内存缓存区里， 文件同步：等缓存区被填满或者由系统主动操作的时候才会真的将缓存区里的数据写入磁盘。\n注意：这种做法虽然高效，但是对写入的数据存在一定安全隐患，因为如果计算机出现停机，那么在缓存区中的数据将会丢失。 服务器每次结束一个事件循环之前，都会调用flushAppendOnlyFile函数，考虑是否要把aof_buf缓存区里的内容写入到AOF日志里。 def eventLoop(): while True: # 处理文件事件，接收命令请求以及发送命令回复 # 处理命令请求时可能会有新内容被追加到 aof_buf 缓冲区中 processFileEvents() # 处理时间事件 processTimeEvents() # 考虑是否要将 aof_buf 中的内容写入和保存到 AOF 文件里面 flushAppendOnlyFile() flushAppendOnlyFile值由服务器配置的appendfsync选项的值来决定，不同的值产生不同的行为\nappendfsync选项值 flushAppendOnlyFile函数行为 always 将aof_buf缓冲区中的所有内容写入并同步到AOF文件。 everysec 将aof_buf缓冲区中的所有内容写入到AOF文件，如果上次同步AOF文件的时间距离现在超过一秒钟，再次同步AOF文件，由专门的线程执行。 no 将aof_buf缓冲区中的所有内容写入到AOF文件，但不对AOF文件进行同步，同步时机由操作系统决定。 appendfsync默认为everysec\n系统提供fsync 和 fdatasync 两个同步函数，可以强制将缓存区中的数据写入到磁盘，确保数据安全。\n示例：\n执行命令 SADD databases \"Redis\" \"MongoDB\" \"MariaDB\" SET date \"2013-9-5\" INCR click_counter 10086 命令转换成协议追加到aof_buf缓存区 *5\\r\\n$4\\r\\nSADD\\r\\n$9\\r\\ndatabases\\r\\n$5\\r\\nRedis\\r\\n$7\\r\\nMongoDB\\r\\n$7\\r\\nMariaDB\\r\\n *3\\r\\n$3\\r\\nSET\\r\\n$4\\r\\ndate\\r\\n$8\\r\\n2013-9-5\\r\\n *3\\r\\n$4\\r\\nINCR\\r\\n$13\\r\\nclick_counter\\r\\n$5\\r\\n10086\\r\\n 执行flushAppendOnlyFile函数，查看appendfsync属性，若为everysec，则判断距离上次同步AOF文件是否超过1秒。 如超过则把aof_buf中的内容写如到AOF文件中，再对AOF文件进行同步。 安全性分析：\nappendfsync值为always：服务器每次事件循环都要将aof_buf缓存区的数据写入AOF文件，同步AOF文件。效率最低，但是安全性最高，即使服务器停机，也只损失循环中的一点点命令数据。 appendfsync值为everysec：服务器也是每次事件循环都要将aof_buf缓存区中的数据写入AOF文件，每隔一秒事件就要在子线程中对AOF文件进行一次同步。效率相对还行，安全性也还行，即使服务器停机，也只损失一秒的命令数据。 appendfsync值为no：服务器也是每次事件循环都要将aof_buf缓存区中的数据写入AOF文件，但是同步交由系统控制。效率最高，但是安全性很低，如果长时间没有执行AOF同步，服务器停机，损失的数据量就会很大。 AOF重写与后台重写 什么是AOF重写 因为AOF持久化是通过保存被执行的写命令来记录数据库状态，随着服务器的运行，AOF文件内容会越来越多，文件体积会越来越大。\n体积过大的AOF文件会对Redis服务器造成影响 使用AOF进行还原数据所用的事件越多。 Redis服务器会选择一个事件节点 创建一个新的AOF文件来代替旧的AOF文件，AOF文件的所保存的数据库状态相同，但是不会有任何冗余的命令，所以新AOF文件要比旧AOF文件小很多。\n如何实现AOF重写（aof_rewrite 函数） 仅需从数据库中读取键现在的值，然后用一条命令去记录键值对，代替之前的多条命令记录键值对。无需读取现有的AOF文件。\n什么是AOF后台重写 AOF重写会进行大量写入操作，调用该函数的线程很可能会出现堵塞，为了避免堵塞，Redis决定分配一个子进程给AOF重写。这样可以达到两个目的：\n主服务器还可以继续处理命令请求 子进程拥有服务器进程的数据副本，使用进程而不是线程，很好的避免了在使用锁的情况下，保证数据的安全性，因为线程会共享父进程的资源。 使用子进程带来的问题： 子进程在进行AOF重写期间，服务器还在处理命令请求，新的命令可能会对现有的数据库进行修改，那么子进程所重写的AOF文件就有可能和数据库状态不一样。 解决方案： 设置一个AOF重写缓存区，在服务器进行命令操作后，同时把命令发送给AOF缓存区和AOF重写缓存区。\n接着再重写完成的时候，再把AOF重写缓存区中的内容写入到新的AOF文件中。 最后原子性的对AOF文件进行重命名，覆盖掉现有的AOF文件。 RDB和AOF的使用场景 RDB优劣势 优势：Redis只包含一个快照文件，方便备份，比如一天归档一次 劣势：在服务器故障时，会丢失大量数据 AOF优劣势 优势：Redis持久性会比较好，写操作由协议组成，非常容易解析。 劣势：AOF文件体积较大。 fork函数耗时问题 在主进程创建子进程的时候会调用fork函数。\nfork执行时，主进程要拷贝自己的页表给子进程，如果数据量很大，那就要占用大量的资源，在完成拷贝之前，整个Redis会被堵塞，无法进行任何操作。\n优化方式：\n控制Redis整体内存 合理的进行持久化操作 不要部署在虚拟机上 事件 Redis是一个事件驱动程序有一下两种事件：\n文件事件 时间事件 Redis对事件的处理都是同步、有序、原子的，不会出现中断事件、事件抢占\n文件事件 什么是文件事件：服务器与客户端产生的通信，服务器通过监听和处理这些事件实现网络通信。\nRedis基于Reactor模式开发了自己的文件事件处理器。是单线程的运行的。\n单线程如何监听大量客户端 文件处理器采用I/O多路复用程序来监听客户端的大量连接\nRedis 6.0 以后为什么又引入了多线程 需要提高网络IO的读写性能，但是在执行命令的时候依然是单线程顺序执行。\n时间事件 什么是时间事件：Redis的一些操作需要在指定的时间点执行。\n分为两类：\n定时事件 周期性事件 ",
+  "wordCount" : "4701",
+  "inLanguage": "en",
+  "datePublished": "2023-08-15T00:00:00Z",
+  "dateModified": "2023-08-15T00:00:00Z",
+  "author":{
+    "@type": "Person",
+    "name": "ZhouJze"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://zhoujze.github.io/en/posts/tech/redis-02-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "ZhouJz's blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://zhoujze.github.io/img/Q.jpg"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    (function () {
+        let  arr,reg = new RegExp("(^| )"+"change-themes"+"=([^;]*)(;|$)");
+        if(arr = document.cookie.match(reg)) {
+        } else {
+            if (new Date().getHours() >= 19 || new Date().getHours() < 6) {
+                document.body.classList.add('dark');
+                localStorage.setItem("pref-theme", 'dark');
+            } else {
+                document.body.classList.remove('dark');
+                localStorage.setItem("pref-theme", 'light');
+            }
+        }
+    })()
+
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://zhoujze.github.io/en/" accesskey="h" title="ZhouJze&#39;s Blog (Alt + H)">
+            <img src="https://zhoujze.github.io/img/Q.jpg" alt="logo" aria-label="logo"
+                 height="35">ZhouJze&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                         stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                         stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://zhoujze.github.io/en/search" title="🔍搜索 (Alt &#43; /)" accesskey=/>
+                <span>🔍搜索</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zhoujze.github.io/en/" title="🏠主页">
+                <span>🏠主页</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zhoujze.github.io/en/archives/" title="⏱时间轴">
+                <span>⏱时间轴</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zhoujze.github.io/en/tags" title="🔖标签">
+                <span>🔖标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zhoujze.github.io/en/about" title="🙋🏻‍♂️关于">
+                <span>🙋🏻‍♂️关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main page">
+<style>
+    i[id*="post_meta_style"] {
+        display: flex;
+        align-items: center;
+        margin: 0 0 10px 0;
+    }
+</style>
+
+<article class="post-single">
+    <div id="single-content">
+        <header class="post-header">
+            <div class="breadcrumbs"><a href="https://zhoujze.github.io/en/">🏠 主页</a>&nbsp;»&nbsp;<a href="https://zhoujze.github.io/en/posts/">📚文章</a>&nbsp;»&nbsp;<a href="https://zhoujze.github.io/en/posts/tech/">👨🏻‍💻 技术</a></div>
+            <h1 class="post-title">
+                Redis 02-单机数据库的实现
+            </h1>
+            <div class="post-description">
+                Redis单机数据库的具体实现
+            </div>
+            <div class="post-meta">
+
+<style>
+    i[id*="post_meta_style"] {
+        display: flex;
+        align-items: center;
+        margin: 0 0 10px 0;
+    }
+
+    .parent-post-meta {
+        display: flex;
+        flex-wrap: wrap;
+        opacity: 0.8;
+    }
+</style>
+
+<span class="parent-post-meta">
+    <span id="post_meta_style_1">
+        <span class="fa fa-calendar-check-o"></span>
+        <span>2023-08-15
+            &nbsp;&nbsp;
+        </span>
+    </span>
+    
+    
+    
+    
+    
+    
+    
+    <span id="post_meta_style_3">
+        <span class="fa fa-file-word-o"></span>
+        <span>4701字
+            &nbsp;&nbsp;
+        </span>
+    </span>
+    <span id="post_meta_style_4">
+        <span class="fa fa-clock-o"></span>
+        <span>10分钟
+            &nbsp;&nbsp;
+        </span>
+    </span>
+    <span id="post_meta_style_5">
+        <span class="fa fa-user-o"></span>
+        <span>ZhouJze
+            &nbsp;&nbsp;
+        </span>
+    </span>
+    <span id="post_meta_style_6">
+        <span class="fa fa-tags" style="opacity: 0.8"></span>
+        <span>
+            <span class="post-tags-meta">
+                <a href="https://zhoujze.github.io/en/tags/redis/" style="color: var(--secondary)!important;">Redis</a>
+                &nbsp;<a href="https://zhoujze.github.io/en/tags/redis%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93/" style="color: var(--secondary)!important;">Redis单机数据库</a>
+            </span>
+        </span>
+    </span>
+</span>
+<span style="opacity: 0.8;">
+                    <span id="post_meta_style_7">
+                        &nbsp;&nbsp;
+                        <span class="fa fa-eye" ></span>
+                        <span>
+                            <span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span></span>
+                            &nbsp;&nbsp;
+                        </span>
+                    </span>
+                    <span id="post_meta_style_8">
+                        <span class="fa fa-commenting-o"></span>
+                        <span>
+                            <script src="https://cdn.staticfile.org/twikoo/1.4.11/twikoo.all.min.js"></script>
+                            <script>
+                                let url = document.documentURI
+                                
+                                let dnsUrl = "https://zhoujze.github.io/"
+                                let urlSplit = url.split(dnsUrl)
+                                let finalUrl = urlSplit[1]
+                                if (finalUrl[0] !== '/') {
+                                    finalUrl = '/'+finalUrl
+                                }
+                                twikoo.getCommentsCount({
+                                    envId:  null , 
+                                region:  null , 
+                                urls: [ 
+                                    
+                                    finalUrl,
+                                ],
+                                    includeReply: false 
+                                }).then(function (res) {
+                                    let count = res[0].count
+                                    const obj = document.getElementById("comment_count");
+                                    obj.innerText = count
+                                    
+                                    
+                                    
+                                }).catch(function (err) {
+                                    
+                                    console.error(err);
+                                });
+                            </script>
+                            <span id="comment_count"></span>
+                        </span>
+                    </span>
+                </span>
+
+</div>
+        </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">文章目录</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#%e6%95%b0%e6%8d%ae%e5%ba%93" aria-label="数据库">数据库</a><ul>
+                        
+                <li>
+                    <a href="#%e6%95%b0%e6%8d%ae%e5%ba%93%e9%94%ae%e7%a9%ba%e9%97%b4" aria-label="数据库键空间">数据库键空间</a><ul>
+                        
+                <li>
+                    <a href="#%e6%b7%bb%e5%8a%a0%e6%96%b0%e9%94%ae" aria-label="添加新键">添加新键</a></li>
+                <li>
+                    <a href="#%e5%88%a0%e9%99%a4%e9%94%ae" aria-label="删除键">删除键</a></li>
+                <li>
+                    <a href="#%e6%9b%b4%e6%96%b0%e9%94%ae" aria-label="更新键">更新键</a></li>
+                <li>
+                    <a href="#%e5%af%b9%e9%94%ae%e6%9f%a5%e5%80%bc" aria-label="对键查值">对键查值</a></li>
+                <li>
+                    <a href="#%e5%85%b6%e4%bb%96%e9%94%ae%e7%a9%ba%e9%97%b4%e6%93%8d%e4%bd%9c" aria-label="其他键空间操作">其他键空间操作</a></li>
+                <li>
+                    <a href="#%e8%af%bb%e5%86%99%e9%94%ae%e7%a9%ba%e9%97%b4%e6%97%b6%e7%9a%84%e7%bb%b4%e6%8a%a4%e6%93%8d%e4%bd%9c" aria-label="读写键空间时的维护操作">读写键空间时的维护操作</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e9%87%8d%e7%82%b9%e5%9b%9e%e9%a1%be" aria-label="重点回顾">重点回顾</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e6%8c%81%e4%b9%85%e5%8c%96%e6%9c%ba%e5%88%b6" aria-label="持久化机制">持久化机制</a><ul>
+                        
+                <li>
+                    <a href="#rdb%e5%bf%ab%e7%85%a7" aria-label="RDB快照">RDB快照</a><ul>
+                        
+                <li>
+                    <a href="#%e5%88%9b%e5%bb%bardb%e6%96%87%e4%bb%b6" aria-label="创建RDB文件">创建RDB文件</a></li>
+                <li>
+                    <a href="#%e5%8a%a0%e8%bd%bdrdb%e6%96%87%e4%bb%b6" aria-label="加载RDB文件">加载RDB文件</a></li></ul>
+                </li>
+                <li>
+                    <a href="#aof%e6%97%a5%e5%bf%97" aria-label="AOF日志">AOF日志</a><ul>
+                        
+                <li>
+                    <a href="#%e5%88%9b%e5%bb%baaof%e6%97%a5%e5%bf%97" aria-label="创建AOF日志">创建AOF日志</a></li>
+                <li>
+                    <a href="#aof%e6%96%87%e4%bb%b6%e7%9a%84%e5%86%99%e5%85%a5%e4%b8%8e%e5%90%8c%e6%ad%a5" aria-label="AOF文件的写入与同步">AOF文件的写入与同步</a></li>
+                <li>
+                    <a href="#aof%e9%87%8d%e5%86%99%e4%b8%8e%e5%90%8e%e5%8f%b0%e9%87%8d%e5%86%99" aria-label="AOF重写与后台重写">AOF重写与后台重写</a><ul>
+                        
+                <li>
+                    <a href="#%e4%bb%80%e4%b9%88%e6%98%afaof%e9%87%8d%e5%86%99" aria-label="什么是AOF重写">什么是AOF重写</a></li>
+                <li>
+                    <a href="#%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0aof%e9%87%8d%e5%86%99aof_rewrite-%e5%87%bd%e6%95%b0" aria-label="如何实现AOF重写（aof_rewrite 函数）">如何实现AOF重写（<code>aof_rewrite </code>函数）</a></li>
+                <li>
+                    <a href="#%e4%bb%80%e4%b9%88%e6%98%afaof%e5%90%8e%e5%8f%b0%e9%87%8d%e5%86%99" aria-label="什么是AOF后台重写">什么是AOF后台重写</a></li></ul>
+                </li></ul>
+                </li>
+                <li>
+                    <a href="#rdb%e5%92%8caof%e7%9a%84%e4%bd%bf%e7%94%a8%e5%9c%ba%e6%99%af" aria-label="RDB和AOF的使用场景">RDB和AOF的使用场景</a><ul>
+                        
+                <li>
+                    <a href="#rdb%e4%bc%98%e5%8a%a3%e5%8a%bf" aria-label="RDB优劣势">RDB优劣势</a></li>
+                <li>
+                    <a href="#aof%e4%bc%98%e5%8a%a3%e5%8a%bf" aria-label="AOF优劣势">AOF优劣势</a></li></ul>
+                </li>
+                <li>
+                    <a href="#fork%e5%87%bd%e6%95%b0%e8%80%97%e6%97%b6%e9%97%ae%e9%a2%98" aria-label="fork函数耗时问题"><code>fork</code>函数耗时问题</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e4%ba%8b%e4%bb%b6" aria-label="事件">事件</a><ul>
+                        
+                <li>
+                    <a href="#%e6%96%87%e4%bb%b6%e4%ba%8b%e4%bb%b6" aria-label="文件事件">文件事件</a><ul>
+                        
+                <li>
+                    <a href="#%e5%8d%95%e7%ba%bf%e7%a8%8b%e5%a6%82%e4%bd%95%e7%9b%91%e5%90%ac%e5%a4%a7%e9%87%8f%e5%ae%a2%e6%88%b7%e7%ab%af" aria-label="单线程如何监听大量客户端">单线程如何监听大量客户端</a></li>
+                <li>
+                    <a href="#redis-60-%e4%bb%a5%e5%90%8e%e4%b8%ba%e4%bb%80%e4%b9%88%e5%8f%88%e5%bc%95%e5%85%a5%e4%ba%86%e5%a4%9a%e7%ba%bf%e7%a8%8b" aria-label="Redis 6.0 以后为什么又引入了多线程">Redis 6.0 以后为什么又引入了多线程</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e6%97%b6%e9%97%b4%e4%ba%8b%e4%bb%b6" aria-label="时间事件">时间事件</a>
+                </li>
+            </ul>
+            </li>
+            </ul>
+        </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+        
+        activeElement = elements[0];
+        const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+        document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+    }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        if (elements) {
+            activeElement = Array.from(elements).find((element) => {
+                if ((getOffsetTop(element) - window.pageYOffset) > 0 &&
+                    (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                    return element;
+                }
+            }) || activeElement
+
+            elements.forEach(element => {
+                const id = encodeURI(element.getAttribute('id')).toLowerCase();
+                if (element === activeElement){
+                    document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+                } else {
+                    document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+                }
+            })
+        }
+    }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;
+    }
+</script>
+        <div class="post-content"><h2 id="数据库">数据库<a hidden class="anchor" aria-hidden="true" href="#数据库">#</a></h2>
+<h3 id="数据库键空间">数据库键空间<a hidden class="anchor" aria-hidden="true" href="#数据库键空间">#</a></h3>
+<ul>
+<li>Redis是一个key-value形式的数据服务器，服务器中的每个数据库都是一个<code>redis.h/redisDb</code>结构表示。<code>redisDb</code>中的<code>dict</code>字典属性记录了数据库中的所有键值对，这个字典称为键空间。
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>typedef struct redisDb {
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    // ...
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    // 数据库键空间，保存着数据库中的所有键值对
+</span></span><span style="display:flex;"><span>    dict *dict;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    // ...
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>} redisDb;
+</span></span></code></pre></div></li>
+<li>键空间中的键就是数据库的键，每个键都是一个字符串对象</li>
+<li>键空间中的值就是数据库的值，每个值都可以是Redis五大基本对象中的一种。</li>
+<li>举例
+<ul>
+<li>在空白数据库中执行命令
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>redis&gt; SET message &#34;hello world&#34;
+</span></span><span style="display:flex;"><span>OK
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; RPUSH alphabet &#34;a&#34; &#34;b&#34; &#34;c&#34;
+</span></span><span style="display:flex;"><span>(integer) 3
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; HSET book name &#34;Redis in Action&#34;
+</span></span><span style="display:flex;"><span>(integer) 1
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; HSET book author &#34;Josiah L. Carlson&#34;
+</span></span><span style="display:flex;"><span>(integer) 1
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; HSET book publisher &#34;Manning&#34;
+</span></span><span style="display:flex;"><span>(integer) 1
+</span></span></code></pre></div></li>
+<li>执行完成后数据库的键空间结构如下<br>
+<img loading="lazy" src="%e6%95%b0%e6%8d%ae%e5%ba%93%e9%94%ae%e7%a9%ba%e9%97%b4.png" alt="数据库键空间"  />
+</li>
+</ul>
+</li>
+<li>因数据库的键空间是一个字典结构，所有针对数据库增删改查操作都是对其中的字典进行操作实现。</li>
+</ul>
+<h4 id="添加新键">添加新键<a hidden class="anchor" aria-hidden="true" href="#添加新键">#</a></h4>
+<ul>
+<li>添加新的键值对到数据库中，本质就是对数据库的字典进行新增操作，其中键为字符串对象，值则为Redis五大对象之一。</li>
+<li>示例
+<ul>
+<li>执行命令
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>redis&gt; SET date &#34;2013.12.1&#34;
+</span></span><span style="display:flex;"><span>OK
+</span></span></code></pre></div></li>
+<li>执行完成后数据库键空间结构图<br>
+<img loading="lazy" src="%e6%95%b0%e6%8d%ae%e5%ba%93%e9%94%ae%e7%a9%ba%e9%97%b4%e6%96%b0%e5%a2%9e.png" alt="数据库新增"  />
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="删除键">删除键<a hidden class="anchor" aria-hidden="true" href="#删除键">#</a></h4>
+<ul>
+<li>本质就是删除数据库键空间里的键值对对象</li>
+<li>示例
+<ul>
+<li>执行命令
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>redis&gt; DEL book
+</span></span><span style="display:flex;"><span>(integer) 1
+</span></span></code></pre></div></li>
+<li>执行完成后数据库键空间结构图<br>
+<img loading="lazy" src="%e6%95%b0%e6%8d%ae%e5%ba%93%e9%94%ae%e7%a9%ba%e9%97%b4%e5%88%a0%e9%99%a4.png" alt="数据库删除"  />
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="更新键">更新键<a hidden class="anchor" aria-hidden="true" href="#更新键">#</a></h4>
+<ul>
+<li>本质就是对数据库键空间的键值对对象进行更新，值对象不同，更新的具体方法也不同</li>
+<li>示例
+<ul>
+<li>执行命令(值为字符串对象)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>redis&gt; SET message &#34;blah blah&#34;
+</span></span><span style="display:flex;"><span>OK
+</span></span></code></pre></div></li>
+<li>执行完成后数据库键空间结构图<br>
+<img loading="lazy" src="%e6%95%b0%e6%8d%ae%e5%ba%93%e9%94%ae%e7%a9%ba%e9%97%b4%e6%9b%b4%e6%96%b01.png" alt="数据库更新"  />
+</li>
+<li>执行命令(值为哈希对象)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>redis&gt; HSET book page 320
+</span></span><span style="display:flex;"><span>(integer) 1
+</span></span></code></pre></div></li>
+<li>执行完成后数据库键空间结构图<br>
+<img loading="lazy" src="%e6%95%b0%e6%8d%ae%e5%ba%93%e9%94%ae%e7%a9%ba%e9%97%b4%e6%9b%b4%e6%96%b02.png" alt="数据库更新"  />
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="对键查值">对键查值<a hidden class="anchor" aria-hidden="true" href="#对键查值">#</a></h4>
+<ul>
+<li>根据数据库键空间的键取出所对应的值对象，根据值不同，具体取值方法也不同。</li>
+<li>示例
+<ul>
+<li>执行命令(字符串对象)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>redis&gt; GET message
+</span></span><span style="display:flex;"><span>&#34;hello world&#34;
+</span></span></code></pre></div></li>
+<li>执行完成后数据库键空间结构图<br>
+<img loading="lazy" src="%e6%95%b0%e6%8d%ae%e5%ba%93%e9%94%ae%e7%a9%ba%e9%97%b4%e6%9f%a5%e6%89%be%e5%80%bc.png" alt="数据库查找"  />
+</li>
+<li>执行命令(列表对象)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>redis&gt; LRANGE alphabet 0 -1
+</span></span><span style="display:flex;"><span>1) &#34;a&#34;
+</span></span><span style="display:flex;"><span>2) &#34;b&#34;
+</span></span><span style="display:flex;"><span>3) &#34;c&#34;
+</span></span></code></pre></div></li>
+<li>执行完成后数据库键空间结构图<br>
+<img loading="lazy" src="%e6%95%b0%e6%8d%ae%e5%ba%93%e9%94%ae%e7%a9%ba%e9%97%b4%e6%9f%a5%e6%89%be1.png" alt="数据库查找"  />
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="其他键空间操作">其他键空间操作<a hidden class="anchor" aria-hidden="true" href="#其他键空间操作">#</a></h4>
+<ul>
+<li>除了以上的增删改查操作，还有一些基于Redis数据库本身的操作。</li>
+<li><code>FLUSHDB </code>：清空数据库，通过删除键空间中所有键值对实现。</li>
+<li><code>RANDOMKEY </code>：随机返回数据库中某个键，通过在键空间中随机返回一个键实现。</li>
+<li><code>DBSIZE </code>：返回数据库键数，通过返回键空间中包含键值对的数量来实现。</li>
+<li><code>EXISTS</code> 、 <code>RENAME</code> 、 <code>KEYS</code>等。</li>
+</ul>
+<h4 id="读写键空间时的维护操作">读写键空间时的维护操作<a hidden class="anchor" aria-hidden="true" href="#读写键空间时的维护操作">#</a></h4>
+<p>当使用Redis命令对数据库进行读写操作的时候，服务器还会执行一些额外的维护操作：</p>
+<ul>
+<li>在读取一个键之后（读操作和写操作都要对键进行读取），服务器会根据键是否存在，以此来更新服务器的键空间命中（hit）次数或键空间不命中（miss）次数，这两个值可以在 <code>INFO stats</code> 命令的 <code>keyspace_hits</code> 属性和 <code>keyspace_misses</code> 属性中查看。</li>
+<li>在读取一个键之后，服务器会更新键的 <code>LRU</code> （最后一次使用）时间，这个值可以用于计算键的闲置时间，使用命令 <code>OBJECT idletime</code> 命令可以查看键 <code>key</code> 的闲置时间。</li>
+<li>如果服务器在读取一个键时，发现该键已经过期，那么服务器会先删除这个过期键，然后才执行余下的其他操作，本章稍后对过期键的讨论会详细说明这一点。</li>
+<li>如果有客户端使用 <code>WATCH</code> 命令监视了某个键，那么服务器在对被监视的键进行修改之后，会将这个键标记为脏（dirty），从而让事务程序注意到这个键已经被修改过，《事务》一章会详细说明这一点。</li>
+<li>服务器每次修改一个键之后，都会对脏（dirty）键计数器的值增一，这个计数器会触发服务器的持久化以及复制操作执行，《RDB 持久化》、《AOF 持久化》和《复制》这三章都会说到这一点。</li>
+<li>如果服务器开启了数据库通知功能，那么在对键进行修改之后，服务器将按配置发送相应的数据库通知，本章稍后讨论数据库通知功能的实现时会详细说明这一点。</li>
+</ul>
+<h3 id="重点回顾">重点回顾<a hidden class="anchor" aria-hidden="true" href="#重点回顾">#</a></h3>
+<ul>
+<li>Redis服务器的所有数据库都保存在<code>redisServer.db</code>数组中，数据库的数量由<code>redisServer.dbnum</code>保存。</li>
+<li>客户端通过修改目标数据库指针，让他指向<code>redisServer.db</code>数组中不同的元素实现切换数据库。</li>
+<li>数据库主要由<code>dict</code>和<code>expires</code>两个字典构成，<code>dict</code>用于保存键空间里的键值对，<code>expires</code>保存键的过期时间。</li>
+<li>数据库由字典构成，所有对数据库的操作，实际都是在对字典进行操作。</li>
+<li>数据库的键总是一个字符串对象，值可以是Redis五大对象之一。</li>
+<li><code>expires</code>字典键指向数据库中的键，值则为键的过期时间，以毫秒为单位的时间戳。</li>
+<li>Redis使用惰性删除和定期删除策略来删除过期键：惰性删除碰到过期键才删除，定期删除则每隔一定时间，主动查找过期键删除。</li>
+<li>执行<code>SAVE</code>和<code>BGSAVE</code>命令，产生的新的<code>RDB</code>文件不会存在过期键。</li>
+<li>执行<code>BGREWRITEAOF</code>命令，产生的重新<code>AOF</code>文件不存在过期键。</li>
+<li>当一个过期键被删除之后，服务器会追加一条<code>DEL</code>命令到现有的<code>AOF</code>文件末尾，显示的删除过期键。</li>
+<li>从服务器即使发现过期键，也不会自作主张地删除它，而是等待主节点发来 <code>DEL</code> 命令，这种统一、中心化的过期键删除策略可以保证主从服务器数据的一致性。</li>
+<li>当 Redis 命令对数据库进行修改之后，服务器会根据配置，向客户端发送数据库通知。</li>
+</ul>
+<h2 id="持久化机制">持久化机制<a hidden class="anchor" aria-hidden="true" href="#持久化机制">#</a></h2>
+<ul>
+<li>Redis持久化有两种策略
+<ul>
+<li>RDB 快照</li>
+<li>AOF 日志</li>
+</ul>
+</li>
+</ul>
+<h3 id="rdb快照">RDB快照<a hidden class="anchor" aria-hidden="true" href="#rdb快照">#</a></h3>
+<ul>
+<li>RDB持久化就是将Redis在内存中的数据库状态保存到磁盘里，以RDB持久化生成的RDB二进制文件。通过该文件可以还原生成RDB文件时候的数据库状态。<br>
+<img loading="lazy" src="RDB%e5%bf%ab%e7%85%a7.png" alt="RDB快照"  />
+</li>
+</ul>
+<h4 id="创建rdb文件">创建RDB文件<a hidden class="anchor" aria-hidden="true" href="#创建rdb文件">#</a></h4>
+<ul>
+<li>执行<code>SAVE</code>、<code>BGSAVE</code> 命令：
+<ul>
+<li><code>SAVE</code>会堵塞Redis服务器进程，一直到RDB文件生成完毕，期间服务器无法进行任何操作</li>
+<li><code>BGSAVE</code>：创建了一个子进程负责生成RDB文件，主进程继续处理命令</li>
+</ul>
+</li>
+</ul>
+<h4 id="加载rdb文件">加载RDB文件<a hidden class="anchor" aria-hidden="true" href="#加载rdb文件">#</a></h4>
+<ul>
+<li>RDB文件在服务器启动的时候自动加载，在加载的时候Redis服务器会被堵塞。如果服务器开启了AOF持久化，那么服务器在启动的时候优先使用AOF还原数据库状态。</li>
+</ul>
+<h3 id="aof日志">AOF日志<a hidden class="anchor" aria-hidden="true" href="#aof日志">#</a></h3>
+<ul>
+<li>AOF通过保存Redis服务器执行的写命令来记录服务器状态。</li>
+<li>AOF持久化功能的实现可以分为命令追加、文件写入、文件同步三个步骤</li>
+</ul>
+<h4 id="创建aof日志">创建AOF日志<a hidden class="anchor" aria-hidden="true" href="#创建aof日志">#</a></h4>
+<ul>
+<li>当AOF持久化功能打开的时候，服务器在执行完写命令之后，会以协议格式将被执行的写命令追加到服务器状态的<code>aof_buf</code>缓冲区末尾。
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>struct redisServer {
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    // ...
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    // AOF 缓冲区
+</span></span><span style="display:flex;"><span>    sds aof_buf;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    // ...
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div></li>
+<li>示例
+<ul>
+<li>执行写命令
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>redis&gt; SET KEY VALUE
+</span></span><span style="display:flex;"><span>OK
+</span></span></code></pre></div></li>
+<li>服务器在执行命令之后,将以下协议内容追加到 <code>aof_buf</code> 缓冲区的末尾：
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>*3\r\n$3\r\nSET\r\n$3\r\nKEY\r\n$5\r\nVALUE\r\n
+</span></span></code></pre></div></li>
+</ul>
+</li>
+</ul>
+<h4 id="aof文件的写入与同步">AOF文件的写入与同步<a hidden class="anchor" aria-hidden="true" href="#aof文件的写入与同步">#</a></h4>
+<blockquote>
+<ul>
+<li>文件写入：为了提高文件的写入效率，在实际操作中，当用户调用<code>write</code>函数，将数据写入文件的时候，系统会暂时保存在内存缓存区里，</li>
+<li>文件同步：等缓存区被填满或者由系统主动操作的时候才会真的将缓存区里的数据写入磁盘。<br>
+注意：这种做法虽然高效，但是对写入的数据存在一定安全隐患，因为如果计算机出现停机，那么在缓存区中的数据将会丢失。</li>
+</ul>
+</blockquote>
+<ul>
+<li>服务器每次结束一个事件循环之前，都会调用<code>flushAppendOnlyFile</code>函数，考虑是否要把<code>aof_buf</code>缓存区里的内容写入到AOF日志里。</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>def eventLoop():
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    while True:
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>        # 处理文件事件，接收命令请求以及发送命令回复
+</span></span><span style="display:flex;"><span>        # 处理命令请求时可能会有新内容被追加到 aof_buf 缓冲区中
+</span></span><span style="display:flex;"><span>        processFileEvents()
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>        # 处理时间事件
+</span></span><span style="display:flex;"><span>        processTimeEvents()
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>        # 考虑是否要将 aof_buf 中的内容写入和保存到 AOF 文件里面
+</span></span><span style="display:flex;"><span>        flushAppendOnlyFile()
+</span></span></code></pre></div><ul>
+<li>
+<p><code>flushAppendOnlyFile</code>值由服务器配置的<code>appendfsync</code>选项的值来决定，不同的值产生不同的行为</p>
+<table>
+<thead>
+<tr>
+<th><code>appendfsync</code>选项值</th>
+<th><code>flushAppendOnlyFile</code>函数行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>always</code></td>
+<td>将<code>aof_buf</code>缓冲区中的所有内容写入并同步到AOF文件。</td>
+</tr>
+<tr>
+<td><code>everysec</code></td>
+<td>将<code>aof_buf</code>缓冲区中的所有内容写入到AOF文件，如果上次同步AOF文件的时间距离现在超过一秒钟，再次同步AOF文件，由专门的线程执行。</td>
+</tr>
+<tr>
+<td><code>no</code></td>
+<td>将<code>aof_buf</code>缓冲区中的所有内容写入到AOF文件，但不对AOF文件进行同步，同步时机由操作系统决定。</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p><code>appendfsync</code>默认为<code>everysec</code></p>
+</li>
+<li>
+<p>系统提供<code>fsync</code> 和 <code>fdatasync</code> 两个同步函数，可以强制将缓存区中的数据写入到磁盘，确保数据安全。</p>
+</li>
+<li>
+<p>示例：</p>
+<ul>
+<li>执行命令
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>SADD databases &#34;Redis&#34; &#34;MongoDB&#34; &#34;MariaDB&#34;
+</span></span><span style="display:flex;"><span>SET date &#34;2013-9-5&#34;
+</span></span><span style="display:flex;"><span>INCR click_counter 10086
+</span></span></code></pre></div></li>
+<li>命令转换成协议追加到<code>aof_buf</code>缓存区
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>*5\r\n$4\r\nSADD\r\n$9\r\ndatabases\r\n$5\r\nRedis\r\n$7\r\nMongoDB\r\n$7\r\nMariaDB\r\n
+</span></span><span style="display:flex;"><span>*3\r\n$3\r\nSET\r\n$4\r\ndate\r\n$8\r\n2013-9-5\r\n
+</span></span><span style="display:flex;"><span>*3\r\n$4\r\nINCR\r\n$13\r\nclick_counter\r\n$5\r\n10086\r\n
+</span></span></code></pre></div></li>
+<li>执行<code>flushAppendOnlyFile</code>函数，查看<code>appendfsync</code>属性，若为<code>everysec</code>，则判断距离上次同步AOF文件是否超过1秒。</li>
+<li>如超过则把<code>aof_buf</code>中的内容写如到AOF文件中，再对AOF文件进行同步。</li>
+</ul>
+</li>
+<li>
+<p>安全性分析：</p>
+<ol>
+<li><code>appendfsync</code>值为<code>always</code>：服务器每次事件循环都要将<code>aof_buf</code>缓存区的数据写入AOF文件，同步AOF文件。效率最低，但是安全性最高，即使服务器停机，也只损失循环中的一点点命令数据。</li>
+<li><code>appendfsync</code>值为<code>everysec</code>：服务器也是每次事件循环都要将<code>aof_buf</code>缓存区中的数据写入AOF文件，每隔一秒事件就要在子线程中对AOF文件进行一次同步。效率相对还行，安全性也还行，即使服务器停机，也只损失一秒的命令数据。</li>
+<li><code>appendfsync</code>值为<code>no</code>：服务器也是每次事件循环都要将<code>aof_buf</code>缓存区中的数据写入AOF文件，但是同步交由系统控制。效率最高，但是安全性很低，如果长时间没有执行AOF同步，服务器停机，损失的数据量就会很大。</li>
+</ol>
+</li>
+</ul>
+<h4 id="aof重写与后台重写">AOF重写与后台重写<a hidden class="anchor" aria-hidden="true" href="#aof重写与后台重写">#</a></h4>
+<h5 id="什么是aof重写">什么是AOF重写<a hidden class="anchor" aria-hidden="true" href="#什么是aof重写">#</a></h5>
+<p>因为AOF持久化是通过保存被执行的写命令来记录数据库状态，随着服务器的运行，AOF文件内容会越来越多，文件体积会越来越大。</p>
+<ul>
+<li>体积过大的AOF文件会对Redis服务器造成影响</li>
+<li>使用AOF进行还原数据所用的事件越多。</li>
+</ul>
+<p>Redis服务器会选择一个事件节点 <em><em>创建一个新的AOF文件来代替旧的AOF文件，AOF文件的所保存的数据库状态相同，但是不会有任何冗余的命令，所以新AOF文件要比旧AOF文件小很多。</em></em></p>
+<h5 id="如何实现aof重写aof_rewrite-函数">如何实现AOF重写（<code>aof_rewrite </code>函数）<a hidden class="anchor" aria-hidden="true" href="#如何实现aof重写aof_rewrite-函数">#</a></h5>
+<p>仅需从数据库中读取键现在的值，然后用一条命令去记录键值对，代替之前的多条命令记录键值对。无需读取现有的AOF文件。</p>
+<h5 id="什么是aof后台重写">什么是AOF后台重写<a hidden class="anchor" aria-hidden="true" href="#什么是aof后台重写">#</a></h5>
+<p>AOF重写会进行大量写入操作，调用该函数的线程很可能会出现堵塞，为了避免堵塞，Redis决定分配一个子进程给AOF重写。这样可以达到两个目的：</p>
+<ol>
+<li>主服务器还可以继续处理命令请求</li>
+<li>子进程拥有服务器进程的数据副本，使用进程而不是线程，很好的避免了在使用锁的情况下，保证数据的安全性，因为线程会共享父进程的资源。</li>
+</ol>
+<ul>
+<li>使用子进程带来的问题：
+<ul>
+<li>子进程在进行AOF重写期间，服务器还在处理命令请求，新的命令可能会对现有的数据库进行修改，那么子进程所重写的AOF文件就有可能和数据库状态不一样。</li>
+<li>解决方案：
+<ol>
+<li>设置一个<font color=red>AOF重写缓存区</font>，在服务器进行命令操作后，同时把命令发送给AOF缓存区和AOF重写缓存区。<br>
+<img loading="lazy" src="AOF%e9%87%8d%e5%86%99%e7%bc%93%e5%ad%98%e5%8c%ba.png" alt="AOF重写缓存区"  />
+</li>
+<li>接着再重写完成的时候，再把AOF重写缓存区中的内容写入到新的AOF文件中。</li>
+<li>最后原子性的对AOF文件进行重命名，覆盖掉现有的AOF文件。</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="rdb和aof的使用场景">RDB和AOF的使用场景<a hidden class="anchor" aria-hidden="true" href="#rdb和aof的使用场景">#</a></h3>
+<h4 id="rdb优劣势">RDB优劣势<a hidden class="anchor" aria-hidden="true" href="#rdb优劣势">#</a></h4>
+<ul>
+<li>优势：Redis只包含一个快照文件，方便备份，比如一天归档一次</li>
+<li>劣势：在服务器故障时，会丢失大量数据</li>
+</ul>
+<h4 id="aof优劣势">AOF优劣势<a hidden class="anchor" aria-hidden="true" href="#aof优劣势">#</a></h4>
+<ul>
+<li>优势：Redis持久性会比较好，写操作由协议组成，非常容易解析。</li>
+<li>劣势：AOF文件体积较大。</li>
+</ul>
+<h3 id="fork函数耗时问题"><code>fork</code>函数耗时问题<a hidden class="anchor" aria-hidden="true" href="#fork函数耗时问题">#</a></h3>
+<p>在主进程创建子进程的时候会调用<code>fork</code>函数。</p>
+<p><code>fork</code>执行时，主进程要拷贝自己的页表给子进程，如果数据量很大，那就要占用大量的资源，在完成拷贝之前，整个Redis会被堵塞，无法进行任何操作。</p>
+<p>优化方式：</p>
+<ul>
+<li>控制Redis整体内存</li>
+<li>合理的进行持久化操作</li>
+<li>不要部署在虚拟机上</li>
+</ul>
+<h2 id="事件">事件<a hidden class="anchor" aria-hidden="true" href="#事件">#</a></h2>
+<p>Redis是一个事件驱动程序有一下两种事件：</p>
+<ol>
+<li><strong>文件事件</strong></li>
+<li>时间事件</li>
+</ol>
+<p>Redis对事件的处理都是同步、有序、原子的，不会出现中断事件、事件抢占</p>
+<h3 id="文件事件">文件事件<a hidden class="anchor" aria-hidden="true" href="#文件事件">#</a></h3>
+<p>什么是文件事件：服务器与客户端产生的通信，服务器通过监听和处理这些事件实现网络通信。</p>
+<p>Redis基于<code>Reactor模式</code>开发了自己的文件事件处理器。是单线程的运行的。</p>
+<h4 id="单线程如何监听大量客户端">单线程如何监听大量客户端<a hidden class="anchor" aria-hidden="true" href="#单线程如何监听大量客户端">#</a></h4>
+<p>文件处理器采用<code>I/O多路复用</code>程序来监听客户端的大量连接</p>
+<h4 id="redis-60-以后为什么又引入了多线程">Redis 6.0 以后为什么又引入了多线程<a hidden class="anchor" aria-hidden="true" href="#redis-60-以后为什么又引入了多线程">#</a></h4>
+<p>需要提高网络IO的读写性能，但是在执行命令的时候依然是单线程顺序执行。</p>
+<h3 id="时间事件">时间事件<a hidden class="anchor" aria-hidden="true" href="#时间事件">#</a></h3>
+<p>什么是时间事件：Redis的一些操作需要在指定的时间点执行。</p>
+<p>分为两类：</p>
+<ul>
+<li>定时事件</li>
+<li>周期性事件</li>
+</ul>
+
+
+        </div>
+
+        <footer class="post-footer">
+            
+<nav class="paginav">
+  <a class="prev" href="https://zhoujze.github.io/en/posts/tech/redis-03-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/">
+    <span class="title">« 上一页</span>
+    <br>
+    <span>Redis 03-多机数据库的实现</span>
+  </a>
+  <a class="next" href="https://zhoujze.github.io/en/posts/tech/redis-01-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/">
+    <span class="title">下一页 »</span>
+    <br>
+    <span>Redis 01-数据结构与对象</span>
+  </a>
+</nav>
+
+
+<div class="share-buttons">
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Redis 02-单机数据库的实现 on twitter"
+       href="https://twitter.com/intent/tweet/?text=Redis%2002-%e5%8d%95%e6%9c%ba%e6%95%b0%e6%8d%ae%e5%ba%93%e7%9a%84%e5%ae%9e%e7%8e%b0&amp;url=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fredis-02-%25E5%258D%2595%25E6%259C%25BA%25E6%2595%25B0%25E6%258D%25AE%25E5%25BA%2593%25E7%259A%2584%25E5%25AE%259E%25E7%258E%25B0%2f&amp;hashtags=Redis%2cRedis%e5%8d%95%e6%9c%ba%e6%95%b0%e6%8d%ae%e5%ba%93">
+    <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-253.927,424.544c135.939,0 210.268,-112.643 210.268,-210.268c0,-3.218 0,-6.437 -0.153,-9.502c14.406,-10.421 26.973,-23.448 36.935,-38.314c-13.18,5.824 -27.433,9.809 -42.452,11.648c15.326,-9.196 26.973,-23.602 32.49,-40.92c-14.252,8.429 -30.038,14.56 -46.896,17.931c-13.487,-14.406 -32.644,-23.295 -53.946,-23.295c-40.767,0 -73.87,33.104 -73.87,73.87c0,5.824 0.613,11.494 1.992,16.858c-61.456,-3.065 -115.862,-32.49 -152.337,-77.241c-6.284,10.881 -9.962,23.601 -9.962,37.088c0,25.594 13.027,48.276 32.95,61.456c-12.107,-0.307 -23.448,-3.678 -33.41,-9.196l0,0.92c0,35.862 25.441,65.594 59.311,72.49c-6.13,1.686 -12.72,2.606 -19.464,2.606c-4.751,0 -9.348,-0.46 -13.946,-1.38c9.349,29.426 36.628,50.728 68.965,51.341c-25.287,19.771 -57.164,31.571 -91.8,31.571c-5.977,0 -11.801,-0.306 -17.625,-1.073c32.337,21.15 71.264,33.41 112.95,33.41Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Redis 02-单机数据库的实现 on linkedin"
+       href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fredis-02-%25E5%258D%2595%25E6%259C%25BA%25E6%2595%25B0%25E6%258D%25AE%25E5%25BA%2593%25E7%259A%2584%25E5%25AE%259E%25E7%258E%25B0%2f&amp;title=Redis%2002-%e5%8d%95%e6%9c%ba%e6%95%b0%e6%8d%ae%e5%ba%93%e7%9a%84%e5%ae%9e%e7%8e%b0&amp;summary=Redis%2002-%e5%8d%95%e6%9c%ba%e6%95%b0%e6%8d%ae%e5%ba%93%e7%9a%84%e5%ae%9e%e7%8e%b0&amp;source=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fredis-02-%25E5%258D%2595%25E6%259C%25BA%25E6%2595%25B0%25E6%258D%25AE%25E5%25BA%2593%25E7%259A%2584%25E5%25AE%259E%25E7%258E%25B0%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Redis 02-单机数据库的实现 on reddit"
+       href="https://reddit.com/submit?url=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fredis-02-%25E5%258D%2595%25E6%259C%25BA%25E6%2595%25B0%25E6%258D%25AE%25E5%25BA%2593%25E7%259A%2584%25E5%25AE%259E%25E7%258E%25B0%2f&title=Redis%2002-%e5%8d%95%e6%9c%ba%e6%95%b0%e6%8d%ae%e5%ba%93%e7%9a%84%e5%ae%9e%e7%8e%b0">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Redis 02-单机数据库的实现 on facebook"
+       href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fredis-02-%25E5%258D%2595%25E6%259C%25BA%25E6%2595%25B0%25E6%258D%25AE%25E5%25BA%2593%25E7%259A%2584%25E5%25AE%259E%25E7%258E%25B0%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Redis 02-单机数据库的实现 on whatsapp"
+       href="https://api.whatsapp.com/send?text=Redis%2002-%e5%8d%95%e6%9c%ba%e6%95%b0%e6%8d%ae%e5%ba%93%e7%9a%84%e5%ae%9e%e7%8e%b0%20-%20https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fredis-02-%25E5%258D%2595%25E6%259C%25BA%25E6%2595%25B0%25E6%258D%25AE%25E5%25BA%2593%25E7%259A%2584%25E5%25AE%259E%25E7%258E%25B0%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Redis 02-单机数据库的实现 on telegram"
+       href="https://telegram.me/share/url?text=Redis%2002-%e5%8d%95%e6%9c%ba%e6%95%b0%e6%8d%ae%e5%ba%93%e7%9a%84%e5%ae%9e%e7%8e%b0&amp;url=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fredis-02-%25E5%258D%2595%25E6%259C%25BA%25E6%2595%25B0%25E6%258D%25AE%25E5%25BA%2593%25E7%259A%2584%25E5%25AE%259E%25E7%258E%25B0%2f">
+        <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28">
+            <path
+                    d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+        </svg>
+    </a>
+</div>
+
+        </footer>
+    </div>
+
+<style>
+    .comments_details summary::marker {
+        font-size: 20px;
+        content: '👉展开评论';
+        color: var(--content);
+    }
+    .comments_details[open] summary::marker{
+        font-size: 20px;
+        content: '👇关闭评论';
+        color: var(--content);
+    }
+</style>
+
+
+<div>
+    
+    <script src="https://cdn.staticfile.org/twikoo/1.4.11/twikoo.all.min.js">
+    </script>
+    <script>
+        twikoo.init({
+            envId:  null ,
+        el: "#tcomment",
+            lang: 'zh-CN',
+            region:  null ,
+        path: window.TWIKOO_MAGIC_PATH||window.location.pathname,
+        })
+    </script>
+</div>
+</article>
+</main>
+
+<footer class="footer">
+    <span>
+        Copyright
+        &copy;
+        2023-2023
+        <a href="https://zhoujze.github.io/en/" style="color:#939393;">ZhouJz&#39;s blog</a>
+        All Rights Reserved
+    </span>
+    <a href="https://beian.miit.gov.cn/" target="_blank" style="color:#939393;"></a>&nbsp;
+    <span>
+        <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=null"
+           style="display:inline-block;text-decoration:none;height:20px;color:#939393;">
+            <img src="" style="float:left;margin: 0px 5px 0px 0px;"/>
+            
+        </a>
+    </span>
+    <span id="busuanzi_container">
+        <span class="fa fa-user"></span> <span id="busuanzi_value_site_uv"></span>
+        <span class="fa fa-eye"></span> <span id="busuanzi_value_site_pv"></span>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <span class="topInner">
+        <svg class="topSvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+            <path d="M12 6H0l6-6z"/>
+        </svg>
+        <span id="read_progress"></span>
+    </span>
+</a>
+
+<script>
+    document.addEventListener('scroll', function (e) {
+        const readProgress = document.getElementById("read_progress");
+        const scrollHeight = document.documentElement.scrollHeight;
+        const clientHeight = document.documentElement.clientHeight;
+        const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        readProgress.innerText = ((scrollTop / (scrollHeight - clientHeight)).toFixed(2) * 100).toFixed(0);
+    })
+</script>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+</script>
+<script>
+    let mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        (function() {
+            document.cookie = "change-themes" + "="+ escape ("false");
+        })()
+
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    });
+</script>
+
+<script>
+    document.body.addEventListener('copy', function (e) {
+        if (window.getSelection().toString() && window.getSelection().toString().length > 50) {
+            let clipboardData = e.clipboardData || window.clipboardData;
+            if (clipboardData) {
+                e.preventDefault();
+                let htmlData = window.getSelection().toString() +
+                    '\r\n\n————————————————\r\n' +
+                    '版权声明：本文为「'+"ZhouJz's blog"+'」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。' +
+                '\r\n原文链接：' + location.href;
+                let textData = window.getSelection().toString() +
+                    '\r\n\n————————————————\r\n' +
+                    '版权声明：本文为「'+"ZhouJz's blog"+'」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。' +
+                '\r\n原文链接：' + location.href;
+                clipboardData.setData('text/html', htmlData);
+                clipboardData.setData('text/plain', textData);
+            }
+        }
+    });
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerText = '📄复制';
+
+        function copyingDone() {
+            copybutton.innerText = '👌🏻已复制!';
+            setTimeout(() => {
+                copybutton.innerText = '📄复制';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                let text = codeblock.textContent +
+                    '\r\n————————————————\r\n' +
+                    '版权声明：本文为「'+"ZhouJz's blog"+'」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。' +
+                '\r\n原文链接：' + location.href;
+                navigator.clipboard.writeText(text);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) {}
+            selection.removeRange(range);
+        });
+
+        let language = codeblock.className.replaceAll("language-", "")
+        let macTool = document.createElement("div")
+        let macTool1 = document.createElement("div")
+        let macTool2 = document.createElement("div")
+        let macTool3 = document.createElement("div")
+        let languageType = document.createElement("div")
+        languageType.innerText = language
+        macTool.setAttribute('class', 'mac-tool')
+        macTool1.setAttribute('class', 'mac bb1')
+        macTool2.setAttribute('class', 'mac bb2')
+        macTool3.setAttribute('class', 'mac bb3')
+        languageType.setAttribute('class', 'language-type')
+        macTool.appendChild(macTool1)
+        macTool.appendChild(macTool2)
+        macTool.appendChild(macTool3)
+        macTool.appendChild(languageType)
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+            container.appendChild(macTool)
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+            container.appendChild(macTool)
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+            container.appendChild(macTool)
+        }
+    });
+</script>
+</body>
+
+</html>

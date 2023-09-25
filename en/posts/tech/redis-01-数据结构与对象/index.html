@@ -1,0 +1,2904 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Redis 01-数据结构与对象 | ZhouJz&#39;s blog</title>
+<meta name="keywords" content="Redis, Redis数据结构">
+<meta name="description" content="Redis基本数据结构与对象">
+<meta name="author" content="ZhouJze">
+<link rel="canonical" href="https://zhoujze.github.io/en/posts/tech/redis-01-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.1d3401cbcdd2f10bdb5198bcf67bd24686c4792045e0991c052459ef4196f5cf.css" integrity="" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/assets/js/highlight.f413e19d0714851f6474e7ee9632408e58ac146fbdbe62747134bea2fa3415e0.js" integrity="sha256-9BPhnQcUhR9kdOfuljJAjlisFG&#43;9vmJ0cTS&#43;ovo0FeA="
+        onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://zhoujze.github.io/img/Q.jpg">
+<link rel="icon" type="image/png" sizes="16x16" href="https://zhoujze.github.io/img/Q.jpg">
+<link rel="icon" type="image/png" sizes="32x32" href="https://zhoujze.github.io/img/Q.jpg">
+<link rel="apple-touch-icon" href="https://zhoujze.github.io/Q.jpg">
+<link rel="mask-icon" href="https://zhoujze.github.io/Q.jpg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.3/dist/jquery.min.js"></script>
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = ""; 
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<meta property="og:title" content="Redis 01-数据结构与对象" />
+<meta property="og:description" content="Redis基本数据结构与对象" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://zhoujze.github.io/en/posts/tech/redis-01-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2023-08-13T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-08-13T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Redis 01-数据结构与对象"/>
+<meta name="twitter:description" content="Redis基本数据结构与对象"/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+
+        {
+          "@type": "ListItem",
+          "position":  1 ,
+          "name": "📚文章",
+          "item": "https://zhoujze.github.io/en/posts/"
+        },
+
+        {
+          "@type": "ListItem",
+          "position":  2 ,
+          "name": "👨🏻‍💻 技术",
+          "item": "https://zhoujze.github.io/en/posts/tech/"
+        }, 
+    {
+      "@type": "ListItem",
+      "position":  3 ,
+      "name": "Redis 01-数据结构与对象",
+      "item": "https://zhoujze.github.io/en/posts/tech/redis-01-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Redis 01-数据结构与对象",
+  "name": "Redis 01-数据结构与对象",
+  "description": "Redis基本数据结构与对象",
+  "keywords": [
+    "Redis", "Redis数据结构"
+  ],
+  "articleBody": "数据结构 1. 简单动态字符串 Redis只会使用C语言字符串作为字面量，而经常使用的是自己构建的简单字符串SDS(simple dynamic string)抽象类型。并把SDS作为默认的字符串表示。 SDS的结构 struct sdshdr { // 记录 buf 数组中已使用字节的数量 // 等于 SDS 所保存字符串的长度 int len; // 记录 buf 数组中未使用字节的数量 int free; // 字节数组，用于保存字符串 char buf[]; }; 例子\nfree：没有分配未使用的字节 len：字节长度为5的字符串 buf：char类型的字节数组遵循C语言字符串定义以空字符串结尾,但是不算在len的长度里 SDS与C语言字符串的区别 常数复杂度获取数组长度 在C语言中获取字符串长度需要遍历整个字符串，时间复杂度为O(n) 在SDS中有内置的len属性记录了字符串的长度，时间复杂度为O(1) 杜绝缓存区溢出 在C语言中字符串是不记录自身长度的。 我需要在该字符串后拼接新的字符串，用到/strcat函数进行拼接，src拼接到dest后。 char *strcat(char *dest, const char *src); 因为C字符串不记录自身长度，所以在C语言里默认你的字符数组是可以容纳src中的所有内容。一旦数组无法容纳，就会出现缓冲区泄露问题。 实例： 内存中有两个紧贴的字符串s1和s2，s1=\"Redis\" s2=\"MongoDB\"\n执行Redis命令 strcat(s1, \" Cluster\"); 因未对s1分配足够的空间，出现数据溢出，覆盖s2 在SDS中有用于执行字符串拼接的函数sdscat 执行命令 sdscat(s, \" Cluster\"); 在s后拼接Cluster，sdscat在拼接前会检查s长度是否足够，如不足则会扩展长度，然后再拼接。 sdscat命令执行后不仅执行了拼接操作还分配了13字节的未使用空间。len和free相等，涉及到空间分配策略。 减少修改字符串长度时所涉及的内存重分配次数 C语言字符串如果要修改长度 拼接字符串(append)：内存重分配来扩展底层数组的长度，如果忘记就会出现缓冲区溢出 截断字符串(trim)：内存重分配释放多余的字符串空间 如果忘记就会出现内存泄漏 SDS修改字符串长度 拼接字符串(空间预分配)：SDS执行命令sdscat拼接字符串 free未分配空间足够拼接新的字符串——直接拼接 free未分配空间不够拼接新的字符串——对SDS进行空间扩展 如果扩展后的len\u003c1MB，给free分配len大小的空间作为未分配空间。\n例如：修改后len变为13字节，那么程序也会分13字节的未使用空间，SDS的实际长度就为13byt+13byt+1byt=27byt，1字节为末尾空字符。 如果扩展后的len\u003e1MB，给free分配1MB空间作为未分配空间。\n例如：修改后的len变为10MB，那么程序就会分1MB的未使用空间，SDS的实际长度就是10MB+1MB+1byt 缩短字符串(惰性空间释放)：SDS的API执行缩短字符串时，程序不会立即回收多余空间，而是把多余的空间用free记录，等待使用。 举例：删除SDS里所有的XY\n执行命令 sdstrim(s, \"XY\"); // 移除 SDS 字符串中的所有 'X' 和 'Y' SDS修改流程图 通过惰性空间释放，SDS避免了缩短字符串内存重分配问题，为将来增加字符串做了优化。 SDS也提供了API，真正的释放未使用空间。不用担心内存浪费问题。 二进制安全 C语言字符串在读入的时候会把空字符串作为结尾，这样就会出现如果读入\" hello\"空字符在最前、\"hello world\"空字符在中间的情况，读入不正常。——这样的限制会出现C字符串只能保存一些文本数据，而不能保存音频，图片、视频等二进制数据。 SDS则没有对读入的数据做任何限制——SDS里的len属性值是用空字符串来判断结束的。你写入数据什么样子，读取就是什么样子。\n所有SDS的API都是用二进制的方式处理SDS中的buf里的数据，所以是二进制安全的。\n这也是我们将SDS的buf属性称为字节数组的原因——Redis 不是用这个数组来保存字符，而是用它来保存一系列二进制数据。 兼容部分C语言字符串函数 通过遵循C语言字符串的以空字符结尾，SDS可以在有需要的时候重用里的函数库，避免代码重复。 SDS API 函数 作用 时间复杂度 sdsnew 创建一个包含给定 C 字符串的 SDS 。 O(N) ， N 为给定 C 字符串的长度。 sdsempty 创建一个不包含任何内容的空 SDS 。 O(1) sdsfree 释放给定的 SDS 。 O(1) sdslen 返回 SDS 的已使用空间字节数。 这个值可以通过读取 SDS 的 len 属性来直接获得，复杂度为 O(1) 。 sdsavail 返回 SDS 的未使用空间字节数。 这个值可以通过读取 SDS 的 free 属性来直接获得，复杂度为 O(1) 。 sdsdup 创建一个给定 SDS 的副本（copy）。 O(N) ， N 为给定 SDS 的长度。 sdsclear 清空 SDS 保存的字符串内容。 因为惰性空间释放策略，复杂度为 O(1) 。 sdscat 将给定 C 字符串拼接到 SDS字符串的末尾。 O(N) ， N 为被拼接 C 字符串的长度。 sdscatsds 将给定 SDS 字符串拼接到另一个 SDS字符串的末尾。 O(N) ， N 为被拼接 SDS 字符串的长度。 sdscpy 将给定的 C 字符串复制到 SDS 里面，覆盖 SDS 原有的字符串。 O(N) ， N 为被复制 C 字符串的长度。 sdsgrowzero 用空字符将 SDS 扩展至给定长度。 O(N) ， N 为扩展新增的字节数。 sdsrange 保留 SDS 给定区间内的数据，不在区间内的数据会被覆盖或清除。 O(N) ， N 为被保留数据的字节数。 sdstrim 接受一个 SDS 和一个 C 字符串作为参数，从 SDS 左右两端分别移除所有在 C字符串中出现过的字符。 O(M*N) ， M 为 SDS 的长度，N 为给定 C 字符串的长度。 sdscmp 对比两个 SDS 字符串是否相同。 O(N) ， N 为两个 SDS 中较短的那个 SDS的长度。 2. 链表 链表有高效的节点重排能力，对增加、删除比较灵活。\n链表作为一种常用的数据结构，内置在很多编程语言中，Redis所用的C语言并没有内置链表数据结构，所有构建了自己的链表结构。\n当一个列表键包含的数据比较多的时候，或者列表里字符串都比较长的时候，Redis就会使用链表作为底层实现。\n链表和链表节点 链表节点 typedef struct listNode { // 前置节点 struct listNode *prev; // 后置节点 struct listNode *next; // 节点的值 void *value; } listNode; 多个链表节点通过prev和next组成双端链表。 使用list来持有链表 typedef struct list { // 表头节点 listNode *head; // 表尾节点 listNode *tail; // 链表所包含的节点数量 unsigned long len; // 节点值复制函数 void *(*dup)(void *ptr); // 节点值释放函数 void (*free)(void *ptr); // 节点值对比函数 int (*match)(void *ptr, void *key); } list; list结构提供了表头节点head、表尾节点tail、链表长度计数器len、实现多态链表所需的类型特定函数： * dup：用于复制链表节点所保存的值 * free：用于释放链表节点所保存的值 * match：用于对比链表节点所保存的值是否和输入的值相等 Redis链表实现的特性 双端：链表节点有前置节点prev、后置节点next 无头：表头的prev节点和表尾的next节点都是NULL，对链表的访问都是以NULL结尾 有链表节点计数器：list结构提供了链表节点计数器，查找链表节点数的时间复杂度为O(1) 带表头指针和表尾指针：list结构提供了表头节点head、表尾节点tail，查找表头和表尾节点的时间复杂度为O(1) 多态：通过list结构的dup free match 设置链表不同的类型特定函数，来实现链表保存各种不同类型的值。 链表API 函数 作用 时间复杂度 listSetDupMethod 将给定的函数设置为链表的节点值复制函数。 O(1)。 listGetDupMethod 返回链表当前正在使用的节点值复制函数。 O(1)。 listSetFreeMethod 将给定的函数设置为链表的节点值释放函数。 O(1)。 listGetFree 返回链表当前正在使用的节点值释放函数。 O(1)。 listSetMatchMethod 将给定的函数设置为链表的节点值对比函数。 O(1)。 listGetMatchMethod 返回链表当前正在使用的节点值对比函数。 O(1)。 listLength 返回链表的长度（包含了多少个节点）。 O(1)。 listFirst 返回链表的表头节点。 O(1)。 listLast 返回链表的表尾节点。 O(1)。 listPrevNode 返回给定节点的前置节点。 O(1)。 listNextNode 返回给定节点的后置节点。 O(1)。 listNodeValue 返回给定节点目前正在保存的值。 O(1)。 listCreate 创建一个不包含任何节点的新链表。 O(1)。 listAddNodeHead 将一个包含给定值的新节点添加到表头。 O(1)。 listAddNodeTail 将一个包含给定值的新节点添加到表尾。 O(1)。 listInsertNode 将一个包含给定值的新节点添加到节点前后。 O(1)。 listSearchKey 查找并返回链表中包含给定值的节点。 O(N)， N为链表长度。 listIndex 返回链表在给定索引上的节点。 O(N)， N为链表长度。 listDelNode 从链表中删除给定节点。 O(1)。 listRotate 将链表的表尾节点弹出并移到表头。 O(1)。 listDup 复制一个给定链表的副本。 O(N)， N为链表长度。 listRelease 释放给定链表以及链表中的所有节点。 O(N)， N为链表长度。 3. 字典（dict） 定义：字典又称为符号表、关联数组、映射。是一种以键值对形式保存的抽象数据结构。因为Redis所用的C语言底层没有这种数据结构，所有Redis自己构建了字典。 字典的实现 Redis的字典使用哈希表（数组＋链表）作为底层实现，一个哈希表里有多个哈希节点，每个节点里保存了字典中的一个键值对。 哈希表：(dictht) typedef struct dictht { // 哈希表数组 dictEntry **table; // 哈希表大小 unsigned long size; // 哈希表大小掩码，用于计算索引值 // 总是等于 size - 1 unsigned long sizemask; // 该哈希表已有节点的数量 unsigned long used; } dictht; table：数组，里面每个元素都指向dictEntry哈希节点。\nsize：哈希表的大小，即table数组的长度。\nsizemask：与哈希值一起决定一个键应该放在数组的哪个索引上，值总是等于size-1。\nused：哈希表已经有多少个哈希节点。\n一个有四个空节点的空哈希表结构图。 哈希节点：(dictEntry) typedef struct dictEntry { // 键 void *key; // 值 union { void *val; uint64_t u64; int64_t s64; } v; // 指向下个哈希表节点，形成链表 struct dictEntry *next; } dictEntry; key：表示键\nval：表示值 next：指针指向下一个哈希节点，next指针可以把哈希值相同的键值对连接在一起，解决键冲突问题\n如图，k0和k1哈希值相同，通过next指针连接在一起。 字典：(dict) typedef struct dict { // 类型特定函数 dictType *type; // 私有数据 void *privdata; // 哈希表 dictht ht[2]; // rehash 索引 // 当 rehash 不在进行时，值为 -1 int rehashidx; /* rehashing not in progress if rehashidx == -1 */ } dict; type，privdata：针对不同类型的键值对，实现多种形态的字典。\ntype：是一个指向dictType的指针。\nprivdata：保存特定类型键值对函数的可选参数。 dictType：是一簇操作特定类型键值对的函数。 typedef struct dictType { // 计算哈希值的函数 unsigned int (*hashFunction)(const void *key); // 复制键的函数 void *(*keyDup)(void *privdata, const void *key); // 复制值的函数 void *(*valDup)(void *privdata, const void *obj); // 对比键的函数 int (*keyCompare)(void *privdata, const void *key1, const void *key2); // 销毁键的函数 void (*keyDestructor)(void *privdata, void *key); // 销毁值的函数 void (*valDestructor)(void *privdata, void *obj); } dictType; ht：是一个包含两项的数组，每一项都是一个dictht哈希表。\nht[0]：默认只使用的哈希表。\nht[1]：在执行rehash重新散列时使用。 还有一个和rehash相关的属性rehashidx，记录了rehash的进度，如果没有在进行rehash值为-1。 * 字典整体结构图 哈希算法 当我们需要向字典里添加键值对的时候就要用到哈希算法。 流程：\n根据键计算哈希值、索引值 -\u003e 根据索引值把包含这个价值对的哈希节点放到哈希表的数组的指定索引上 计算方法： # 使用字典设置的哈希函数，计算键 key 的哈希值 hash = dict-\u003etype-\u003ehashFunction(key); # 使用哈希表的 sizemask 属性和哈希值，计算出索引值 # 根据情况不同， ht[x] 可以是 ht[0] 或者 ht[1] index = hash \u0026 dict-\u003eht[x].sizemask; 解决键冲突 定义：哈希值相同，索引相同的键被分配到数组的同一个索引上。 解决方法：链地址法\n通过哈希节点里的next指针把索引相同的哈希节点连接在一起形成单向链表。 举例：k1和k2的索引值都为2。 添加k2 因哈希节点没有指向链表表尾的指针，所以每次添加键冲突的键值对都要放在头部。复杂度为O(1)。 重新散列(rehash) 定义：随着哈希表内保存的键值对的不断增多，为了让负载因子维持在一个合理的范围内，要对哈希表进行扩展或收缩。 负载因子：哈希表已保存节点数量 / 哈希表大小。\nload_factor = ht[0].used / ht[0].size 触发条件： 服务器没有执行bgsave bgrewriteaof 命令，负载因子\u003e=1 服务器在执行bgsave bgrewriteaof 命令，负载因子\u003e=5 负载因子\u003c0.1 流程： 为ht[1]分配空间，大小规则如下： 扩展时，ht[0].used * 2\u003c= 2^n，符合条件第一个2^n即空间大小。 缩小时，ht[0].used \u003c= 2^n，符合条件第一个2^n即空间大小。 把ht[0]上的所有键值对rehash到ht[1]。\nrehash：重新计算哈希值和索引值，并放置到ht[1]。 释放ht[0]，把ht[1]设置为ht[0]，创建新的空白哈希表ht[1]。 举例：条件ht[0].used = 4 分配空间\nht[0].used * 2 = 4 * 2 = 8，比4大等的一个2^n为2^3=8。所以分配空间ht[1].size = 8。 转移键值对\n重新计算键值对的哈希值和索引值，然后放置到ht[1]。 标准化\n释放ht[0]，把ht[1]设置成ht[0]，重新创建新的空哈希表ht[1]。 渐进式rehash 定义：在哈希表数据比较庞大的时候，如果要一次性rehash，计算量太大，可能导致服务器在一段时间内停止工作。因此引入了渐进式rehash的方式，渐进式rehash时分多次，渐进式的rehash。 步骤： 为ht[1]分配空间。字典同时持有ht[0] ht[1]两个哈希表 在字典中为rehashidx赋值为0,表示开始工作 在rehash期间，每次对字典执行增删改查操作的同时，对索引为rehashidx的哈希节点进行rehash，并且让rehashidx + 1。 随着对字典的不断操作，rehash操作完成，rehashidx = -1。 采用分治思想，把rehash操作分摊到每次增删改查操作上，避免了集中rehash带来大庞大计算量。\n对于渐进式rehash，每次删改查操作都要对两张哈希表进行。并且新增的键值对都要存在ht[1]中。 字典常用API 函数 作用 时间复杂度 dictCreate 创建一个新的字典。 O(1)。 dictAdd 将给定的键值对添加到字典里面。 O(1)。 dictReplace 将给定的键值对添加到字典里面，如果键已经存在于字典，那么用新值取代原有的值。 O(1)。 dictFetchValue 返回给定键的值。 O(1)。 dictGetRandomKey 从字典中随机返回一个键值对。 O(1)。 dictDelete 从字典中删除给定键所对应的键值对。 O(1)。 dictRelease 释放给定字典，以及字典中包含的所有键值对。 O(N)，N为字典包含的键值对数量。 重点回顾 字典广泛应用于Redis实现各种功能，包括数据库和哈希键等。 Redis中的字典用自己构建的哈希表底层实现，每个字典中带有两个哈希表，一个作为日常使用，另一个作为rehash的时候使用。 当字典被用作数据库、哈希键的底层实现时，Redis用MurmurHash2算法来计算键的哈希值。 哈希表使用链地址法来解决哈希冲突，根本是哈希节点内置了next属性，当键值对的哈希值和索引值相同的时候，会在同一个索引上形成单向链表。 在哈希表进行rehash操作的时候，采用分治的思想，分多次、渐进式的对每个键值对执行rehash。 4. 跳跃表（skiplist） 定义： 跳表就是支持二分查找的有序链表 跳跃表的实现 跳表的整体结构 跳表由zskiplistNode跳表节点和zskiplist保存跳表信息 构成。 zskiplist属性： header：指向跳表头部 tail：指向跳表尾部 level：记录除表头外，最大的节点的层数 length：记录出表头外，总的节点个数 zskiplistNode属性： 层(level)：节点中用L1、L2、L3…表示，每层有两个属性：\n前进指针：访问位于表尾的其他节点\n跨度：前进指针所指节点和当前节点的距离 后退(backward)：BW标记，位于当前节点的前一节点，在从表尾往表头遍历时使用 分值(score)：节点按分值从小到大排列 成员对象(obj)：o1、o2、o3，为节点所保存的成员对象 跳跃表API 函数 作用 时间复杂度 zslCreate 创建一个新的跳跃表。 O(1)。 zslFree 释放给定跳跃表，以及表中包含的所有节点。 O(N)，N为跳跃表的长度。 zslInsert 将包含给定成员和分值的新节点添加到跳跃表中。 平均 O(log N)，最坏 O(N)，N为跳跃表长度。 zslDelete 删除跳跃表中包含给定成员和分值的节点。 平均 O(log N)，最坏 O(N)，N为跳跃表长度。 zslGetRank 返回包含给定成员和分值的节点在跳跃表中的排位。 平均 O(log N)，最坏 O(N)，N为跳跃表长度。 zslGetElementByRank 返回跳跃表在给定排位上的节点。 平均 O(log N)，最坏 O(N)，N为跳跃表长度。 zslIsInRange 给定一个分值范围，检测是否在跳跃表的分值范围内。 O(1)。 zslFirstInRange 给定一个分值范围，返回第一个符合范围的节点。 平均 O(log N)，最坏 O(N)，N为跳跃表长度。 zslLastInRange 给定一个分值范围，返回最后一个符合范围的节点。 平均 O(log N)，最坏 O(N)，N为跳跃表长度。 zslDeleteRangeByScore 给定一个分值范围，删除范围内的所有节点。 O(N)，N为被删除节点数量。 zslDeleteRangeByRank 给定一个排位范围，删除范围内的所有节点。 O(N)，N为被删除节点数量。 重点回顾 跳表是有序集合的底层实现，除此之外没有应用 跳表是可以实现二分查找的有序链表 最底层包含所用元素 每个索引节点包含两个指针，向右和向下 跳表查询、插入、删除的时间复杂度为 O(logn)，与平衡二叉树接近 5. 整数集合(intset) 定义： 整数集合是Redis用于保存整数数值的集合抽象数据结构，且不会出现重复元素。 整数集合是集合键的底层实现之一。 当一个集合只包含整数，且数据量不大的时候，就会使用整数集合作为底层集合键的底层实现。 整数集合的实现 结构 typedef struct intset { // 编码方式 uint32_t encoding; // 集合包含的元素数量 uint32_t length; // 保存元素的数组 int8_t contents[]; } intset; encoding：\n属性值为INTSET_ENC_INT16，就是int16_t类型数组。（最小值为-32,768 ，最大值为32,767）\n属性值为INTSET_ENC_INT32，就是int32_t类型数组。（最小值为-2,147,483,648 ，最大值为2,147,483,647）\n属性值为INTSET_ENC_INT64，就是int64_t类型数组。（最小值为-9,223,372,036,854,775,808 ，最大值为9,223,372,036,854,775,807） length：contents数组的长度。 contents：整数集合的底层实现，从小到大排列，没有重复项。 升级 当我们新添加的元素类型比现有的所有数据类型都长的时候，就要进行数据类型的升级。 升级整数集合并添加新元素步骤： 根据新元素的类型扩展整个整数集合底层数组的空间大小，并为新元素分配空间。 将底层数组里现有的元素进行类型转换，并放在正确的位置。 将新元素添加到底层数组里。 举例：有一编码为INTSET_ENC_INT16的整数集合\ncontents数组所占位数：\n根据添加元素数据类型扩展空间\n为新元素分配空间并且对已有元素进行类型转换，放在正确位置。\n将新元素添加到底层数组里。\n修改整数集合encoding属性和length属性\n整数集合API 函数 作用 时间复杂度 intsetNew 创建一个新的整数集合。 O(1)。 intsetAdd 将给定元素添加到整数集合里面。 O(N)。 intsetRemove 从整数集合中移除给定元素。 O(N)。 intsetFind 检查给定值是否存在于集合。 O(log N)。 intsetRandom 从整数集合中随机返回一个元素。 O(1)。 intsetGet 取出底层数组在给定索引上的元素。 O(1)。 intsetLen 返回整数集合包含的元素个数。 O(1)。 intsetBlobLen 返回整数集合占用的内存字节数。 O(1)。 6. 压缩列表（ziplist） 定义： 是列表键和哈希键的底层实现之一 当列表键只包含少量列表项，并且每个列表项要么是小整数，要么是短字符串。 当哈希键只包含少量键值对，并且每个键值对的键和值要么是小整数，要么是短字符串。 压缩列表的构成 压缩列表由一组特殊编码的连续内存块组成的顺序型的数据结构，是为了节约内存而开发的。 压缩列表块的构成：\nzlbytes：长度4字节，用于保存压缩列表的总的占用字节数。在对压缩列表进行内存重分配或者计算zlend的位置的时候使用。 zltail：长度4字节，记录压缩列表表尾节点的地址距离表头节点的地址有多少字节。通过偏移量可以计算表尾节点的地址，无需遍历。 zllen：长度2字节，记录压缩列表的节点长度。 entryX：长度不定，用于记录字节数组或者整数数值。 zlend：长度1字节，用于标记压缩列表末端。 示例：\nzlbytes：属性值0xd2十进制为210，表示压缩列表总长210字节。 zltail：属性值0xb3十进制179，如图p指针指向表头节点，用p+179表示末尾节点的地址值。 zllen：属性值0x5十进制5，表示压缩列表包含5个节点 压缩列表节点构成 压缩列表的节点保存的是字节数组或者整数值。 字节数组规定如下： 长度小于等于2^6-1的字节数组 长度小于等于2^14-1的字节数组 长度小于等于2^32-1的字节数组 整数值规定如下 4位，且介于0-12直接的无符号整数 1字节长的有符号整数 3字节长的有符号整数 int16_t类型整数 int32_t类型整数 int64_t类型整数 压缩列表节点构成图\nprevious_entry_length：节点位单位，记录了前一节点的长度。属性可以为1节点或者5节点 如果前一节点小于256字节，那么长度为1字节，前一节点的信息保存在这里 如果前一节点大于256字节，那么长度为5字节，第1个字节用0xFE表示十进制的256字节，然后4位用于保存前一节点的长度。 可以有用此计算前一节点的起始地址，当前起始地址的指针-previous_entry_length得出。 encoding：记录content属性值的数据类型和长度。 content：记录节点的值，可以是字节数组或者整数值 连锁更新 因为previous_entry_length的特殊机制，如果现在设置一个压缩列表，内的节点长度都为250-253之间，那么如果要向表头新添加一个长度大于256字节的节点，那么原头节点的previous_entry_length就要进行内存重分配变成5个字节，然后这个节点整体长度也大于256字节了，就要对后一节点的previous_entry_length进行内存重分配。引发连锁反应。 示例： 设置一个压缩列表，内的节点长度都为250-253之间\n向表头新添加一个长度大于256字节的节点\n原头节点的previous_entry_length进行内存重分配变成5个字节。\n这个节点整体长度也大于256字节了，对后一节点的previous_entry_length进行内存重分配。\n引发连锁反应。\n同理删除节点也会出现连锁反应。 压缩列表API 函数 作用 算法复杂度 ziplistNew 创建一个新的压缩列表。 O(1)。 ziplistPush 创建一个包含给定值的新节点，并将新节点添加到压缩列表的表头或表尾。 平均 O(N)，最坏 O(N^2)。 ziplistInsert 将包含给定值的新节点插入到给定节点之后。 平均 O(N)，最坏 O(N^2)。 ziplistIndex 返回压缩列表给定索引上的节点。 O(N)。 ziplistFind 在压缩列表中查找并返回包含给定值的节点。 平均 O(N^2)，最坏 O(N^2)。 ziplistNext 返回给定节点的下一个节点。 O(1)。 ziplistPrev 返回给定节点的前一个节点。 O(1)。 ziplistGet 获取给定节点所保存的值。 O(1)。 ziplistDelete 从压缩列表中删除给定的节点。 平均 O(N)，最坏 O(N^2)。 ziplistDeleteRange 删除压缩列表在给定索引上的连续多个节点。 平均 O(N)，最坏 O(N^2)。 ziplistBlobLen 返回压缩列表目前占用的内存字节数。 O(1)。 ziplistLen 返回压缩列表目前包含的节点数量。 节点数量 \u003c 65535 时 O(1)，节点数量 \u003e 65535 时 O(N)。 重点回顾 压缩列表是为了节约内存开发的顺序型数据结构 压缩列表用于列表键和哈希键的底层实现之一 压缩列表里的节点可以是字节数组也可以是整数值 新增或删除节点都可能会出现连锁更新操作 对象 Redis创建了一个对象系统，把以上这些数据结构作为底层实现。 5大对象包括：字符串对象、列表对象、哈希对象、集合对象、有序集合对象。 通过这五种对象，Redis在执行命令之前根据对象的类型判断是否可以执行命令。可以针对不同的场景，用不同的数据结构实现。 Redis对象实现了基于引用计数技术的内存回收机制：当对象不再使用，自动释放内存。 Redis对象实现了基于引用计数技术的对象共享机制：在适当情况下多个数据库可以共享同一个对象来节约内存。 对象的类型和编码 Redis用对象来表示数据库中的键值对，当创建一个键值对的时候，至少会创建两个对象，键对象和值对象。 Redis中的对象redisObject结构： typedef struct redisObject { // 类型 unsigned type:4; // 编码 unsigned encoding:4; // 指向底层实现数据结构的指针 void *ptr; // ... } robj; type：对象的类型，值为一下常量中的一个\nREDIS_STRING：字符串对象 REDIS_LIST：列表对象 REDIS_HASH：哈希对象 REDIS_SET：集合对象 REDIS_ZSET：有序集合对象 示例：（用TYPE + 键名来查看值的对象类型） # 键为字符串对象，值为字符串对象 redis\u003e SET msg \"hello world\" OK redis\u003e TYPE msg string # 键为字符串对象，值为列表对象 redis\u003e RPUSH numbers 1 3 5 (integer) 6 redis\u003e TYPE numbers list # 键为字符串对象，值为哈希对象 redis\u003e HMSET profile name Tome age 25 career Programmer OK redis\u003e TYPE profile hash # 键为字符串对象，值为集合对象 redis\u003e SADD fruits apple banana cherry (integer) 3 redis\u003e TYPE fruits set # 键为字符串对象，值为有序集合对象 redis\u003e ZADD price 8.5 apple 5.0 banana 6.0 cherry (integer) 3 redis\u003e TYPE price zset encoding：记录值对象所使用的编码格式，通俗说就是这个对象使用什么数据结构作为底层实现。\n编码常量如下：\n编码常量 编码所对应的底层数据结构 REDIS_ENCODING_INT long 类型的整数 REDIS_ENCODING_EMBSTR embstr 编码的简单动态字符串 REDIS_ENCODING_RAW 简单动态字符串 REDIS_ENCODING_HT 字典 REDIS_ENCODING_LINKEDLIST 双端链表 REDIS_ENCODING_ZIPLIST 压缩列表 REDIS_ENCODING_INTSET 整数集合 REDIS_ENCODING_SKIPLIST 跳跃表和字典 每种类型的对象至少可以使用两种以上的编码格式，如下表\n类型 编码 对象 REDIS_STRING REDIS_ENCODING_INT 使用整数值实现的字符串对象。 REDIS_STRING REDIS_ENCODING_EMBSTR 使用 embstr 编码的简单动态字符串实现的字符串对象。 REDIS_STRING REDIS_ENCODING_RAW 使用简单动态字符串实现的字符串对象。 REDIS_LIST REDIS_ENCODING_ZIPLIST 使用压缩列表实现的列表对象。 REDIS_LIST REDIS_ENCODING_LINKEDLIST 使用双端链表实现的列表对象。 REDIS_HASH REDIS_ENCODING_ZIPLIST 使用压缩列表实现的哈希对象。 REDIS_HASH REDIS_ENCODING_HT 使用字典实现的哈希对象。 REDIS_SET REDIS_ENCODING_INTSET 使用整数集合实现的集合对象。 REDIS_SET REDIS_ENCODING_HT 使用字典实现的集合对象。 REDIS_ZSET REDIS_ENCODING_ZIPLIST 使用压缩列表实现的有序集合对象。 REDIS_ZSET REDIS_ENCODING_SKIPLIST 使用跳跃表和字典实现的有序集合对象。 使用命令OBJECT ENCODING + 键查看值对象的编码格式：\nredis\u003e SET msg \"hello wrold\" OK redis\u003e OBJECT ENCODING msg \"embstr\" redis\u003e SET story \"long long long long long long ago ...\" OK redis\u003e OBJECT ENCODING story \"raw\" redis\u003e SADD numbers 1 3 5 (integer) 3 redis\u003e OBJECT ENCODING numbers \"intset\" redis\u003e SADD numbers \"seven\" (integer) 1 redis\u003e OBJECT ENCODING numbers \"hashtable\" 字符串对象 编码格式：int、raw、embstr int 条件：输入值为整数值并且可以用long来表示 转换过程：ptr属性由*void转成long，编码格式设置为int redis\u003e SET number 10086 OK redis\u003e OBJECT ENCODING number \"int\" raw * 条件：字符串长度大于39字节\r* 转换过程：编码格式设置为`raw`\r```\rredis\u003e SET story \"Long, long, long ago there lived a king ...\"\rOK\rredis\u003e STRLEN story\r(integer) 43\rredis\u003e OBJECT ENCODING story\r\"raw\"\r```\r![字符串raw对象](字符串对象sds.png)\rembstr 条件：字符串长度小于等于39字节 转换过程：调用一次内存分配一块连续的内存空间，空间包含redisObject sdshdr，编码格式设置为embstr redis\u003e SET msg \"hello\" OK redis\u003e OBJECT ENCODING msg \"embstr\" 好处： 只用分配一次内存空间 释放也只需释放一次 可以更好的利用缓存优势 注意事项 小数浮点类型的数据在Redis中也是用字符串进行保存，保存过程：先转换成字符串，再保存转换后的字符串。在对小数浮点类型的数据进行计算操作的时候先转换成浮点型再操作，再转换成字符串进行保存。 redis\u003e SET pi 3.14 OK redis\u003e OBJECT ENCODING pi \"embstr\" redis\u003e INCRBYFLOAT pi 2.0 \"5.14\" redis\u003e OBJECT ENCODING pi \"embstr\" 程序先取\"3.14\"转换成浮点值3.14，计算得5.14，再转换成\"5.14\"字符串进行储存。\n编码转换 int编码的字符串对象和emtstr编码的字符串对象，在满足条件的时候都会转换成raw编码。 如在int编码的字符串对象后加hello world，不满足int编码条件 在emtstr编码的字符串对象后加够39个字节以上。 字符串命令的实现 命令 int 编码的实现方法 embstr 编码的实现方法 raw 编码的实现方法 SET 使用 int 编码保存值。 使用 embstr 编码保存值。 使用 raw 编码保存值。 GET 将整数值转换为字符串值，然后返回。 直接返回字符串值。 直接返回字符串值。 APPEND 转换为 raw 编码，然后按 raw 编码方式操作。 转换为 raw 编码，然后按 raw 编码方式操作。 使用 sdscatlen 追加字符串到末尾。 INCRBYFLOAT 取出整数值，进行加法计算并保存。 取出字符串值，进行加法计算并保存。 取出字符串值，进行加法计算并保存。 INCRBY 进行整数加法计算并保存。 不支持，返回错误。 不支持，返回错误。 DECRBY 进行整数减法计算并保存。 不支持，返回错误。 不支持，返回错误。 STRLEN 将整数值转换为字符串值，计算并返回长度。 使用 sdslen 返回字符串长度。 使用 sdslen 返回字符串长度。 SETRANGE 转换为 raw 编码，然后按 raw 编码方式操作。 转换为 raw 编码，然后按 raw 编码方式操作。 在指定索引处设置字符。 GETRANGE 将整数值转换为字符串值，返回指定索引字符。 直接返回指定索引字符。 直接返回指定索引字符。 列表对象 编码格式：ziplist、linkedlist ziplist 条件：同时满足列表保存的所有字符串小于64字节，列表对象保存的元素数量小于512个。 底层实现：压缩列表 转换过程：ptr指向压缩列表结构 redis\u003e RPUSH numbers 1 \"three\" 5 (integer) 3 linkedlist 底层实现：双端链表 转换过程：ptr指针指向双端链表的头节点\n对StringObject进行的简化\n编码转换 ziplist的条件不满足时触发编码转换。 示例： 因保存了长度太大的元素而进行编码转换 # 所有元素的长度都小于 64 字节 redis\u003e RPUSH blah \"hello\" \"world\" \"again\" (integer) 3 redis\u003e OBJECT ENCODING blah \"ziplist\" # 将一个 65 字节长的元素推入列表对象中 redis\u003e RPUSH blah \"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\" (integer) 4 # 编码已改变 redis\u003e OBJECT ENCODING blah \"linkedlist\" 因保存的元素数量过多而进行编码转换 # 列表对象包含 512 个元素 redis\u003e EVAL \"for i=1,512 do redis.call('RPUSH', KEYS[1], i) end\" 1 \"integers\" (nil) redis\u003e LLEN integers (integer) 512 redis\u003e OBJECT ENCODING integers \"ziplist\" # 再向列表对象推入一个新元素，使得对象保存的元素数量达到 513 个 redis\u003e RPUSH integers 513 (integer) 513 # 编码已改变 redis\u003e OBJECT ENCODING integers \"linkedlist\" 列表命令的实现 命令 ziplist 编码的实现方法 linkedlist 编码的实现方法 LPUSH 调用 ziplistPush 函数，将新元素推入到压缩列表的表头。 调用 listAddNodeHead 函数，将新元素推入到双端链表的表头。 RPUSH 调用 ziplistPush 函数，将新元素推入到压缩列表的表尾。 调用 listAddNodeTail 函数，将新元素推入到双端链表的表尾。 LPOP 调用 ziplistIndex 函数定位压缩列表的表头节点，然后调用 ziplistDelete 函数删除表头节点。 调用 listFirst 函数定位双端链表的表头节点，然后调用 listDelNode 函数删除表头节点。 RPOP 调用 ziplistIndex 函数定位压缩列表的表尾节点，然后调用 ziplistDelete 函数删除表尾节点。 调用 listLast 函数定位双端链表的表尾节点，然后调用 listDelNode 函数删除表尾节点。 LINDEX 调用 ziplistIndex 函数定位压缩列表中的指定节点，然后返回节点所保存的元素。 调用 listIndex 函数定位双端链表中的指定节点，然后返回节点所保存的元素。 LLEN 调用 ziplistLen 函数返回压缩列表的长度。 调用 listLength 函数返回双端链表的长度。 LINSERT 插入新节点到压缩列表时，使用 ziplistPush 函数；插入新节点到其他位置时，使用 ziplistInsert 函数。 调用 listInsertNode 函数，将新节点插入到双端链表的指定位置。 LREM 遍历压缩列表节点，并调用 ziplistDelete 函数删除包含给定元素的节点。 遍历双端链表节点，并调用 listDelNode 函数删除包含给定元素的节点。 LTRIM 调用 ziplistDeleteRange 函数，删除压缩列表中所有不在指定索引范围内的节点。 遍历双端链表节点，并调用 listDelNode 函数删除链表中所有不在指定索引范围内的节点。 LSET 调用 ziplistDelete 函数删除压缩列表指定索引上的节点，然后调用 ziplistInsert 函数插入包含给定元素的新节点。 调用 listIndex 函数定位双端链表指定索引上的节点，然后通过赋值操作更新节点的值。 哈希对象 编码格式：ziplist、hashtable ziplist 条件：同时满足哈希对象保存的所有键值对的键和值小于64字节，哈希对象保存的键值对数量小于512个。 底层实现：压缩列表 转换过程：ptr指向压缩列表，每个新添加的键值对都加在表尾，键先压入，值再压入。 redis\u003e HSET profile name \"Tom\" (integer) 1 redis\u003e HSET profile age 25 (integer) 1 redis\u003e HSET profile career \"Programmer\" (integer) 1 hashtable 底层实现：字典 转换过程：ptr指向dict字典 编码转化 ziplist条件不满足时转换成hashtable 哈希对象命令的实现 命令 ziplist 编码实现方法 hashtable 编码的实现方法 HSET 调用 ziplistPush 函数，将键和值分别推入到压缩列表的表尾。 调用 dictAdd 函数，将新节点添加到字典里面。 HGET 调用 ziplistFind 函数，在压缩列表中查找指定键所对应的节点，然后返回值节点。 调用 dictFind 函数，在字典中查找指定键，返回对应的值。 HEXISTS 调用 ziplistFind 函数，在压缩列表中查找指定键所对应的节点，存在则返回1，不存在返回0。 调用 dictFind 函数，在字典中查找指定键，存在则返回1，不存在返回0。 HDEL 调用 ziplistFind 函数，在压缩列表中查找指定键所对应的节点，然后删除键节点和值节点。 调用 dictDelete 函数，从字典中删除指定键的键值对。 HLEN 调用 ziplistLen 函数取得压缩列表节点数量，然后除以2得到键值对数量。 调用 dictSize 函数，返回字典中键值对的数量。 HGETALL 遍历压缩列表，使用 ziplistGet 函数返回所有的键和值。 遍历字典，使用 dictGetKey 函数返回键，使用 dictGetVal 函数返回值。 集合对象 编码格式：intset、hashtable intset 条件：同时满足集合对象保存的所有元素都是整数值，集合对象保存的元素数量小于等于512个。 底层实现：整数集合 转化过程：ptr指向intset redis\u003e SADD numbers 1 3 5 (integer) 3 hashtable 底层实现：字典 转化过程：ptr指向dict\n编码转换 不满足intset编码自动转换成hashtable编码 集合对象命令的实现 命令 intset 编码的实现方法 hashtable 编码的实现方法 SADD 调用 intsetAdd 函数，将新元素添加到整数集合中。 调用 dictAdd 函数，以新元素为键，NULL 为值，将键值对添加到字典中。 SCARD 调用 intsetLen 函数，返回整数集合的元素数量，这个数量即集合的元素数量。 调用 dictSize 函数，返回字典的键值对数量，这个数量即集合的元素数量。 SISMEMBER 调用 intsetFind 函数，在整数集合中查找给定元素，存在返回1，不存在返回0。 调用 dictFind 函数，在字典中查找给定元素，存在返回1，不存在返回0。 SMEMBERS 遍历整数集合，使用 intsetGet 函数返回所有的元素。 遍历字典，使用 dictGetKey 函数返回所有键作为集合元素。 SRANDMEMBER 调用 intsetRandom 函数，从整数集合中随机返回一个元素。 调用 dictGetRandomKey 函数，从字典中随机返回一个键。 SPOP 调用 intsetRandom 函数，随机返回整数集合中的一个元素，然后从集合中删除。 调用 dictGetRandomKey 函数，随机返回字典中的一个键，然后从字典中删除。 SREM 调用 intsetRemove 函数，从整数集合中删除所有给定元素。 调用 dictDelete 函数，从字典中删除所有键为给定元素的键值对。 有序集合对象 编码格式：ziplist、skiplist ziplist 条件：同时满足有序集合对象保存的元素小于128个，有序集合对象保存的所有元素长度小于64字节。 底层实现：压缩列表 转化过程：ptr指向压缩列表，集合元素按从小到大排序，小的在表头，大的在表尾。 redis\u003e ZADD price 8.5 apple 5.0 banana 6.0 cherry (integer) 3 skiplist 底层实现：zset结构作为底层实现，包含跳跃表和字典。 typedef struct zset { zskiplist *zsl; dict *dict; } zset; 为什么同时使用跳跃表和字典来保存有序集合对象 跳跃表是一种有序的数据结构，支持范围查找，提高了有序集合在范围操作上的性能。 字典对单条数据可以快速的查找和更新，并且字典是无序的。 要注意，跳跃表和字典共享元素的成员和分量。所以性能不会差。 结构图 注意：图中的StringObject是共享的图中为了方便给分开了。 编码转换 有序集合对象内的元素同时满足元素个数小于128个，所有元素的长度小于64字节；使用ziplist，否则使用skiplist。 示例：\n元素过多导致编码转换。 # 对象包含了 128 个元素 redis\u003e EVAL \"for i=1, 128 do redis.call('ZADD', KEYS[1], i, i) end\" 1 numbers (nil) redis\u003e ZCARD numbers (integer) 128 redis\u003e OBJECT ENCODING numbers \"ziplist\" # 再添加一个新元素 redis\u003e ZADD numbers 3.14 pi (integer) 1 # 对象包含的元素数量变为 129 个 redis\u003e ZCARD numbers (integer) 129 # 编码已改变 redis\u003e OBJECT ENCODING numbers \"skiplist\" 元素过长导致编码转换 # 向有序集合添加一个成员只有三字节长的元素 redis\u003e ZADD blah 1.0 www (integer) 1 redis\u003e OBJECT ENCODING blah \"ziplist\" # 向有序集合添加一个成员为 66 字节长的元素 redis\u003e ZADD blah 2.0 oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo (integer) 1 # 编码已改变 redis\u003e OBJECT ENCODING blah \"skiplist\" 有序集合对象的命令实现 命令 ziplist 编码的实现方法 zset 编码的实现方法 ZADD 调用 ziplistInsert 函数，将成员和分值作为两个节点插入到压缩列表。 先调用 zslInsert 函数，将新元素添加到跳跃表，然后调用 dictAdd 函数，将新元素关联到字典。 ZCARD 调用 ziplistLen 函数，获取压缩列表的节点数量，除以 2 得出集合元素数量。 访问跳跃表数据结构的 length 属性，直接返回集合元素数量。 ZCOUNT 遍历压缩列表，统计分值在给定范围内的节点数量。 遍历跳跃表，统计分值在给定范围内的节点数量。 ZRANGE 从表头向表尾遍历压缩列表，返回给定索引范围内的所有元素。 从表头向表尾遍历跳跃表，返回给定索引范围内的所有元素。 ZREVRANGE 从表尾向表头遍历压缩列表，返回给定索引范围内的所有元素。 从表尾向表头遍历跳跃表，返回给定索引范围内的所有元素。 ZRANK 从表头向表尾遍历压缩列表，查找给定成员，记录经过节点数量，找到成员后的节点数量即排名。 从表头向表尾遍历跳跃表，查找给定成员，记录经过节点数量，找到成员后的节点数量即排名。 ZREVRANK 从表尾向表头遍历压缩列表，查找给定成员，记录经过节点数量，找到成员后的节点数量即排名。 从表尾向表头遍历跳跃表，查找给定成员，记录经过节点数量，找到成员后的节点数量即排名。 ZREM 遍历压缩列表，删除所有包含给定成员的节点，及其分值节点。 遍历跳跃表，删除所有包含给定成员的节点，解除字典中成员与分值的关联。 ZSCORE 遍历压缩列表，查找给定成员的节点，取出分值节点保存的分值。 直接从字典中取出给定成员的分值。 类型检查和命令多态 类型检查 Redis用于操作键的命令包括两种，公共命令和特定命令。 功共命令：可以对所有类型键执行，如：DEL 命令、 EXPIRE 命令、 RENAME 命令、 TYPE 命令、 OBJECT 命令。 特定命令：只对特定类型的键执行 SET 、 GET 、 APPEND 、 STRLEN 等命令只能对字符串键执行； HDEL 、 HSET 、 HGET 、 HLEN 等命令只能对哈希键执行； RPUSH 、 LPOP 、 LINSERT 、 LLEN 等命令只能对列表键执行； SADD 、 SPOP 、 SINTER 、 SCARD 等命令只能对集合键执行； ZADD 、 ZCARD 、 ZRANK 、 ZSCORE 等命令只能对有序集合键执行； 底层实现：底层通过redisObject里的type属性来进行判断。 示例： 执行LLEN命令，先检查redisObject里的type属性是否是REDIS_LIST。 是则执行相应函数，否则服务器拒接执行命令并返回类型错误。 命令多态 Redis会根据编码的不同执行不同的函数。 示例： 列表对象有ziplist和linkdelist两种编码格式 执行LLEN命令： ziplist程序执行ziplistLen函数来返回列表长度 linkedlist程序执行listLength函数返回双端链表的长度\n以上示例说明，命令存在多态，相同的命令不同编码都可以执行，执行的函数不相同。 同时我们也可以将公共命令作为多态命令。前者为对类型的多态，后者为对编码的多态。 内存回收 C语言中没有内置内存回收机制，所以Redis构建了一个引用计数技术实现内存回收机制 通过该机制，程序通过跟踪对象引用计数信息，在适当的时候释放对象并进行内存回收。 引用计数信息在redisObject中的refcount属性中。 typedef struct redisObject { // ... // 引用计数 int refcount; // ... } robj; 引用计数信息变化规则 创建新对象，引用计数值初始化为1 对象被新程序引用，引用计数器+1 对象不再被一个程序使用，引用计数-1 引用计数值=0，对象占用的内存释放。 对引用计数值操作的API 函数 作用 incrRefCount 将对象的引用计数值增一。 decrRefCount 将对象的引用计数值减一，当引用计数值为 0 时，释放对象。 resetRefCount 将对象的引用计数值设置为 0 ，但不释放对象。 对象的生命周期 创建对象、操作对象、释放对象\n// 创建一个字符串对象 s ，对象的引用计数为 1 robj *s = createStringObject(...) // 对象 s 执行各种操作 ... // 将对象 s 的引用计数减一，使得对象的引用计数变为 0 // 导致对象 s 被释放 decrRefCount(s) 对象共享 基于引用计数计数的对象共享 只对基于整数的字符串进行共享。因为对于字符串来说，对象共享进行比较的时间复杂度可能会很高，消耗性能。 示例： redis\u003e SET A 100 OK redis\u003e OBJECT REFCOUNT A (integer) 2 redis\u003e SET B 100 OK redis\u003e OBJECT REFCOUNT A (integer) 3 redis\u003e OBJECT REFCOUNT B (integer) 3 适用于字符串和数据结构中嵌套了字符串对象的对象，如linklist编码的列表对象、hashtable编码的哈希对象、hashtable编码的集合对象、zset编码的有序集合对象。 对象的空转时长 redisObject中的lru属性记录了对象最后一次被程序访问的时间。 我们通过OBJECT IDLETIME命令打印出给定键的空转时长，空转时长=当前时间-lru redis\u003e SET msg \"hello world\" OK # 等待一小段时间 redis\u003e OBJECT IDLETIME msg (integer) 20 # 等待一阵子 redis\u003e OBJECT IDLETIME msg (integer) 180 # 访问 msg 键的值 redis\u003e GET msg \"hello world\" # 键处于活跃状态，空转时长为 0 redis\u003e OBJECT IDLETIME msg (integer) 0 注意OBJECT IDLETIME命令是特殊的，不算访问键的值对象。不会修改lru的值。 当服务器打开的maxmemory选项，并且服务器用于内存回收的算法为volatile-lru或者allkey-lru，那么当服务器占用内存超过了maxmemory选项上设置的限值，空转较高的那部分键会优先被释放，并且回收内存。 重点回顾 Redis中的每个键和值都是一个redisObject对象 Redis中有五大对象：字符串对象、列表对象、哈希对象、集合对象、有序集合对象。每个对象都有两种以上的编码格式，不同的编码格式可以应对不同的场景，提高对象效率。 服务器在执行命令的时候，会先检查键的类型是否可以执行。 Redis自己构建了基于引用计数计数的内存回收机制，当对象不再被使用的时候，释放回收内存。 Redis会共享0-9999的字符串对象 对象会记录最后一次被程序访问的时间，用于计算空转时长 ",
+  "wordCount" : "16172",
+  "inLanguage": "en",
+  "datePublished": "2023-08-13T00:00:00Z",
+  "dateModified": "2023-08-13T00:00:00Z",
+  "author":{
+    "@type": "Person",
+    "name": "ZhouJze"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://zhoujze.github.io/en/posts/tech/redis-01-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "ZhouJz's blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://zhoujze.github.io/img/Q.jpg"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    (function () {
+        let  arr,reg = new RegExp("(^| )"+"change-themes"+"=([^;]*)(;|$)");
+        if(arr = document.cookie.match(reg)) {
+        } else {
+            if (new Date().getHours() >= 19 || new Date().getHours() < 6) {
+                document.body.classList.add('dark');
+                localStorage.setItem("pref-theme", 'dark');
+            } else {
+                document.body.classList.remove('dark');
+                localStorage.setItem("pref-theme", 'light');
+            }
+        }
+    })()
+
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://zhoujze.github.io/en/" accesskey="h" title="ZhouJze&#39;s Blog (Alt + H)">
+            <img src="https://zhoujze.github.io/img/Q.jpg" alt="logo" aria-label="logo"
+                 height="35">ZhouJze&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                         stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                         stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://zhoujze.github.io/en/search" title="🔍搜索 (Alt &#43; /)" accesskey=/>
+                <span>🔍搜索</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zhoujze.github.io/en/" title="🏠主页">
+                <span>🏠主页</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zhoujze.github.io/en/archives/" title="⏱时间轴">
+                <span>⏱时间轴</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zhoujze.github.io/en/tags" title="🔖标签">
+                <span>🔖标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zhoujze.github.io/en/about" title="🙋🏻‍♂️关于">
+                <span>🙋🏻‍♂️关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main page">
+<style>
+    i[id*="post_meta_style"] {
+        display: flex;
+        align-items: center;
+        margin: 0 0 10px 0;
+    }
+</style>
+
+<article class="post-single">
+    <div id="single-content">
+        <header class="post-header">
+            <div class="breadcrumbs"><a href="https://zhoujze.github.io/en/">🏠 主页</a>&nbsp;»&nbsp;<a href="https://zhoujze.github.io/en/posts/">📚文章</a>&nbsp;»&nbsp;<a href="https://zhoujze.github.io/en/posts/tech/">👨🏻‍💻 技术</a></div>
+            <h1 class="post-title">
+                Redis 01-数据结构与对象
+            </h1>
+            <div class="post-description">
+                Redis基本数据结构与对象
+            </div>
+            <div class="post-meta">
+
+<style>
+    i[id*="post_meta_style"] {
+        display: flex;
+        align-items: center;
+        margin: 0 0 10px 0;
+    }
+
+    .parent-post-meta {
+        display: flex;
+        flex-wrap: wrap;
+        opacity: 0.8;
+    }
+</style>
+
+<span class="parent-post-meta">
+    <span id="post_meta_style_1">
+        <span class="fa fa-calendar-check-o"></span>
+        <span>2023-08-13
+            &nbsp;&nbsp;
+        </span>
+    </span>
+    
+    
+    
+    
+    
+    
+    
+    <span id="post_meta_style_3">
+        <span class="fa fa-file-word-o"></span>
+        <span>16172字
+            &nbsp;&nbsp;
+        </span>
+    </span>
+    <span id="post_meta_style_4">
+        <span class="fa fa-clock-o"></span>
+        <span>33分钟
+            &nbsp;&nbsp;
+        </span>
+    </span>
+    <span id="post_meta_style_5">
+        <span class="fa fa-user-o"></span>
+        <span>ZhouJze
+            &nbsp;&nbsp;
+        </span>
+    </span>
+    <span id="post_meta_style_6">
+        <span class="fa fa-tags" style="opacity: 0.8"></span>
+        <span>
+            <span class="post-tags-meta">
+                <a href="https://zhoujze.github.io/en/tags/redis/" style="color: var(--secondary)!important;">Redis</a>
+                &nbsp;<a href="https://zhoujze.github.io/en/tags/redis%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" style="color: var(--secondary)!important;">Redis数据结构</a>
+            </span>
+        </span>
+    </span>
+</span>
+<span style="opacity: 0.8;">
+                    <span id="post_meta_style_7">
+                        &nbsp;&nbsp;
+                        <span class="fa fa-eye" ></span>
+                        <span>
+                            <span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span></span>
+                            &nbsp;&nbsp;
+                        </span>
+                    </span>
+                    <span id="post_meta_style_8">
+                        <span class="fa fa-commenting-o"></span>
+                        <span>
+                            <script src="https://cdn.staticfile.org/twikoo/1.4.11/twikoo.all.min.js"></script>
+                            <script>
+                                let url = document.documentURI
+                                
+                                let dnsUrl = "https://zhoujze.github.io/"
+                                let urlSplit = url.split(dnsUrl)
+                                let finalUrl = urlSplit[1]
+                                if (finalUrl[0] !== '/') {
+                                    finalUrl = '/'+finalUrl
+                                }
+                                twikoo.getCommentsCount({
+                                    envId:  null , 
+                                region:  null , 
+                                urls: [ 
+                                    
+                                    finalUrl,
+                                ],
+                                    includeReply: false 
+                                }).then(function (res) {
+                                    let count = res[0].count
+                                    const obj = document.getElementById("comment_count");
+                                    obj.innerText = count
+                                    
+                                    
+                                    
+                                }).catch(function (err) {
+                                    
+                                    console.error(err);
+                                });
+                            </script>
+                            <span id="comment_count"></span>
+                        </span>
+                    </span>
+                </span>
+
+</div>
+        </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">文章目录</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84" aria-label="数据结构">数据结构</a><ul>
+                        
+                <li>
+                    <a href="#1-%e7%ae%80%e5%8d%95%e5%8a%a8%e6%80%81%e5%ad%97%e7%ac%a6%e4%b8%b2" aria-label="1. 简单动态字符串">1. 简单动态字符串</a><ul>
+                        
+                <li>
+                    <a href="#sds%e7%9a%84%e7%bb%93%e6%9e%84" aria-label="SDS的结构">SDS的结构</a></li>
+                <li>
+                    <a href="#sds%e4%b8%8ec%e8%af%ad%e8%a8%80%e5%ad%97%e7%ac%a6%e4%b8%b2%e7%9a%84%e5%8c%ba%e5%88%ab" aria-label="SDS与C语言字符串的区别">SDS与C语言字符串的区别</a><ul>
+                        
+                <li>
+                    <a href="#%e5%b8%b8%e6%95%b0%e5%a4%8d%e6%9d%82%e5%ba%a6%e8%8e%b7%e5%8f%96%e6%95%b0%e7%bb%84%e9%95%bf%e5%ba%a6" aria-label="常数复杂度获取数组长度">常数复杂度获取数组长度</a></li>
+                <li>
+                    <a href="#%e6%9d%9c%e7%bb%9d%e7%bc%93%e5%ad%98%e5%8c%ba%e6%ba%a2%e5%87%ba" aria-label="杜绝缓存区溢出">杜绝缓存区溢出</a></li>
+                <li>
+                    <a href="#%e5%9c%a8sds%e4%b8%ad%e6%9c%89%e7%94%a8%e4%ba%8e%e6%89%a7%e8%a1%8c%e5%ad%97%e7%ac%a6%e4%b8%b2%e6%8b%bc%e6%8e%a5%e7%9a%84%e5%87%bd%e6%95%b0sdscat" aria-label="在SDS中有用于执行字符串拼接的函数sdscat">在SDS中有用于执行字符串拼接的函数<code>sdscat</code></a></li>
+                <li>
+                    <a href="#%e5%87%8f%e5%b0%91%e4%bf%ae%e6%94%b9%e5%ad%97%e7%ac%a6%e4%b8%b2%e9%95%bf%e5%ba%a6%e6%97%b6%e6%89%80%e6%b6%89%e5%8f%8a%e7%9a%84%e5%86%85%e5%ad%98%e9%87%8d%e5%88%86%e9%85%8d%e6%ac%a1%e6%95%b0" aria-label="减少修改字符串长度时所涉及的内存重分配次数">减少修改字符串长度时所涉及的内存重分配次数</a></li>
+                <li>
+                    <a href="#%e4%ba%8c%e8%bf%9b%e5%88%b6%e5%ae%89%e5%85%a8" aria-label="二进制安全">二进制安全</a></li>
+                <li>
+                    <a href="#%e5%85%bc%e5%ae%b9%e9%83%a8%e5%88%86c%e8%af%ad%e8%a8%80%e5%ad%97%e7%ac%a6%e4%b8%b2%e5%87%bd%e6%95%b0" aria-label="兼容部分C语言字符串函数">兼容部分C语言字符串函数</a></li></ul>
+                </li>
+                <li>
+                    <a href="#sds-api" aria-label="SDS API">SDS API</a></li></ul>
+                </li>
+                <li>
+                    <a href="#2-%e9%93%be%e8%a1%a8" aria-label="2. 链表">2. 链表</a><ul>
+                        
+                <li>
+                    <a href="#%e9%93%be%e8%a1%a8%e5%92%8c%e9%93%be%e8%a1%a8%e8%8a%82%e7%82%b9" aria-label="链表和链表节点">链表和链表节点</a></li>
+                <li>
+                    <a href="#redis%e9%93%be%e8%a1%a8%e5%ae%9e%e7%8e%b0%e7%9a%84%e7%89%b9%e6%80%a7" aria-label="Redis链表实现的特性">Redis链表实现的特性</a></li>
+                <li>
+                    <a href="#%e9%93%be%e8%a1%a8api" aria-label="链表API">链表API</a></li></ul>
+                </li>
+                <li>
+                    <a href="#3-%e5%ad%97%e5%85%b8dict" aria-label="3. 字典（dict）">3. 字典（dict）</a><ul>
+                        
+                <li>
+                    <a href="#%e5%ad%97%e5%85%b8%e7%9a%84%e5%ae%9e%e7%8e%b0" aria-label="字典的实现">字典的实现</a></li>
+                <li>
+                    <a href="#%e5%93%88%e5%b8%8c%e7%ae%97%e6%b3%95" aria-label="哈希算法">哈希算法</a></li>
+                <li>
+                    <a href="#%e8%a7%a3%e5%86%b3%e9%94%ae%e5%86%b2%e7%aa%81" aria-label="解决键冲突">解决键冲突</a></li>
+                <li>
+                    <a href="#%e9%87%8d%e6%96%b0%e6%95%a3%e5%88%97rehash" aria-label="重新散列(rehash)">重新散列(rehash)</a></li>
+                <li>
+                    <a href="#%e6%b8%90%e8%bf%9b%e5%bc%8frehash" aria-label="渐进式rehash">渐进式rehash</a></li>
+                <li>
+                    <a href="#%e5%ad%97%e5%85%b8%e5%b8%b8%e7%94%a8api" aria-label="字典常用API">字典常用API</a></li>
+                <li>
+                    <a href="#%e9%87%8d%e7%82%b9%e5%9b%9e%e9%a1%be" aria-label="重点回顾">重点回顾</a></li></ul>
+                </li>
+                <li>
+                    <a href="#4-%e8%b7%b3%e8%b7%83%e8%a1%a8skiplist" aria-label="4. 跳跃表（skiplist）">4. 跳跃表（skiplist）</a><ul>
+                        
+                <li>
+                    <a href="#%e8%b7%b3%e8%b7%83%e8%a1%a8%e7%9a%84%e5%ae%9e%e7%8e%b0" aria-label="跳跃表的实现">跳跃表的实现</a></li>
+                <li>
+                    <a href="#%e8%b7%b3%e8%b7%83%e8%a1%a8api" aria-label="跳跃表API">跳跃表API</a></li>
+                <li>
+                    <a href="#%e9%87%8d%e7%82%b9%e5%9b%9e%e9%a1%be-1" aria-label="重点回顾">重点回顾</a></li></ul>
+                </li>
+                <li>
+                    <a href="#5-%e6%95%b4%e6%95%b0%e9%9b%86%e5%90%88intset" aria-label="5. 整数集合(intset)">5. 整数集合(intset)</a><ul>
+                        
+                <li>
+                    <a href="#%e6%95%b4%e6%95%b0%e9%9b%86%e5%90%88%e7%9a%84%e5%ae%9e%e7%8e%b0" aria-label="整数集合的实现">整数集合的实现</a></li>
+                <li>
+                    <a href="#%e5%8d%87%e7%ba%a7" aria-label="升级">升级</a></li>
+                <li>
+                    <a href="#%e6%95%b4%e6%95%b0%e9%9b%86%e5%90%88api" aria-label="整数集合API">整数集合API</a></li></ul>
+                </li>
+                <li>
+                    <a href="#6-%e5%8e%8b%e7%bc%a9%e5%88%97%e8%a1%a8ziplist" aria-label="6. 压缩列表（ziplist）">6. 压缩列表（ziplist）</a><ul>
+                        
+                <li>
+                    <a href="#%e5%8e%8b%e7%bc%a9%e5%88%97%e8%a1%a8%e7%9a%84%e6%9e%84%e6%88%90" aria-label="压缩列表的构成">压缩列表的构成</a></li>
+                <li>
+                    <a href="#%e8%bf%9e%e9%94%81%e6%9b%b4%e6%96%b0" aria-label="连锁更新">连锁更新</a></li>
+                <li>
+                    <a href="#%e5%8e%8b%e7%bc%a9%e5%88%97%e8%a1%a8api" aria-label="压缩列表API">压缩列表API</a></li>
+                <li>
+                    <a href="#%e9%87%8d%e7%82%b9%e5%9b%9e%e9%a1%be-2" aria-label="重点回顾">重点回顾</a></li></ul>
+                </li></ul>
+                </li>
+                <li>
+                    <a href="#%e5%af%b9%e8%b1%a1" aria-label="对象">对象</a><ul>
+                        
+                <li>
+                    <a href="#%e5%af%b9%e8%b1%a1%e7%9a%84%e7%b1%bb%e5%9e%8b%e5%92%8c%e7%bc%96%e7%a0%81" aria-label="对象的类型和编码">对象的类型和编码</a><ul>
+                        
+                <li>
+                    <a href="#redis%e4%b8%ad%e7%9a%84%e5%af%b9%e8%b1%a1redisobject%e7%bb%93%e6%9e%84" aria-label="Redis中的对象redisObject结构：">Redis中的对象<code>redisObject</code>结构：</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e5%ad%97%e7%ac%a6%e4%b8%b2%e5%af%b9%e8%b1%a1" aria-label="字符串对象">字符串对象</a><ul>
+                        
+                <li>
+                    <a href="#int" aria-label="int"><code>int</code></a></li>
+                <li>
+                    <a href="#raw" aria-label="raw"><code>raw</code></a></li>
+                <li>
+                    <a href="#embstr" aria-label="embstr"><code>embstr</code></a></li>
+                <li>
+                    <a href="#%e6%b3%a8%e6%84%8f%e4%ba%8b%e9%a1%b9" aria-label="注意事项">注意事项</a></li>
+                <li>
+                    <a href="#%e7%bc%96%e7%a0%81%e8%bd%ac%e6%8d%a2" aria-label="编码转换">编码转换</a></li>
+                <li>
+                    <a href="#%e5%ad%97%e7%ac%a6%e4%b8%b2%e5%91%bd%e4%bb%a4%e7%9a%84%e5%ae%9e%e7%8e%b0" aria-label="字符串命令的实现">字符串命令的实现</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e5%88%97%e8%a1%a8%e5%af%b9%e8%b1%a1" aria-label="列表对象">列表对象</a><ul>
+                        
+                <li>
+                    <a href="#ziplist" aria-label="ziplist"><code>ziplist</code></a></li>
+                <li>
+                    <a href="#linkedlist" aria-label="linkedlist"><code>linkedlist</code></a></li>
+                <li>
+                    <a href="#%e7%bc%96%e7%a0%81%e8%bd%ac%e6%8d%a2-1" aria-label="编码转换">编码转换</a></li>
+                <li>
+                    <a href="#%e5%88%97%e8%a1%a8%e5%91%bd%e4%bb%a4%e7%9a%84%e5%ae%9e%e7%8e%b0" aria-label="列表命令的实现">列表命令的实现</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e5%93%88%e5%b8%8c%e5%af%b9%e8%b1%a1" aria-label="哈希对象">哈希对象</a><ul>
+                        
+                <li>
+                    <a href="#ziplist-1" aria-label="ziplist"><code>ziplist</code></a></li>
+                <li>
+                    <a href="#hashtable" aria-label="hashtable"><code>hashtable</code></a></li>
+                <li>
+                    <a href="#%e7%bc%96%e7%a0%81%e8%bd%ac%e5%8c%96" aria-label="编码转化">编码转化</a></li>
+                <li>
+                    <a href="#%e5%93%88%e5%b8%8c%e5%af%b9%e8%b1%a1%e5%91%bd%e4%bb%a4%e7%9a%84%e5%ae%9e%e7%8e%b0" aria-label="哈希对象命令的实现">哈希对象命令的实现</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e9%9b%86%e5%90%88%e5%af%b9%e8%b1%a1" aria-label="集合对象">集合对象</a><ul>
+                        
+                <li>
+                    <a href="#intset" aria-label="intset"><code>intset</code></a></li>
+                <li>
+                    <a href="#hashtable-1" aria-label="hashtable"><code>hashtable</code></a></li>
+                <li>
+                    <a href="#%e7%bc%96%e7%a0%81%e8%bd%ac%e6%8d%a2-2" aria-label="编码转换">编码转换</a></li>
+                <li>
+                    <a href="#%e9%9b%86%e5%90%88%e5%af%b9%e8%b1%a1%e5%91%bd%e4%bb%a4%e7%9a%84%e5%ae%9e%e7%8e%b0" aria-label="集合对象命令的实现">集合对象命令的实现</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e6%9c%89%e5%ba%8f%e9%9b%86%e5%90%88%e5%af%b9%e8%b1%a1" aria-label="有序集合对象">有序集合对象</a><ul>
+                        
+                <li>
+                    <a href="#ziplist-2" aria-label="ziplist"><code>ziplist</code></a></li>
+                <li>
+                    <a href="#skiplist" aria-label="skiplist"><code>skiplist</code></a></li>
+                <li>
+                    <a href="#%e7%bc%96%e7%a0%81%e8%bd%ac%e6%8d%a2-3" aria-label="编码转换">编码转换</a></li>
+                <li>
+                    <a href="#%e6%9c%89%e5%ba%8f%e9%9b%86%e5%90%88%e5%af%b9%e8%b1%a1%e7%9a%84%e5%91%bd%e4%bb%a4%e5%ae%9e%e7%8e%b0" aria-label="有序集合对象的命令实现">有序集合对象的命令实现</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e7%b1%bb%e5%9e%8b%e6%a3%80%e6%9f%a5%e5%92%8c%e5%91%bd%e4%bb%a4%e5%a4%9a%e6%80%81" aria-label="类型检查和命令多态">类型检查和命令多态</a><ul>
+                        
+                <li>
+                    <a href="#%e7%b1%bb%e5%9e%8b%e6%a3%80%e6%9f%a5" aria-label="类型检查">类型检查</a></li>
+                <li>
+                    <a href="#%e5%91%bd%e4%bb%a4%e5%a4%9a%e6%80%81" aria-label="命令多态">命令多态</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e5%86%85%e5%ad%98%e5%9b%9e%e6%94%b6" aria-label="内存回收">内存回收</a><ul>
+                        
+                <li>
+                    <a href="#%e5%bc%95%e7%94%a8%e8%ae%a1%e6%95%b0%e4%bf%a1%e6%81%af%e5%8f%98%e5%8c%96%e8%a7%84%e5%88%99" aria-label="引用计数信息变化规则">引用计数信息变化规则</a></li>
+                <li>
+                    <a href="#%e5%af%b9%e5%bc%95%e7%94%a8%e8%ae%a1%e6%95%b0%e5%80%bc%e6%93%8d%e4%bd%9c%e7%9a%84api" aria-label="对引用计数值操作的API">对引用计数值操作的API</a></li>
+                <li>
+                    <a href="#%e5%af%b9%e8%b1%a1%e7%9a%84%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f" aria-label="对象的生命周期">对象的生命周期</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e5%af%b9%e8%b1%a1%e5%85%b1%e4%ba%ab" aria-label="对象共享">对象共享</a></li>
+                <li>
+                    <a href="#%e5%af%b9%e8%b1%a1%e7%9a%84%e7%a9%ba%e8%bd%ac%e6%97%b6%e9%95%bf" aria-label="对象的空转时长">对象的空转时长</a></li>
+                <li>
+                    <a href="#%e9%87%8d%e7%82%b9%e5%9b%9e%e9%a1%be-3" aria-label="重点回顾">重点回顾</a>
+                </li>
+            </ul>
+            </li>
+            </ul>
+        </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+        
+        activeElement = elements[0];
+        const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+        document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+    }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        if (elements) {
+            activeElement = Array.from(elements).find((element) => {
+                if ((getOffsetTop(element) - window.pageYOffset) > 0 &&
+                    (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                    return element;
+                }
+            }) || activeElement
+
+            elements.forEach(element => {
+                const id = encodeURI(element.getAttribute('id')).toLowerCase();
+                if (element === activeElement){
+                    document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+                } else {
+                    document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+                }
+            })
+        }
+    }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;
+    }
+</script>
+        <div class="post-content"><h1 id="数据结构">数据结构<a hidden class="anchor" aria-hidden="true" href="#数据结构">#</a></h1>
+<h2 id="1-简单动态字符串">1. 简单动态字符串<a hidden class="anchor" aria-hidden="true" href="#1-简单动态字符串">#</a></h2>
+<ul>
+<li>Redis只会使用C语言字符串作为字面量，而经常使用的是自己构建的简单字符串SDS(simple dynamic string)抽象类型。并把SDS作为默认的字符串表示。</li>
+</ul>
+<h3 id="sds的结构">SDS的结构<a hidden class="anchor" aria-hidden="true" href="#sds的结构">#</a></h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>    struct sdshdr {
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>      // 记录 buf 数组中已使用字节的数量
+</span></span><span style="display:flex;"><span>      // 等于 SDS 所保存字符串的长度
+</span></span><span style="display:flex;"><span>      int len;
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>      // 记录 buf 数组中未使用字节的数量
+</span></span><span style="display:flex;"><span>      int free;
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>      // 字节数组，用于保存字符串
+</span></span><span style="display:flex;"><span>      char buf[];
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>  };
+</span></span></code></pre></div><ul>
+<li>例子<br>
+<img loading="lazy" src="SDS%e7%a4%ba%e4%be%8b.png" alt="SDS示例"  />
+
+<ol>
+<li>free：没有分配未使用的字节</li>
+<li>len：字节长度为5的字符串</li>
+<li>buf：char类型的字节数组遵循C语言字符串定义以空字符串结尾,但是不算在len的长度里</li>
+</ol>
+</li>
+</ul>
+<h3 id="sds与c语言字符串的区别">SDS与C语言字符串的区别<a hidden class="anchor" aria-hidden="true" href="#sds与c语言字符串的区别">#</a></h3>
+<h4 id="常数复杂度获取数组长度">常数复杂度获取数组长度<a hidden class="anchor" aria-hidden="true" href="#常数复杂度获取数组长度">#</a></h4>
+<ul>
+<li>在C语言中获取字符串长度需要遍历整个字符串，时间复杂度为O(n)</li>
+<li>在SDS中有内置的len属性记录了字符串的长度，时间复杂度为O(1)</li>
+</ul>
+<h4 id="杜绝缓存区溢出">杜绝缓存区溢出<a hidden class="anchor" aria-hidden="true" href="#杜绝缓存区溢出">#</a></h4>
+<ul>
+<li>在C语言中字符串是不记录自身长度的。
+<ul>
+<li>我需要在该字符串后拼接新的字符串，用到<code>&lt;string.h&gt;/strcat</code>函数进行拼接，src拼接到dest后。</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>char *strcat(char *dest, const char *src);
+</span></span></code></pre></div><ul>
+<li>因为C字符串不记录自身长度，所以在C语言里默认你的字符数组是可以容纳src中的所有内容。一旦数组无法容纳，就会出现缓冲区泄露问题。</li>
+<li>实例：
+<ul>
+<li>内存中有两个紧贴的字符串s1和s2，<code>s1=&quot;Redis&quot;</code> <code>s2=&quot;MongoDB&quot;</code><br>
+<img loading="lazy" src="%e7%b4%a7%e8%b4%b4%e7%9a%84%e5%ad%97%e7%ac%a6%e4%b8%b2s1%e5%92%8cs2.png" alt="紧贴的字符串s1和s2"  />
+</li>
+<li>执行Redis命令</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>    strcat(s1, &#34; Cluster&#34;);
+</span></span></code></pre></div><ul>
+<li>因未对s1分配足够的空间，出现数据溢出，覆盖s2
+<img loading="lazy" src="%e7%bc%93%e5%86%b2%e5%8c%ba%e6%ba%a2%e5%87%ba.png" alt="缓冲区溢出"  />
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="在sds中有用于执行字符串拼接的函数sdscat">在SDS中有用于执行字符串拼接的函数<code>sdscat</code><a hidden class="anchor" aria-hidden="true" href="#在sds中有用于执行字符串拼接的函数sdscat">#</a></h4>
+<ul>
+<li>执行命令</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>    sdscat(s, &#34; Cluster&#34;);
+</span></span></code></pre></div><ul>
+<li>在s后拼接Cluster，<code>sdscat</code>在拼接前会检查s长度是否足够，如不足则会扩展长度，然后再拼接。
+<img loading="lazy" src="sdscat%e5%91%bd%e4%bb%a4%e6%89%a7%e8%a1%8c%e5%89%8d.png" alt="命令执行前"  />
+
+<img loading="lazy" src="sds%e5%91%bd%e4%bb%a4%e6%89%a7%e8%a1%8c%e5%90%8e.png" alt="命令执行后"  />
+</li>
+<li>sdscat命令执行后不仅执行了拼接操作还分配了13字节的未使用空间。len和free相等，涉及到空间分配策略。</li>
+</ul>
+<h4 id="减少修改字符串长度时所涉及的内存重分配次数">减少修改字符串长度时所涉及的内存重分配次数<a hidden class="anchor" aria-hidden="true" href="#减少修改字符串长度时所涉及的内存重分配次数">#</a></h4>
+<ul>
+<li>C语言字符串如果要修改长度
+<ul>
+<li>拼接字符串(append)：内存重分配来扩展底层数组的长度，如果忘记就会出现<font color="red">缓冲区溢出</font></li>
+<li>截断字符串(trim)：内存重分配释放多余的字符串空间
+如果忘记就会出现<font color="red">内存泄漏</font></li>
+</ul>
+</li>
+<li>SDS修改字符串长度
+<ul>
+<li>拼接字符串(<font color="red">空间预分配</font>)：SDS执行命令<code>sdscat</code>拼接字符串
+<ul>
+<li>free未分配空间足够拼接新的字符串——直接拼接</li>
+<li>free未分配空间不够拼接新的字符串——对SDS进行空间扩展
+<ul>
+<li>如果扩展后的<code>len&lt;1MB</code>，给free分配len大小的空间作为未分配空间。<br>
+例如：修改后len变为13字节，那么程序也会分13字节的未使用空间，SDS的实际长度就为<code>13byt+13byt+1byt=27byt</code>，1字节为末尾空字符。</li>
+<li>如果扩展后的<code>len&gt;1MB</code>，给free分配1MB空间作为未分配空间。<br>
+例如：修改后的len变为10MB，那么程序就会分1MB的未使用空间，SDS的实际长度就是<code>10MB+1MB+1byt</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>缩短字符串(<font color="red">惰性空间释放</font>)：SDS的API执行缩短字符串时，程序不会立即回收多余空间，而是把多余的空间用<code>free</code>记录，等待使用。
+<ul>
+<li>举例：删除SDS里所有的XY<br>
+执行命令</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>    sdstrim(s, &#34;XY&#34;);   // 移除 SDS 字符串中的所有 &#39;X&#39; 和 &#39;Y&#39;
+</span></span></code></pre></div>SDS修改流程图
+<img loading="lazy" src="%e6%89%a7%e8%a1%8csdstrim%e4%b9%8b%e5%89%8d.png" alt="执行之前"  />
+
+<img loading="lazy" src="%e6%89%a7%e8%a1%8csdstrim%e4%b9%8b%e5%90%8e.png" alt="执行之后"  />
+
+<ul>
+<li>通过惰性空间释放，SDS避免了缩短字符串内存重分配问题，为将来增加字符串做了优化。</li>
+<li>SDS也提供了API，真正的释放未使用空间。不用担心内存浪费问题。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="二进制安全">二进制安全<a hidden class="anchor" aria-hidden="true" href="#二进制安全">#</a></h4>
+<ul>
+<li>C语言字符串在读入的时候会把空字符串作为结尾，这样就会出现如果读入<code>&quot; hello&quot;</code>空字符在最前、<code>&quot;hello world&quot;</code>空字符在中间的情况，读入不正常。——这样的限制会出现C字符串只能保存一些文本数据，而不能保存音频，图片、视频等二进制数据。</li>
+<li>SDS则没有对读入的数据做任何限制——<font color="red">SDS里的len属性值是用空字符串来判断结束的</font>。你写入数据什么样子，读取就是什么样子。<br>
+所有SDS的API都是用二进制的方式处理SDS中的<code>buf</code>里的数据，所以是二进制安全的。<br>
+这也是我们将SDS的<code>buf</code>属性称为字节数组的原因——Redis 不是用这个数组来保存字符，而是用它来保存一系列二进制数据。</li>
+</ul>
+<h4 id="兼容部分c语言字符串函数">兼容部分C语言字符串函数<a hidden class="anchor" aria-hidden="true" href="#兼容部分c语言字符串函数">#</a></h4>
+<ul>
+<li>通过遵循C语言字符串的以空字符结尾，SDS可以在有需要的时候重用<code>&lt;string.h&gt;</code>里的函数库，避免代码重复。</li>
+</ul>
+<h3 id="sds-api">SDS API<a hidden class="anchor" aria-hidden="true" href="#sds-api">#</a></h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">函数</th>
+<th style="text-align:left">作用</th>
+<th style="text-align:left">时间复杂度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>sdsnew</code></td>
+<td style="text-align:left">创建一个包含给定 C 字符串的 SDS 。</td>
+<td style="text-align:left">O(N) ， N 为给定 C 字符串的长度。</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>sdsempty</code></td>
+<td style="text-align:left">创建一个不包含任何内容的空 SDS 。</td>
+<td style="text-align:left">O(1)</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>sdsfree</code></td>
+<td style="text-align:left">释放给定的 SDS 。</td>
+<td style="text-align:left">O(1)</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>sdslen</code></td>
+<td style="text-align:left">返回 SDS 的已使用空间字节数。</td>
+<td style="text-align:left">这个值可以通过读取 SDS 的 len 属性来直接获得，复杂度为 O(1) 。</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>sdsavail</code></td>
+<td style="text-align:left">返回 SDS 的未使用空间字节数。</td>
+<td style="text-align:left">这个值可以通过读取 SDS 的 free 属性来直接获得，复杂度为 O(1) 。</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>sdsdup</code></td>
+<td style="text-align:left">创建一个给定 SDS 的副本（copy）。</td>
+<td style="text-align:left">O(N) ， N 为给定 SDS 的长度。</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>sdsclear</code></td>
+<td style="text-align:left">清空 SDS 保存的字符串内容。</td>
+<td style="text-align:left">因为惰性空间释放策略，复杂度为 O(1) 。</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>sdscat</code></td>
+<td style="text-align:left">将给定 C 字符串拼接到 SDS字符串的末尾。</td>
+<td style="text-align:left">O(N) ， N 为被拼接 C 字符串的长度。</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>sdscatsds</code></td>
+<td style="text-align:left">将给定 SDS 字符串拼接到另一个 SDS字符串的末尾。</td>
+<td style="text-align:left">O(N) ， N 为被拼接 SDS 字符串的长度。</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>sdscpy</code></td>
+<td style="text-align:left">将给定的 C 字符串复制到 SDS 里面，覆盖 SDS 原有的字符串。</td>
+<td style="text-align:left">O(N) ， N 为被复制 C 字符串的长度。</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>sdsgrowzero</code></td>
+<td style="text-align:left">用空字符将 SDS 扩展至给定长度。</td>
+<td style="text-align:left">O(N) ， N 为扩展新增的字节数。</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>sdsrange</code></td>
+<td style="text-align:left">保留 SDS 给定区间内的数据，不在区间内的数据会被覆盖或清除。</td>
+<td style="text-align:left">O(N) ， N 为被保留数据的字节数。</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>sdstrim</code></td>
+<td style="text-align:left">接受一个 SDS 和一个 C 字符串作为参数，从 SDS 左右两端分别移除所有在 C字符串中出现过的字符。</td>
+<td style="text-align:left">O(M*N) ， M 为 SDS 的长度，N 为给定 C 字符串的长度。</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>sdscmp</code></td>
+<td style="text-align:left">对比两个 SDS 字符串是否相同。</td>
+<td style="text-align:left">O(N) ， N 为两个 SDS 中较短的那个 SDS的长度。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2-链表">2. 链表<a hidden class="anchor" aria-hidden="true" href="#2-链表">#</a></h2>
+<ul>
+<li>
+<p>链表有高效的节点重排能力，对增加、删除比较灵活。</p>
+</li>
+<li>
+<p>链表作为一种常用的数据结构，内置在很多编程语言中，Redis所用的C语言并没有内置链表数据结构，所有构建了自己的链表结构。</p>
+</li>
+<li>
+<p>当一个列表键包含的数据比较多的时候，或者列表里字符串都比较长的时候，Redis就会使用链表作为底层实现。</p>
+</li>
+</ul>
+<h3 id="链表和链表节点">链表和链表节点<a hidden class="anchor" aria-hidden="true" href="#链表和链表节点">#</a></h3>
+<ul>
+<li>链表节点</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>    typedef struct listNode {
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>     // 前置节点
+</span></span><span style="display:flex;"><span>     struct listNode *prev;
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>     // 后置节点
+</span></span><span style="display:flex;"><span>     struct listNode *next;
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>     // 节点的值
+</span></span><span style="display:flex;"><span>     void *value;
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span> } listNode;
+</span></span></code></pre></div><p>多个链表节点通过<code>prev</code>和<code>next</code>组成<font color="red">双端链表</font>。
+<img loading="lazy" src="listNode.png" alt="双端链表"  />
+</p>
+<ul>
+<li>使用list来持有链表</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>    typedef struct list {
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>     // 表头节点
+</span></span><span style="display:flex;"><span>     listNode *head;
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>     // 表尾节点
+</span></span><span style="display:flex;"><span>     listNode *tail;
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>     // 链表所包含的节点数量
+</span></span><span style="display:flex;"><span>     unsigned long len;
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>     // 节点值复制函数
+</span></span><span style="display:flex;"><span>     void *(*dup)(void *ptr);
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>     // 节点值释放函数
+</span></span><span style="display:flex;"><span>     void (*free)(void *ptr);
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>     // 节点值对比函数
+</span></span><span style="display:flex;"><span>     int (*match)(void *ptr, void *key);
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span> } list;
+</span></span></code></pre></div><p>list结构提供了表头节点<code>head</code>、表尾节点<code>tail</code>、链表长度计数器<code>len</code>、实现多态链表所需的类型特定函数：
+* <code>dup</code>：用于复制链表节点所保存的值
+* <code>free</code>：用于释放链表节点所保存的值
+* <code>match</code>：用于对比链表节点所保存的值是否和输入的值相等
+<img loading="lazy" src="%e9%93%be%e8%a1%a8%e7%bb%93%e6%9e%84%e5%9b%be.png" alt="链表结构图"  />
+</p>
+<h3 id="redis链表实现的特性">Redis链表实现的特性<a hidden class="anchor" aria-hidden="true" href="#redis链表实现的特性">#</a></h3>
+<ul>
+<li>双端：链表节点有前置节点<code>prev</code>、后置节点<code>next</code></li>
+<li>无头：表头的<code>prev</code>节点和表尾的<code>next</code>节点都是NULL，对链表的访问都是以NULL结尾</li>
+<li>有链表节点计数器：list结构提供了链表节点计数器，查找链表节点数的时间复杂度为O(1)</li>
+<li>带表头指针和表尾指针：list结构提供了表头节点<code>head</code>、表尾节点<code>tail</code>，查找表头和表尾节点的时间复杂度为O(1)</li>
+<li>多态：通过list结构的<code>dup</code> <code>free</code> <code>match</code> 设置链表不同的类型特定函数，来实现链表保存各种不同类型的值。</li>
+</ul>
+<h3 id="链表api">链表API<a hidden class="anchor" aria-hidden="true" href="#链表api">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>函数</th>
+<th>作用</th>
+<th>时间复杂度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>listSetDupMethod</code></td>
+<td>将给定的函数设置为链表的节点值复制函数。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>listGetDupMethod</code></td>
+<td>返回链表当前正在使用的节点值复制函数。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>listSetFreeMethod</code></td>
+<td>将给定的函数设置为链表的节点值释放函数。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>listGetFree</code></td>
+<td>返回链表当前正在使用的节点值释放函数。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>listSetMatchMethod</code></td>
+<td>将给定的函数设置为链表的节点值对比函数。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>listGetMatchMethod</code></td>
+<td>返回链表当前正在使用的节点值对比函数。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>listLength</code></td>
+<td>返回链表的长度（包含了多少个节点）。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>listFirst</code></td>
+<td>返回链表的表头节点。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>listLast</code></td>
+<td>返回链表的表尾节点。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>listPrevNode</code></td>
+<td>返回给定节点的前置节点。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>listNextNode</code></td>
+<td>返回给定节点的后置节点。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>listNodeValue</code></td>
+<td>返回给定节点目前正在保存的值。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>listCreate</code></td>
+<td>创建一个不包含任何节点的新链表。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>listAddNodeHead</code></td>
+<td>将一个包含给定值的新节点添加到表头。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>listAddNodeTail</code></td>
+<td>将一个包含给定值的新节点添加到表尾。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>listInsertNode</code></td>
+<td>将一个包含给定值的新节点添加到节点前后。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>listSearchKey</code></td>
+<td>查找并返回链表中包含给定值的节点。</td>
+<td>O(N)， N为链表长度。</td>
+</tr>
+<tr>
+<td><code>listIndex</code></td>
+<td>返回链表在给定索引上的节点。</td>
+<td>O(N)， N为链表长度。</td>
+</tr>
+<tr>
+<td><code>listDelNode</code></td>
+<td>从链表中删除给定节点。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>listRotate</code></td>
+<td>将链表的表尾节点弹出并移到表头。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>listDup</code></td>
+<td>复制一个给定链表的副本。</td>
+<td>O(N)， N为链表长度。</td>
+</tr>
+<tr>
+<td><code>listRelease</code></td>
+<td>释放给定链表以及链表中的所有节点。</td>
+<td>O(N)， N为链表长度。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-字典dict">3. 字典（dict）<a hidden class="anchor" aria-hidden="true" href="#3-字典dict">#</a></h2>
+<ul>
+<li>定义：字典又称为符号表、关联数组、映射。是一种以键值对形式保存的抽象数据结构。因为Redis所用的C语言底层没有这种数据结构，所有Redis自己构建了字典。</li>
+</ul>
+<h3 id="字典的实现">字典的实现<a hidden class="anchor" aria-hidden="true" href="#字典的实现">#</a></h3>
+<ul>
+<li>Redis的字典使用哈希表（数组＋链表）作为底层实现，一个哈希表里有多个哈希节点，每个节点里保存了字典中的一个键值对。</li>
+<li>哈希表：(dictht)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>    typedef struct dictht {
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      // 哈希表数组
+</span></span><span style="display:flex;"><span>      dictEntry **table;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      // 哈希表大小
+</span></span><span style="display:flex;"><span>      unsigned long size;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      // 哈希表大小掩码，用于计算索引值
+</span></span><span style="display:flex;"><span>      // 总是等于 size - 1
+</span></span><span style="display:flex;"><span>      unsigned long sizemask;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      // 该哈希表已有节点的数量
+</span></span><span style="display:flex;"><span>      unsigned long used;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  } dictht;
+</span></span></code></pre></div><code>table</code>：数组，里面每个元素都指向<code>dictEntry</code>哈希节点。<br>
+<code>size</code>：哈希表的大小，即<code>table</code>数组的长度。<br>
+<code>sizemask</code>：与哈希值一起决定一个键应该放在数组的哪个索引上，值总是等于size-1。<br>
+<code>used</code>：哈希表已经有多少个哈希节点。<br>
+一个有四个空节点的空哈希表结构图。
+<img loading="lazy" src="%e7%a9%ba%e5%93%88%e5%b8%8c%e8%a1%a8.png" alt="哈希表结构图"  />
+</li>
+<li>哈希节点：(dictEntry)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>typedef struct dictEntry {
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  // 键
+</span></span><span style="display:flex;"><span>  void *key;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  // 值
+</span></span><span style="display:flex;"><span>  union {
+</span></span><span style="display:flex;"><span>      void *val;
+</span></span><span style="display:flex;"><span>      uint64_t u64;
+</span></span><span style="display:flex;"><span>      int64_t s64;
+</span></span><span style="display:flex;"><span>  } v;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  // 指向下个哈希表节点，形成链表
+</span></span><span style="display:flex;"><span>  struct dictEntry *next; 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>} dictEntry;
+</span></span></code></pre></div><code>key</code>：表示键<br>
+<code>val</code>：表示值
+<code>next</code>：指针指向下一个哈希节点，<font color="red">next指针可以把哈希值相同的键值对连接在一起，解决键冲突问题</font><br>
+如图，k0和k1哈希值相同，通过next指针连接在一起。
+<img loading="lazy" src="%e5%93%88%e5%b8%8c%e5%80%bc%e7%9b%b8%e5%90%8c%e8%bf%9e%e6%8e%a5%e5%9c%a8%e4%b8%80%e8%b5%b7.png" alt="哈希值相同"  />
+</li>
+<li>字典：(dict)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>typedef struct dict {
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    // 类型特定函数
+</span></span><span style="display:flex;"><span>    dictType *type;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    // 私有数据
+</span></span><span style="display:flex;"><span>    void *privdata;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    // 哈希表
+</span></span><span style="display:flex;"><span>    dictht ht[2];
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    // rehash 索引
+</span></span><span style="display:flex;"><span>    // 当 rehash 不在进行时，值为 -1
+</span></span><span style="display:flex;"><span>    int rehashidx; /* rehashing not in progress if rehashidx == -1 */
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>} dict;
+</span></span></code></pre></div><code>type</code>，<code>privdata</code>：针对不同类型的键值对，实现多种形态的字典。<br>
+<code>type</code>：是一个指向<code>dictType</code>的指针。<br>
+<code>privdata</code>：保存特定类型键值对函数的可选参数。   <br>
+<code>dictType</code>：是一簇操作特定类型键值对的函数。
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>    typedef struct dictType {
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        // 计算哈希值的函数
+</span></span><span style="display:flex;"><span>        unsigned int (*hashFunction)(const void *key);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        // 复制键的函数
+</span></span><span style="display:flex;"><span>        void *(*keyDup)(void *privdata, const void *key);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        // 复制值的函数
+</span></span><span style="display:flex;"><span>        void *(*valDup)(void *privdata, const void *obj);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        // 对比键的函数
+</span></span><span style="display:flex;"><span>        int (*keyCompare)(void *privdata, const void *key1, const void *key2);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        // 销毁键的函数
+</span></span><span style="display:flex;"><span>        void (*keyDestructor)(void *privdata, void *key);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        // 销毁值的函数
+</span></span><span style="display:flex;"><span>        void (*valDestructor)(void *privdata, void *obj);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    } dictType;
+</span></span></code></pre></div><code>ht</code>：是一个包含两项的数组，每一项都是一个<code>dictht</code>哈希表。<br>
+<code>ht[0]</code>：默认只使用的哈希表。<br>
+<code>ht[1]</code>：在执行<font color="red"><code>rehash</code>重新散列</font>时使用。
+<blockquote>
+<p>还有一个和<code>rehash</code>相关的属性<code>rehashidx</code>，记录了rehash的进度，如果没有在进行rehash值为-1。
+* 字典整体结构图
+<img loading="lazy" src="%e5%ad%97%e5%85%b8%e7%bb%93%e6%9e%84%e5%9b%be.png" alt="字典结构图"  />
+</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="哈希算法">哈希算法<a hidden class="anchor" aria-hidden="true" href="#哈希算法">#</a></h3>
+<ul>
+<li>当我们需要向字典里添加键值对的时候就要用到哈希算法。</li>
+<li>流程：<br>
+根据键计算哈希值、索引值 -&gt; 根据索引值把包含这个价值对的哈希节点放到哈希表的数组的指定索引上</li>
+<li>计算方法：
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span># 使用字典设置的哈希函数，计算键 key 的哈希值
+</span></span><span style="display:flex;"><span> hash = dict-&gt;type-&gt;hashFunction(key);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span># 使用哈希表的 sizemask 属性和哈希值，计算出索引值
+</span></span><span style="display:flex;"><span># 根据情况不同， ht[x] 可以是 ht[0] 或者 ht[1]
+</span></span><span style="display:flex;"><span> index = hash &amp; dict-&gt;ht[x].sizemask;
+</span></span></code></pre></div></li>
+</ul>
+<h3 id="解决键冲突">解决键冲突<a hidden class="anchor" aria-hidden="true" href="#解决键冲突">#</a></h3>
+<ul>
+<li>定义：哈希值相同，索引相同的键被分配到数组的同一个索引上。</li>
+<li>解决方法：<font color="red">链地址法</font><br>
+通过哈希节点里的<code>next</code>指针把索引相同的哈希节点连接在一起形成单向链表。</li>
+<li>举例：k1和k2的索引值都为2。
+<img loading="lazy" src="%e9%94%ae%e5%86%b2%e7%aa%81%e6%b7%bb%e5%8a%a0%e5%89%8d.png" alt="键冲突添加前"  />
+
+添加k2
+<img loading="lazy" src="%e9%94%ae%e5%86%b2%e7%aa%81%e6%b7%bb%e5%8a%a0%e5%90%8e.png" alt="键冲突添加后"  />
+
+因哈希节点没有指向链表表尾的指针，所以每次添加键冲突的键值对都要放在头部。复杂度为O(1)。</li>
+</ul>
+<h3 id="重新散列rehash">重新散列(rehash)<a hidden class="anchor" aria-hidden="true" href="#重新散列rehash">#</a></h3>
+<ul>
+<li>定义：随着哈希表内保存的键值对的不断增多，为了让负载因子维持在一个合理的范围内，要对哈希表进行扩展或收缩。</li>
+<li>负载因子：哈希表已保存节点数量 / 哈希表大小。<br>
+<code>load_factor = ht[0].used / ht[0].size</code></li>
+<li>触发条件：
+<ul>
+<li>服务器没有执行<code>bgsave</code> <code>bgrewriteaof</code> 命令，负载因子&gt;=1</li>
+<li>服务器在执行<code>bgsave</code> <code>bgrewriteaof</code> 命令，负载因子&gt;=5</li>
+<li>负载因子&lt;0.1</li>
+</ul>
+</li>
+<li>流程：
+<ol>
+<li>为<code>ht[1]</code>分配空间，大小规则如下：
+<ol>
+<li>扩展时，<code>ht[0].used * 2</code>&lt;= 2^n，符合条件第一个<code>2^n</code>即空间大小。</li>
+<li>缩小时，<code>ht[0].used</code> &lt;= 2^n，符合条件第一个<code>2^n</code>即空间大小。</li>
+</ol>
+</li>
+<li>把<code>ht[0]</code>上的所有键值对<code>rehash</code>到<code>ht[1]</code>。<br>
+<code>rehash</code>：重新计算哈希值和索引值，并放置到<code>ht[1]</code>。</li>
+<li>释放<code>ht[0]</code>，把<code>ht[1]</code>设置为<code>ht[0]</code>，创建新的空白哈希表<code>ht[1]</code>。</li>
+</ol>
+</li>
+<li>举例：条件<code>ht[0].used = 4</code>
+<img loading="lazy" src="rehash%e5%89%8d.png" alt="rehash前"  />
+
+<ol>
+<li>分配空间<br>
+<code>ht[0].used * 2 = 4 * 2 = 8</code>，比4大等的一个2^n为2^3=8。所以分配空间<code>ht[1].size = 8</code>。
+<img loading="lazy" src="rehash%e5%88%86%e9%85%8d%e7%a9%ba%e9%97%b4.png" alt="分配空间"  />
+</li>
+<li>转移键值对<br>
+重新计算键值对的哈希值和索引值，然后放置到<code>ht[1]</code>。
+<img loading="lazy" src="rehash%e8%bd%ac%e7%a7%bb.png" alt="rehash转移"  />
+</li>
+<li>标准化<br>
+释放<code>ht[0]</code>，把<code>ht[1]</code>设置成<code>ht[0]</code>，重新创建新的空哈希表<code>ht[1]</code>。
+<img loading="lazy" src="rehash%e5%ae%8c%e6%88%90.png" alt="rehash完成"  />
+</li>
+</ol>
+</li>
+</ul>
+<h3 id="渐进式rehash">渐进式rehash<a hidden class="anchor" aria-hidden="true" href="#渐进式rehash">#</a></h3>
+<ul>
+<li>定义：在哈希表数据比较庞大的时候，如果要一次性rehash，计算量太大，可能导致服务器在一段时间内停止工作。因此引入了渐进式rehash的方式，渐进式rehash时分多次，渐进式的rehash。</li>
+<li>步骤：
+<ol>
+<li>为<code>ht[1]</code>分配空间。字典同时持有<code>ht[0]</code> <code>ht[1]</code>两个哈希表</li>
+<li>在字典中为<code>rehashidx</code>赋值为0,表示开始工作</li>
+<li>在rehash期间，每次对字典执行增删改查操作的同时，对索引为<code>rehashidx</code>的哈希节点进行rehash，并且让<code>rehashidx + 1</code>。</li>
+<li>随着对字典的不断操作，rehash操作完成，<code>rehashidx = -1</code>。</li>
+</ol>
+</li>
+</ul>
+<blockquote>
+<p>采用分治思想，把rehash操作分摊到每次增删改查操作上，避免了集中rehash带来大庞大计算量。</p>
+</blockquote>
+<ul>
+<li>对于渐进式rehash，每次删改查操作都要对两张哈希表进行。并且新增的键值对都要存在<code>ht[1]</code>中。</li>
+</ul>
+<h3 id="字典常用api">字典常用API<a hidden class="anchor" aria-hidden="true" href="#字典常用api">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>函数</th>
+<th>作用</th>
+<th>时间复杂度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dictCreate</code></td>
+<td>创建一个新的字典。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>dictAdd</code></td>
+<td>将给定的键值对添加到字典里面。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>dictReplace</code></td>
+<td>将给定的键值对添加到字典里面，如果键已经存在于字典，那么用新值取代原有的值。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>dictFetchValue</code></td>
+<td>返回给定键的值。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>dictGetRandomKey</code></td>
+<td>从字典中随机返回一个键值对。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>dictDelete</code></td>
+<td>从字典中删除给定键所对应的键值对。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>dictRelease</code></td>
+<td>释放给定字典，以及字典中包含的所有键值对。</td>
+<td>O(N)，N为字典包含的键值对数量。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="重点回顾">重点回顾<a hidden class="anchor" aria-hidden="true" href="#重点回顾">#</a></h3>
+<ul>
+<li>字典广泛应用于Redis实现各种功能，包括数据库和哈希键等。</li>
+<li>Redis中的字典用自己构建的哈希表底层实现，每个字典中带有两个哈希表，一个作为日常使用，另一个作为rehash的时候使用。</li>
+<li>当字典被用作数据库、哈希键的底层实现时，Redis用<code>MurmurHash2</code>算法来计算键的哈希值。</li>
+<li>哈希表使用链地址法来解决哈希冲突，根本是哈希节点内置了next属性，当键值对的哈希值和索引值相同的时候，会在同一个索引上形成单向链表。</li>
+<li>在哈希表进行rehash操作的时候，采用分治的思想，分多次、渐进式的对每个键值对执行rehash。</li>
+</ul>
+<h2 id="4-跳跃表skiplist">4. 跳跃表（skiplist）<a hidden class="anchor" aria-hidden="true" href="#4-跳跃表skiplist">#</a></h2>
+<ul>
+<li>定义：
+<ul>
+<li>跳表就是支持二分查找的有序链表</li>
+</ul>
+</li>
+</ul>
+<h3 id="跳跃表的实现">跳跃表的实现<a hidden class="anchor" aria-hidden="true" href="#跳跃表的实现">#</a></h3>
+<ul>
+<li>跳表的整体结构
+<img loading="lazy" src="%e8%b7%b3%e8%a1%a8.png" alt="跳表"  />
+
+跳表由<code>zskiplistNode</code>跳表节点和<code>zskiplist</code>保存跳表信息 构成。</li>
+<li><code>zskiplist</code>属性：
+<ul>
+<li><code>header</code>：指向跳表头部</li>
+<li><code>tail</code>：指向跳表尾部</li>
+<li><code>level</code>：记录除表头外，最大的节点的层数</li>
+<li><code>length</code>：记录出表头外，总的节点个数</li>
+</ul>
+</li>
+<li><code>zskiplistNode</code>属性：
+<ul>
+<li>层(<code>level</code>)：节点中用L1、L2、L3&hellip;表示，每层有两个属性：<br>
+前进指针：访问位于表尾的其他节点<br>
+跨度：前进指针所指节点和当前节点的距离</li>
+<li>后退(<code>backward</code>)：BW标记，位于当前节点的前一节点，在从表尾往表头遍历时使用</li>
+<li>分值(<code>score</code>)：节点按分值从小到大排列</li>
+<li>成员对象(obj)：o1、o2、o3，为节点所保存的成员对象
+<img loading="lazy" src="skiplistNode.png" alt="skiplistNode"  />
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="跳跃表api">跳跃表API<a hidden class="anchor" aria-hidden="true" href="#跳跃表api">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>函数</th>
+<th>作用</th>
+<th>时间复杂度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>zslCreate</code></td>
+<td>创建一个新的跳跃表。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>zslFree</code></td>
+<td>释放给定跳跃表，以及表中包含的所有节点。</td>
+<td>O(N)，N为跳跃表的长度。</td>
+</tr>
+<tr>
+<td><code>zslInsert</code></td>
+<td>将包含给定成员和分值的新节点添加到跳跃表中。</td>
+<td>平均 O(log N)，最坏 O(N)，N为跳跃表长度。</td>
+</tr>
+<tr>
+<td><code>zslDelete</code></td>
+<td>删除跳跃表中包含给定成员和分值的节点。</td>
+<td>平均 O(log N)，最坏 O(N)，N为跳跃表长度。</td>
+</tr>
+<tr>
+<td><code>zslGetRank</code></td>
+<td>返回包含给定成员和分值的节点在跳跃表中的排位。</td>
+<td>平均 O(log N)，最坏 O(N)，N为跳跃表长度。</td>
+</tr>
+<tr>
+<td><code>zslGetElementByRank</code></td>
+<td>返回跳跃表在给定排位上的节点。</td>
+<td>平均 O(log N)，最坏 O(N)，N为跳跃表长度。</td>
+</tr>
+<tr>
+<td><code>zslIsInRange</code></td>
+<td>给定一个分值范围，检测是否在跳跃表的分值范围内。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>zslFirstInRange</code></td>
+<td>给定一个分值范围，返回第一个符合范围的节点。</td>
+<td>平均 O(log N)，最坏 O(N)，N为跳跃表长度。</td>
+</tr>
+<tr>
+<td><code>zslLastInRange</code></td>
+<td>给定一个分值范围，返回最后一个符合范围的节点。</td>
+<td>平均 O(log N)，最坏 O(N)，N为跳跃表长度。</td>
+</tr>
+<tr>
+<td><code>zslDeleteRangeByScore</code></td>
+<td>给定一个分值范围，删除范围内的所有节点。</td>
+<td>O(N)，N为被删除节点数量。</td>
+</tr>
+<tr>
+<td><code>zslDeleteRangeByRank</code></td>
+<td>给定一个排位范围，删除范围内的所有节点。</td>
+<td>O(N)，N为被删除节点数量。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="重点回顾-1">重点回顾<a hidden class="anchor" aria-hidden="true" href="#重点回顾-1">#</a></h3>
+<ul>
+<li>跳表是有序集合的底层实现，除此之外没有应用</li>
+<li>跳表是可以实现二分查找的有序链表</li>
+<li>最底层包含所用元素</li>
+<li>每个索引节点包含两个指针，向右和向下</li>
+<li>跳表查询、插入、删除的时间复杂度为 O(logn)，与平衡二叉树接近</li>
+</ul>
+<h2 id="5-整数集合intset">5. 整数集合(intset)<a hidden class="anchor" aria-hidden="true" href="#5-整数集合intset">#</a></h2>
+<ul>
+<li>定义：
+<ul>
+<li>整数集合是Redis用于保存整数数值的集合抽象数据结构，且不会出现重复元素。</li>
+<li>整数集合是集合键的底层实现之一。</li>
+<li>当一个集合只包含整数，且数据量不大的时候，就会使用整数集合作为底层集合键的底层实现。</li>
+</ul>
+</li>
+</ul>
+<h3 id="整数集合的实现">整数集合的实现<a hidden class="anchor" aria-hidden="true" href="#整数集合的实现">#</a></h3>
+<ul>
+<li>结构
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>  typedef struct intset {
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      // 编码方式
+</span></span><span style="display:flex;"><span>      uint32_t encoding;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      // 集合包含的元素数量
+</span></span><span style="display:flex;"><span>      uint32_t length;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      // 保存元素的数组
+</span></span><span style="display:flex;"><span>      int8_t contents[];
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  } intset;
+</span></span></code></pre></div><ul>
+<li><code>encoding</code>：<br>
+属性值为<code>INTSET_ENC_INT16</code>，就是<code>int16_t</code>类型数组。（最小值为<code>-32,768</code> ，最大值为<code>32,767</code>）<br>
+属性值为<code>INTSET_ENC_INT32</code>，就是<code>int32_t</code>类型数组。（最小值为<code>-2,147,483,648</code> ，最大值为<code>2,147,483,647</code>）<br>
+属性值为<code>INTSET_ENC_INT64</code>，就是<code>int64_t</code>类型数组。（最小值为<code>-9,223,372,036,854,775,808</code> ，最大值为<code>9,223,372,036,854,775,807</code>）</li>
+<li><code>length</code>：contents数组的长度。</li>
+<li><code>contents</code>：整数集合的底层实现，从小到大排列，没有重复项。</li>
+</ul>
+</li>
+</ul>
+<h3 id="升级">升级<a hidden class="anchor" aria-hidden="true" href="#升级">#</a></h3>
+<ul>
+<li>当我们新添加的元素类型比现有的所有数据类型都长的时候，就要进行数据类型的升级。</li>
+<li>升级整数集合并添加新元素步骤：
+<ol>
+<li>根据新元素的类型扩展整个整数集合底层数组的空间大小，并为新元素分配空间。</li>
+<li>将底层数组里现有的元素进行类型转换，并放在正确的位置。</li>
+<li>将新元素添加到底层数组里。</li>
+</ol>
+</li>
+<li>举例：有一编码为INTSET_ENC_INT16的整数集合<br>
+<img loading="lazy" src="%e6%95%b4%e6%95%b0%e9%9b%86%e5%90%88%e4%b8%be%e4%be%8b1.png" alt="举例1"  />
+<br>
+<code>contents</code>数组所占位数：<br>
+<img loading="lazy" src="%e6%95%b4%e6%95%b0%e9%9b%86%e5%90%88%e4%b8%be%e4%be%8b2.png" alt="举例2"  />
+
+<ol>
+<li>根据添加元素数据类型扩展空间<br>
+<img loading="lazy" src="%e6%95%b4%e6%95%b0%e9%9b%86%e5%90%88%e4%b8%be%e4%be%8b3.png" alt="举例3"  />
+</li>
+<li>为新元素分配空间并且对已有元素进行类型转换，放在正确位置。<br>
+<img loading="lazy" src="%e6%95%b4%e6%95%b0%e9%9b%86%e5%90%88%e4%b8%be%e4%be%8b4.png" alt="举例4"  />
+ <br>
+<img loading="lazy" src="%e6%95%b4%e6%95%b0%e9%9b%86%e5%90%88%e4%b8%be%e4%be%8b5.png" alt="举例5"  />
+<br>
+<img loading="lazy" src="%e6%95%b4%e6%95%b0%e9%9b%86%e5%90%88%e4%b8%be%e4%be%8b6.png" alt="举例6"  />
+</li>
+<li>将新元素添加到底层数组里。<br>
+<img loading="lazy" src="%e6%95%b4%e6%95%b0%e9%9b%86%e5%90%88%e4%b8%be%e4%be%8b7.png" alt="举例7"  />
+</li>
+<li>修改整数集合<code>encoding</code>属性和<code>length</code>属性<br>
+<img loading="lazy" src="%e6%95%b4%e6%95%b0%e9%9b%86%e5%90%88%e4%b8%be%e4%be%8b8.png" alt="举例8"  />
+</li>
+</ol>
+</li>
+</ul>
+<h3 id="整数集合api">整数集合API<a hidden class="anchor" aria-hidden="true" href="#整数集合api">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>函数</th>
+<th>作用</th>
+<th>时间复杂度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>intsetNew</code></td>
+<td>创建一个新的整数集合。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>intsetAdd</code></td>
+<td>将给定元素添加到整数集合里面。</td>
+<td>O(N)。</td>
+</tr>
+<tr>
+<td><code>intsetRemove</code></td>
+<td>从整数集合中移除给定元素。</td>
+<td>O(N)。</td>
+</tr>
+<tr>
+<td><code>intsetFind</code></td>
+<td>检查给定值是否存在于集合。</td>
+<td>O(log N)。</td>
+</tr>
+<tr>
+<td><code>intsetRandom</code></td>
+<td>从整数集合中随机返回一个元素。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>intsetGet</code></td>
+<td>取出底层数组在给定索引上的元素。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>intsetLen</code></td>
+<td>返回整数集合包含的元素个数。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>intsetBlobLen</code></td>
+<td>返回整数集合占用的内存字节数。</td>
+<td>O(1)。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="6-压缩列表ziplist">6. 压缩列表（ziplist）<a hidden class="anchor" aria-hidden="true" href="#6-压缩列表ziplist">#</a></h2>
+<ul>
+<li>定义：
+<ul>
+<li>是列表键和哈希键的底层实现之一</li>
+<li>当列表键只包含少量列表项，并且每个列表项要么是<font color="red">小整数</font>，要么是短字符串。</li>
+<li>当哈希键只包含少量键值对，并且每个键值对的键和值要么是小整数，要么是短字符串。</li>
+</ul>
+</li>
+</ul>
+<h3 id="压缩列表的构成">压缩列表的构成<a hidden class="anchor" aria-hidden="true" href="#压缩列表的构成">#</a></h3>
+<ul>
+<li>压缩列表由一组特殊编码的连续内存块组成的顺序型的数据结构，是为了节约内存而开发的。</li>
+<li>压缩列表块的构成：<br>
+<img loading="lazy" src="%e5%8e%8b%e7%bc%a9%e5%88%97%e8%a1%a8%e5%9d%97.png" alt="压缩列表块构成"  />
+
+<ul>
+<li><code>zlbytes</code>：长度4字节，用于保存压缩列表的总的占用字节数。在对压缩列表进行内存重分配或者计算<code>zlend</code>的位置的时候使用。</li>
+<li><code>zltail</code>：长度4字节，记录压缩列表表尾节点的地址距离表头节点的地址有多少字节。通过偏移量可以计算表尾节点的地址，无需遍历。</li>
+<li><code>zllen</code>：长度2字节，记录压缩列表的节点长度。</li>
+<li><code>entryX</code>：长度不定，用于记录字节数组或者整数数值。</li>
+<li><code>zlend</code>：长度1字节，用于标记压缩列表末端。</li>
+</ul>
+</li>
+<li>示例：<br>
+<img loading="lazy" src="%e5%8e%8b%e7%bc%a9%e5%88%97%e8%a1%a8%e7%a4%ba%e4%be%8b.png" alt="压缩列表示例"  />
+
+<ul>
+<li><code>zlbytes</code>：属性值0xd2十进制为210，表示压缩列表总长210字节。</li>
+<li><code>zltail</code>：属性值0xb3十进制179，如图p指针指向表头节点，用p+179表示末尾节点的地址值。</li>
+<li><code>zllen</code>：属性值0x5十进制5，表示压缩列表包含5个节点</li>
+</ul>
+</li>
+<li>压缩列表节点构成
+<ul>
+<li>压缩列表的节点保存的是字节数组或者整数值。</li>
+<li>字节数组规定如下：
+<ul>
+<li>长度小于等于2^6-1的字节数组</li>
+<li>长度小于等于2^14-1的字节数组</li>
+<li>长度小于等于2^32-1的字节数组</li>
+</ul>
+</li>
+<li>整数值规定如下
+<ul>
+<li>4位，且介于0-12直接的无符号整数</li>
+<li>1字节长的有符号整数</li>
+<li>3字节长的有符号整数</li>
+<li>int16_t类型整数</li>
+<li>int32_t类型整数</li>
+<li>int64_t类型整数</li>
+</ul>
+</li>
+<li>压缩列表节点构成图<br>
+<img loading="lazy" src="%e5%8e%8b%e7%bc%a9%e5%88%97%e8%a1%a8%e8%8a%82%e7%82%b9%e6%9e%84%e6%88%90%e5%9b%be.png" alt="压缩列表节点构成图"  />
+
+<ul>
+<li><code>previous_entry_length</code>：节点位单位，记录了前一节点的长度。属性可以为1节点或者5节点
+<ul>
+<li>如果前一节点小于256字节，那么长度为1字节，前一节点的信息保存在这里</li>
+<li>如果前一节点大于256字节，那么长度为5字节，第1个字节用0xFE表示十进制的256字节，然后4位用于保存前一节点的长度。</li>
+<li>可以有用此计算前一节点的起始地址，<code>当前起始地址的指针-previous_entry_length</code>得出。</li>
+</ul>
+</li>
+<li><code>encoding</code>：记录<code>content</code>属性值的数据类型和长度。</li>
+<li><code>content</code>：记录节点的值，可以是字节数组或者整数值</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="连锁更新">连锁更新<a hidden class="anchor" aria-hidden="true" href="#连锁更新">#</a></h3>
+<ul>
+<li>因为<code>previous_entry_length</code>的特殊机制，如果现在设置一个压缩列表，内的节点长度都为250-253之间，那么如果要向表头新添加一个长度大于256字节的节点，那么原头节点的<code>previous_entry_length</code>就要进行内存重分配变成5个字节，然后这个节点整体长度也大于256字节了，就要对后一节点的<code>previous_entry_length</code>进行内存重分配。引发连锁反应。</li>
+<li>示例：
+<ul>
+<li>设置一个压缩列表，内的节点长度都为250-253之间<br>
+<img loading="lazy" src="%e8%bf%9e%e9%94%81%e6%9b%b4%e6%96%b01.png" alt="连锁更新1"  />
+</li>
+<li>向表头新添加一个长度大于256字节的节点<br>
+<img loading="lazy" src="%e8%bf%9e%e9%94%81%e6%9b%b4%e6%96%b02.png" alt="连锁更新2"  />
+</li>
+<li>原头节点的<code>previous_entry_length</code>进行内存重分配变成5个字节。<br>
+这个节点整体长度也大于256字节了，对后一节点的<code>previous_entry_length</code>进行内存重分配。<br>
+引发连锁反应。<br>
+<img loading="lazy" src="%e8%bf%9e%e9%94%81%e6%9b%b4%e6%96%b03.png" alt="连锁更新3"  />
+ <br>
+<img loading="lazy" src="%e8%bf%9e%e9%94%81%e6%9b%b4%e6%96%b04.png" alt="连锁更新4"  />
+ <br>
+<img loading="lazy" src="%e8%bf%9e%e9%94%81%e6%9b%b4%e6%96%b05.png" alt="连锁更新5"  />
+ <br>
+<img loading="lazy" src="%e8%bf%9e%e9%94%81%e6%9b%b4%e6%96%b06.png" alt="连锁更新6"  />
+ <br>
+<img loading="lazy" src="%e8%bf%9e%e9%94%81%e6%9b%b4%e6%96%b07.png" alt="连锁更新7"  />
+</li>
+</ul>
+</li>
+<li>同理删除节点也会出现连锁反应。</li>
+</ul>
+<h3 id="压缩列表api">压缩列表API<a hidden class="anchor" aria-hidden="true" href="#压缩列表api">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>函数</th>
+<th>作用</th>
+<th>算法复杂度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ziplistNew</code></td>
+<td>创建一个新的压缩列表。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>ziplistPush</code></td>
+<td>创建一个包含给定值的新节点，并将新节点添加到压缩列表的表头或表尾。</td>
+<td>平均 O(N)，最坏 O(N^2)。</td>
+</tr>
+<tr>
+<td><code>ziplistInsert</code></td>
+<td>将包含给定值的新节点插入到给定节点之后。</td>
+<td>平均 O(N)，最坏 O(N^2)。</td>
+</tr>
+<tr>
+<td><code>ziplistIndex</code></td>
+<td>返回压缩列表给定索引上的节点。</td>
+<td>O(N)。</td>
+</tr>
+<tr>
+<td><code>ziplistFind</code></td>
+<td>在压缩列表中查找并返回包含给定值的节点。</td>
+<td>平均 O(N^2)，最坏 O(N^2)。</td>
+</tr>
+<tr>
+<td><code>ziplistNext</code></td>
+<td>返回给定节点的下一个节点。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>ziplistPrev</code></td>
+<td>返回给定节点的前一个节点。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>ziplistGet</code></td>
+<td>获取给定节点所保存的值。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>ziplistDelete</code></td>
+<td>从压缩列表中删除给定的节点。</td>
+<td>平均 O(N)，最坏 O(N^2)。</td>
+</tr>
+<tr>
+<td><code>ziplistDeleteRange</code></td>
+<td>删除压缩列表在给定索引上的连续多个节点。</td>
+<td>平均 O(N)，最坏 O(N^2)。</td>
+</tr>
+<tr>
+<td><code>ziplistBlobLen</code></td>
+<td>返回压缩列表目前占用的内存字节数。</td>
+<td>O(1)。</td>
+</tr>
+<tr>
+<td><code>ziplistLen</code></td>
+<td>返回压缩列表目前包含的节点数量。</td>
+<td>节点数量 &lt; 65535 时 O(1)，节点数量 &gt; 65535 时 O(N)。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="重点回顾-2">重点回顾<a hidden class="anchor" aria-hidden="true" href="#重点回顾-2">#</a></h3>
+<ul>
+<li>压缩列表是为了节约内存开发的顺序型数据结构</li>
+<li>压缩列表用于列表键和哈希键的底层实现之一</li>
+<li>压缩列表里的节点可以是字节数组也可以是整数值</li>
+<li>新增或删除节点都可能会出现连锁更新操作</li>
+</ul>
+<h1 id="对象">对象<a hidden class="anchor" aria-hidden="true" href="#对象">#</a></h1>
+<ul>
+<li>Redis创建了一个对象系统，把以上这些数据结构作为底层实现。</li>
+<li>5大对象包括：字符串对象、列表对象、哈希对象、集合对象、有序集合对象。</li>
+<li>通过这五种对象，Redis在执行命令之前根据对象的类型判断是否可以执行命令。可以针对不同的场景，用不同的数据结构实现。</li>
+<li>Redis对象实现了<font color="red">基于引用计数技术的内存回收机制</font>：当对象不再使用，自动释放内存。</li>
+<li>Redis对象实现了<font color="red">基于引用计数技术的对象共享机制</font>：在适当情况下多个数据库可以共享同一个对象来节约内存。</li>
+</ul>
+<h2 id="对象的类型和编码">对象的类型和编码<a hidden class="anchor" aria-hidden="true" href="#对象的类型和编码">#</a></h2>
+<ul>
+<li>Redis用对象来表示数据库中的键值对，当创建一个键值对的时候，至少会创建两个对象，键对象和值对象。</li>
+</ul>
+<h3 id="redis中的对象redisobject结构">Redis中的对象<code>redisObject</code>结构：<a hidden class="anchor" aria-hidden="true" href="#redis中的对象redisobject结构">#</a></h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>    typedef struct redisObject {
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>      // 类型
+</span></span><span style="display:flex;"><span>      unsigned type:4;
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>      // 编码
+</span></span><span style="display:flex;"><span>      unsigned encoding:4;
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>      // 指向底层实现数据结构的指针
+</span></span><span style="display:flex;"><span>      void *ptr;
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>      // ...
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>  } robj;
+</span></span></code></pre></div><ul>
+<li>
+<p><code>type</code>：对象的类型，值为一下常量中的一个</p>
+<ul>
+<li><code>REDIS_STRING</code>：字符串对象</li>
+<li><code>REDIS_LIST</code>：列表对象</li>
+<li><code>REDIS_HASH</code>：哈希对象</li>
+<li><code>REDIS_SET</code>：集合对象</li>
+<li><code>REDIS_ZSET</code>：有序集合对象</li>
+<li>示例：（用TYPE + 键名来查看值的对象类型）
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span># 键为字符串对象，值为字符串对象
+</span></span><span style="display:flex;"><span>redis&gt; SET msg &#34;hello world&#34;
+</span></span><span style="display:flex;"><span>OK
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; TYPE msg
+</span></span><span style="display:flex;"><span>string
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span># 键为字符串对象，值为列表对象
+</span></span><span style="display:flex;"><span>redis&gt; RPUSH numbers 1 3 5
+</span></span><span style="display:flex;"><span>(integer) 6
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; TYPE numbers
+</span></span><span style="display:flex;"><span>list
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span># 键为字符串对象，值为哈希对象
+</span></span><span style="display:flex;"><span>redis&gt; HMSET profile name Tome age 25 career Programmer
+</span></span><span style="display:flex;"><span>OK
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; TYPE profile
+</span></span><span style="display:flex;"><span>hash
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span># 键为字符串对象，值为集合对象
+</span></span><span style="display:flex;"><span>redis&gt; SADD fruits apple banana cherry
+</span></span><span style="display:flex;"><span>(integer) 3
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; TYPE fruits
+</span></span><span style="display:flex;"><span>set
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span># 键为字符串对象，值为有序集合对象
+</span></span><span style="display:flex;"><span>redis&gt; ZADD price 8.5 apple 5.0 banana 6.0 cherry
+</span></span><span style="display:flex;"><span>(integer) 3
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; TYPE price
+</span></span><span style="display:flex;"><span>zset
+</span></span></code></pre></div></li>
+</ul>
+</li>
+<li>
+<p><code>encoding</code>：记录值对象所使用的编码格式，通俗说就是这个对象使用什么数据结构作为底层实现。<br>
+编码常量如下：</p>
+<table>
+<thead>
+<tr>
+<th>编码常量</th>
+<th>编码所对应的底层数据结构</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>REDIS_ENCODING_INT</code></td>
+<td>long 类型的整数</td>
+</tr>
+<tr>
+<td><code>REDIS_ENCODING_EMBSTR</code></td>
+<td>embstr 编码的简单动态字符串</td>
+</tr>
+<tr>
+<td><code>REDIS_ENCODING_RAW</code></td>
+<td>简单动态字符串</td>
+</tr>
+<tr>
+<td><code>REDIS_ENCODING_HT</code></td>
+<td>字典</td>
+</tr>
+<tr>
+<td><code>REDIS_ENCODING_LINKEDLIST</code></td>
+<td>双端链表</td>
+</tr>
+<tr>
+<td><code>REDIS_ENCODING_ZIPLIST</code></td>
+<td>压缩列表</td>
+</tr>
+<tr>
+<td><code>REDIS_ENCODING_INTSET</code></td>
+<td>整数集合</td>
+</tr>
+<tr>
+<td><code>REDIS_ENCODING_SKIPLIST</code></td>
+<td>跳跃表和字典</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>每种类型的对象至少可以使用两种以上的编码格式，如下表</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>编码</th>
+<th>对象</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>REDIS_STRING</code></td>
+<td><code>REDIS_ENCODING_INT</code></td>
+<td>使用整数值实现的字符串对象。</td>
+</tr>
+<tr>
+<td><code>REDIS_STRING</code></td>
+<td><code>REDIS_ENCODING_EMBSTR</code></td>
+<td>使用 embstr 编码的简单动态字符串实现的字符串对象。</td>
+</tr>
+<tr>
+<td><code>REDIS_STRING</code></td>
+<td><code>REDIS_ENCODING_RAW</code></td>
+<td>使用简单动态字符串实现的字符串对象。</td>
+</tr>
+<tr>
+<td><code>REDIS_LIST</code></td>
+<td><code>REDIS_ENCODING_ZIPLIST</code></td>
+<td>使用压缩列表实现的列表对象。</td>
+</tr>
+<tr>
+<td><code>REDIS_LIST</code></td>
+<td><code>REDIS_ENCODING_LINKEDLIST</code></td>
+<td>使用双端链表实现的列表对象。</td>
+</tr>
+<tr>
+<td><code>REDIS_HASH</code></td>
+<td><code>REDIS_ENCODING_ZIPLIST</code></td>
+<td>使用压缩列表实现的哈希对象。</td>
+</tr>
+<tr>
+<td><code>REDIS_HASH</code></td>
+<td><code>REDIS_ENCODING_HT</code></td>
+<td>使用字典实现的哈希对象。</td>
+</tr>
+<tr>
+<td><code>REDIS_SET</code></td>
+<td><code>REDIS_ENCODING_INTSET</code></td>
+<td>使用整数集合实现的集合对象。</td>
+</tr>
+<tr>
+<td><code>REDIS_SET</code></td>
+<td><code>REDIS_ENCODING_HT</code></td>
+<td>使用字典实现的集合对象。</td>
+</tr>
+<tr>
+<td><code>REDIS_ZSET</code></td>
+<td><code>REDIS_ENCODING_ZIPLIST</code></td>
+<td>使用压缩列表实现的有序集合对象。</td>
+</tr>
+<tr>
+<td><code>REDIS_ZSET</code></td>
+<td><code>REDIS_ENCODING_SKIPLIST</code></td>
+<td>使用跳跃表和字典实现的有序集合对象。</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>使用命令<code>OBJECT ENCODING + 键</code>查看值对象的编码格式：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>redis&gt; SET msg &#34;hello wrold&#34;
+</span></span><span style="display:flex;"><span>OK
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; OBJECT ENCODING msg
+</span></span><span style="display:flex;"><span>&#34;embstr&#34;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; SET story &#34;long long long long long long ago ...&#34;
+</span></span><span style="display:flex;"><span>OK
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; OBJECT ENCODING story
+</span></span><span style="display:flex;"><span>&#34;raw&#34;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; SADD numbers 1 3 5
+</span></span><span style="display:flex;"><span>(integer) 3
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; OBJECT ENCODING numbers
+</span></span><span style="display:flex;"><span>&#34;intset&#34;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; SADD numbers &#34;seven&#34;
+</span></span><span style="display:flex;"><span>(integer) 1
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; OBJECT ENCODING numbers
+</span></span><span style="display:flex;"><span>&#34;hashtable&#34;
+</span></span></code></pre></div></li>
+</ul>
+<h2 id="字符串对象">字符串对象<a hidden class="anchor" aria-hidden="true" href="#字符串对象">#</a></h2>
+<ul>
+<li>编码格式：<code>int</code>、<code>raw</code>、<code>embstr</code></li>
+</ul>
+<h3 id="int"><code>int</code><a hidden class="anchor" aria-hidden="true" href="#int">#</a></h3>
+<ul>
+<li>条件：输入值为整数值并且可以用<code>long</code>来表示</li>
+<li>转换过程：<code>ptr</code>属性由<code>*void</code>转成<code>long</code>，编码格式设置为<code>int</code>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>redis&gt; SET number 10086
+</span></span><span style="display:flex;"><span>OK
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; OBJECT ENCODING number
+</span></span><span style="display:flex;"><span>&#34;int&#34;
+</span></span></code></pre></div><img loading="lazy" src="%e5%ad%97%e7%ac%a6%e4%b8%b2%e5%af%b9%e8%b1%a1.png" alt="字符串整数对象"  />
+</li>
+</ul>
+<h3 id="raw"><code>raw</code><a hidden class="anchor" aria-hidden="true" href="#raw">#</a></h3>
+<pre><code>* 条件：字符串长度大于&lt;font color=&quot;red&quot;&gt;39&lt;/font&gt;字节
+* 转换过程：编码格式设置为`raw`
+  ```
+  redis&gt; SET story &quot;Long, long, long ago there lived a king ...&quot;
+  OK
+  
+  redis&gt; STRLEN story
+  (integer) 43
+  
+  redis&gt; OBJECT ENCODING story
+  &quot;raw&quot;
+  ```
+  ![字符串raw对象](字符串对象sds.png)
+</code></pre>
+<h3 id="embstr"><code>embstr</code><a hidden class="anchor" aria-hidden="true" href="#embstr">#</a></h3>
+<ul>
+<li>条件：字符串长度小于等于<font color="red">39</font>字节</li>
+<li>转换过程：调用一次内存分配一块连续的内存空间，空间包含<code>redisObject</code> <code>sdshdr</code>，编码格式设置为<code>embstr</code>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>redis&gt; SET msg &#34;hello&#34;
+</span></span><span style="display:flex;"><span>OK
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; OBJECT ENCODING msg
+</span></span><span style="display:flex;"><span>&#34;embstr&#34;
+</span></span></code></pre></div><img loading="lazy" src="%e5%ad%97%e7%ac%a6%e4%b8%b2embstr1.png" alt="字符串embstr对象"  />
+</li>
+<li>好处：
+<ul>
+<li>只用分配一次内存空间</li>
+<li>释放也只需释放一次</li>
+<li>可以更好的利用缓存优势</li>
+</ul>
+</li>
+</ul>
+<h3 id="注意事项">注意事项<a hidden class="anchor" aria-hidden="true" href="#注意事项">#</a></h3>
+<ul>
+<li>小数浮点类型的数据在Redis中也是用字符串进行保存，保存过程：先转换成字符串，再保存转换后的字符串。在对小数浮点类型的数据进行计算操作的时候先转换成浮点型再操作，再转换成字符串进行保存。
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>redis&gt; SET pi 3.14
+</span></span><span style="display:flex;"><span>OK
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; OBJECT ENCODING pi
+</span></span><span style="display:flex;"><span>&#34;embstr&#34;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; INCRBYFLOAT pi 2.0
+</span></span><span style="display:flex;"><span>&#34;5.14&#34;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; OBJECT ENCODING pi
+</span></span><span style="display:flex;"><span>&#34;embstr&#34;
+</span></span></code></pre></div></li>
+</ul>
+<p>程序先取&quot;3.14&quot;转换成浮点值3.14，计算得5.14，再转换成&quot;5.14&quot;字符串进行储存。</p>
+<h3 id="编码转换">编码转换<a hidden class="anchor" aria-hidden="true" href="#编码转换">#</a></h3>
+<ul>
+<li><code>int</code>编码的字符串对象和<code>emtstr</code>编码的字符串对象，在满足条件的时候都会转换成<code>raw</code>编码。</li>
+<li>如在<code>int</code>编码的字符串对象后加<code>hello world</code>，不满足<code>int</code>编码条件</li>
+<li>在<code>emtstr</code>编码的字符串对象后加够39个字节以上。</li>
+</ul>
+<h3 id="字符串命令的实现">字符串命令的实现<a hidden class="anchor" aria-hidden="true" href="#字符串命令的实现">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>int 编码的实现方法</th>
+<th>embstr 编码的实现方法</th>
+<th>raw 编码的实现方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SET</code></td>
+<td>使用 int 编码保存值。</td>
+<td>使用 embstr 编码保存值。</td>
+<td>使用 raw 编码保存值。</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td>将整数值转换为字符串值，然后返回。</td>
+<td>直接返回字符串值。</td>
+<td>直接返回字符串值。</td>
+</tr>
+<tr>
+<td><code>APPEND</code></td>
+<td>转换为 raw 编码，然后按 raw 编码方式操作。</td>
+<td>转换为 raw 编码，然后按 raw 编码方式操作。</td>
+<td>使用 <code>sdscatlen</code> 追加字符串到末尾。</td>
+</tr>
+<tr>
+<td><code>INCRBYFLOAT</code></td>
+<td>取出整数值，进行加法计算并保存。</td>
+<td>取出字符串值，进行加法计算并保存。</td>
+<td>取出字符串值，进行加法计算并保存。</td>
+</tr>
+<tr>
+<td><code>INCRBY</code></td>
+<td>进行整数加法计算并保存。</td>
+<td>不支持，返回错误。</td>
+<td>不支持，返回错误。</td>
+</tr>
+<tr>
+<td><code>DECRBY</code></td>
+<td>进行整数减法计算并保存。</td>
+<td>不支持，返回错误。</td>
+<td>不支持，返回错误。</td>
+</tr>
+<tr>
+<td><code>STRLEN</code></td>
+<td>将整数值转换为字符串值，计算并返回长度。</td>
+<td>使用 <code>sdslen</code> 返回字符串长度。</td>
+<td>使用 <code>sdslen</code> 返回字符串长度。</td>
+</tr>
+<tr>
+<td><code>SETRANGE</code></td>
+<td>转换为 raw 编码，然后按 raw 编码方式操作。</td>
+<td>转换为 raw 编码，然后按 raw 编码方式操作。</td>
+<td>在指定索引处设置字符。</td>
+</tr>
+<tr>
+<td><code>GETRANGE</code></td>
+<td>将整数值转换为字符串值，返回指定索引字符。</td>
+<td>直接返回指定索引字符。</td>
+<td>直接返回指定索引字符。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="列表对象">列表对象<a hidden class="anchor" aria-hidden="true" href="#列表对象">#</a></h2>
+<ul>
+<li>编码格式：<code>ziplist</code>、<code>linkedlist</code></li>
+</ul>
+<h3 id="ziplist"><code>ziplist</code><a hidden class="anchor" aria-hidden="true" href="#ziplist">#</a></h3>
+<ul>
+<li>条件：<font color="red">同时满足</font>列表保存的所有字符串小于<font color="red">64</font>字节，列表对象保存的元素数量小于<font color="red">512</font>个。</li>
+<li>底层实现：压缩列表</li>
+<li>转换过程：ptr指向压缩列表结构
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>redis&gt; RPUSH numbers 1 &#34;three&#34; 5
+</span></span><span style="display:flex;"><span>(integer) 3
+</span></span></code></pre></div><img loading="lazy" src="ziplist%e7%bc%96%e7%a0%81.png" alt="ziplist编码"  />
+</li>
+</ul>
+<h3 id="linkedlist"><code>linkedlist</code><a hidden class="anchor" aria-hidden="true" href="#linkedlist">#</a></h3>
+<ul>
+<li>底层实现：双端链表</li>
+<li>转换过程：ptr指针指向双端链表的头节点<br>
+<img loading="lazy" src="linkedlist%e7%bc%96%e7%a0%81.png" alt="linkedlist编码"  />
+
+对StringObject进行的简化<br>
+<img loading="lazy" src="%e7%ae%80%e5%8c%96%e5%ad%97%e7%ac%a6%e4%b8%b2%e8%a1%a8%e7%a4%ba.png" alt="简化"  />
+
+<img loading="lazy" src="%e5%ae%8c%e6%95%b4%e5%ad%97%e7%ac%a6%e4%b8%b2%e8%a1%a8%e7%a4%ba.png" alt="完整"  />
+</li>
+</ul>
+<h3 id="编码转换-1">编码转换<a hidden class="anchor" aria-hidden="true" href="#编码转换-1">#</a></h3>
+<ul>
+<li><code>ziplist</code>的条件不满足时触发编码转换。</li>
+<li>示例：
+<ol>
+<li>因保存了长度太大的元素而进行编码转换
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span># 所有元素的长度都小于 64 字节
+</span></span><span style="display:flex;"><span>redis&gt; RPUSH blah &#34;hello&#34; &#34;world&#34; &#34;again&#34;
+</span></span><span style="display:flex;"><span>(integer) 3
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; OBJECT ENCODING blah
+</span></span><span style="display:flex;"><span>&#34;ziplist&#34;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span># 将一个 65 字节长的元素推入列表对象中
+</span></span><span style="display:flex;"><span>redis&gt; RPUSH blah &#34;wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww&#34;
+</span></span><span style="display:flex;"><span>(integer) 4
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span># 编码已改变
+</span></span><span style="display:flex;"><span>redis&gt; OBJECT ENCODING blah
+</span></span><span style="display:flex;"><span>&#34;linkedlist&#34;
+</span></span></code></pre></div></li>
+<li>因保存的元素数量过多而进行编码转换
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span># 列表对象包含 512 个元素
+</span></span><span style="display:flex;"><span>redis&gt; EVAL &#34;for i=1,512 do redis.call(&#39;RPUSH&#39;, KEYS[1], i) end&#34; 1 &#34;integers&#34;
+</span></span><span style="display:flex;"><span>(nil)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; LLEN integers
+</span></span><span style="display:flex;"><span>(integer) 512
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; OBJECT ENCODING integers
+</span></span><span style="display:flex;"><span>&#34;ziplist&#34;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span># 再向列表对象推入一个新元素，使得对象保存的元素数量达到 513 个
+</span></span><span style="display:flex;"><span>redis&gt; RPUSH integers 513
+</span></span><span style="display:flex;"><span>(integer) 513
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span># 编码已改变
+</span></span><span style="display:flex;"><span>redis&gt; OBJECT ENCODING integers
+</span></span><span style="display:flex;"><span>&#34;linkedlist&#34;
+</span></span></code></pre></div></li>
+</ol>
+</li>
+</ul>
+<h3 id="列表命令的实现">列表命令的实现<a hidden class="anchor" aria-hidden="true" href="#列表命令的实现">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>ziplist 编码的实现方法</th>
+<th>linkedlist 编码的实现方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>LPUSH</code></td>
+<td>调用 <code>ziplistPush</code> 函数，将新元素推入到压缩列表的表头。</td>
+<td>调用 <code>listAddNodeHead</code> 函数，将新元素推入到双端链表的表头。</td>
+</tr>
+<tr>
+<td><code>RPUSH</code></td>
+<td>调用 <code>ziplistPush</code> 函数，将新元素推入到压缩列表的表尾。</td>
+<td>调用 <code>listAddNodeTail</code> 函数，将新元素推入到双端链表的表尾。</td>
+</tr>
+<tr>
+<td><code>LPOP</code></td>
+<td>调用 <code>ziplistIndex</code> 函数定位压缩列表的表头节点，然后调用 <code>ziplistDelete</code> 函数删除表头节点。</td>
+<td>调用 <code>listFirst</code> 函数定位双端链表的表头节点，然后调用 <code>listDelNode</code> 函数删除表头节点。</td>
+</tr>
+<tr>
+<td><code>RPOP</code></td>
+<td>调用 <code>ziplistIndex</code> 函数定位压缩列表的表尾节点，然后调用 <code>ziplistDelete</code> 函数删除表尾节点。</td>
+<td>调用 <code>listLast</code> 函数定位双端链表的表尾节点，然后调用 <code>listDelNode</code> 函数删除表尾节点。</td>
+</tr>
+<tr>
+<td><code>LINDEX</code></td>
+<td>调用 <code>ziplistIndex</code> 函数定位压缩列表中的指定节点，然后返回节点所保存的元素。</td>
+<td>调用 <code>listIndex</code> 函数定位双端链表中的指定节点，然后返回节点所保存的元素。</td>
+</tr>
+<tr>
+<td><code>LLEN</code></td>
+<td>调用 <code>ziplistLen</code> 函数返回压缩列表的长度。</td>
+<td>调用 <code>listLength</code> 函数返回双端链表的长度。</td>
+</tr>
+<tr>
+<td><code>LINSERT</code></td>
+<td>插入新节点到压缩列表时，使用 <code>ziplistPush</code> 函数；插入新节点到其他位置时，使用 <code>ziplistInsert</code> 函数。</td>
+<td>调用 <code>listInsertNode</code> 函数，将新节点插入到双端链表的指定位置。</td>
+</tr>
+<tr>
+<td><code>LREM</code></td>
+<td>遍历压缩列表节点，并调用 <code>ziplistDelete</code> 函数删除包含给定元素的节点。</td>
+<td>遍历双端链表节点，并调用 <code>listDelNode</code> 函数删除包含给定元素的节点。</td>
+</tr>
+<tr>
+<td><code>LTRIM</code></td>
+<td>调用 <code>ziplistDeleteRange</code> 函数，删除压缩列表中所有不在指定索引范围内的节点。</td>
+<td>遍历双端链表节点，并调用 <code>listDelNode</code> 函数删除链表中所有不在指定索引范围内的节点。</td>
+</tr>
+<tr>
+<td><code>LSET</code></td>
+<td>调用 <code>ziplistDelete</code> 函数删除压缩列表指定索引上的节点，然后调用 <code>ziplistInsert</code> 函数插入包含给定元素的新节点。</td>
+<td>调用 <code>listIndex</code> 函数定位双端链表指定索引上的节点，然后通过赋值操作更新节点的值。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="哈希对象">哈希对象<a hidden class="anchor" aria-hidden="true" href="#哈希对象">#</a></h2>
+<ul>
+<li>编码格式：<code>ziplist</code>、<code>hashtable</code></li>
+</ul>
+<h3 id="ziplist-1"><code>ziplist</code><a hidden class="anchor" aria-hidden="true" href="#ziplist-1">#</a></h3>
+<ul>
+<li>条件：<font color="red">同时满足</font>哈希对象保存的所有键值对的键和值小于<font color="red">64</font>字节，哈希对象保存的键值对数量小于<font color="red">512</font>个。</li>
+<li>底层实现：压缩列表</li>
+<li>转换过程：<code>ptr</code>指向压缩列表，每个新添加的键值对都加在表尾，键先压入，值再压入。
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>redis&gt; HSET profile name &#34;Tom&#34;
+</span></span><span style="display:flex;"><span>(integer) 1
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; HSET profile age 25
+</span></span><span style="display:flex;"><span>(integer) 1
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; HSET profile career &#34;Programmer&#34;
+</span></span><span style="display:flex;"><span>(integer) 1
+</span></span></code></pre></div><img loading="lazy" src="%e5%93%88%e5%b8%8c%e5%af%b9%e8%b1%a11.png" alt="哈希压缩1"  />
+
+<img loading="lazy" src="%e5%93%88%e5%b8%8c%e5%af%b9%e8%b1%a12.png" alt="哈希压缩2"  />
+</li>
+</ul>
+<h3 id="hashtable"><code>hashtable</code><a hidden class="anchor" aria-hidden="true" href="#hashtable">#</a></h3>
+<ul>
+<li>底层实现：字典</li>
+<li>转换过程：<code>ptr</code>指向<code>dict</code>字典 <br>
+<img loading="lazy" src="%e5%93%88%e5%b8%8c%e5%ad%97%e5%85%b8.png" alt="哈希字典"  />
+</li>
+</ul>
+<h3 id="编码转化">编码转化<a hidden class="anchor" aria-hidden="true" href="#编码转化">#</a></h3>
+<ul>
+<li><code>ziplist</code>条件不满足时转换成<code>hashtable</code></li>
+</ul>
+<h3 id="哈希对象命令的实现">哈希对象命令的实现<a hidden class="anchor" aria-hidden="true" href="#哈希对象命令的实现">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>ziplist 编码实现方法</th>
+<th>hashtable 编码的实现方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>HSET</code></td>
+<td>调用 <code>ziplistPush</code> 函数，将键和值分别推入到压缩列表的表尾。</td>
+<td>调用 <code>dictAdd</code> 函数，将新节点添加到字典里面。</td>
+</tr>
+<tr>
+<td><code>HGET</code></td>
+<td>调用 <code>ziplistFind</code> 函数，在压缩列表中查找指定键所对应的节点，然后返回值节点。</td>
+<td>调用 <code>dictFind</code> 函数，在字典中查找指定键，返回对应的值。</td>
+</tr>
+<tr>
+<td><code>HEXISTS</code></td>
+<td>调用 <code>ziplistFind</code> 函数，在压缩列表中查找指定键所对应的节点，存在则返回1，不存在返回0。</td>
+<td>调用 <code>dictFind</code> 函数，在字典中查找指定键，存在则返回1，不存在返回0。</td>
+</tr>
+<tr>
+<td><code>HDEL</code></td>
+<td>调用 <code>ziplistFind</code> 函数，在压缩列表中查找指定键所对应的节点，然后删除键节点和值节点。</td>
+<td>调用 <code>dictDelete</code> 函数，从字典中删除指定键的键值对。</td>
+</tr>
+<tr>
+<td><code>HLEN</code></td>
+<td>调用 <code>ziplistLen</code> 函数取得压缩列表节点数量，然后除以2得到键值对数量。</td>
+<td>调用 <code>dictSize</code> 函数，返回字典中键值对的数量。</td>
+</tr>
+<tr>
+<td><code>HGETALL</code></td>
+<td>遍历压缩列表，使用 <code>ziplistGet</code> 函数返回所有的键和值。</td>
+<td>遍历字典，使用 <code>dictGetKey</code> 函数返回键，使用 <code>dictGetVal</code> 函数返回值。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="集合对象">集合对象<a hidden class="anchor" aria-hidden="true" href="#集合对象">#</a></h2>
+<ul>
+<li>编码格式：<code>intset</code>、<code>hashtable</code></li>
+</ul>
+<h3 id="intset"><code>intset</code><a hidden class="anchor" aria-hidden="true" href="#intset">#</a></h3>
+<ul>
+<li>条件：<font color="red">同时满足</font>集合对象保存的所有元素都是<font color="red">整数值</font>，集合对象保存的元素数量<font color="red">小于等于512</font>个。</li>
+<li>底层实现：整数集合</li>
+<li>转化过程：<code>ptr</code>指向<code>intset</code>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>redis&gt; SADD numbers 1 3 5
+</span></span><span style="display:flex;"><span>(integer) 3
+</span></span></code></pre></div><img loading="lazy" src="%e9%9b%86%e5%90%88%e5%af%b9%e8%b1%a1intset%e7%bc%96%e7%a0%81.png" alt="集合对象intset编码"  />
+</li>
+</ul>
+<h3 id="hashtable-1"><code>hashtable</code><a hidden class="anchor" aria-hidden="true" href="#hashtable-1">#</a></h3>
+<ul>
+<li>底层实现：字典</li>
+<li>转化过程：<code>ptr</code>指向<code>dict</code><br>
+<img loading="lazy" src="%e9%9b%86%e5%90%88%e5%af%b9%e8%b1%a1hashtable%e7%bc%96%e7%a0%81.png" alt="集合对象hashtable编码"  />
+</li>
+</ul>
+<h3 id="编码转换-2">编码转换<a hidden class="anchor" aria-hidden="true" href="#编码转换-2">#</a></h3>
+<ul>
+<li>不满足<code>intset</code>编码自动转换成<code>hashtable</code>编码</li>
+</ul>
+<h3 id="集合对象命令的实现">集合对象命令的实现<a hidden class="anchor" aria-hidden="true" href="#集合对象命令的实现">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>intset 编码的实现方法</th>
+<th>hashtable 编码的实现方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SADD</code></td>
+<td>调用 <code>intsetAdd</code> 函数，将新元素添加到整数集合中。</td>
+<td>调用 <code>dictAdd</code> 函数，以新元素为键，NULL 为值，将键值对添加到字典中。</td>
+</tr>
+<tr>
+<td><code>SCARD</code></td>
+<td>调用 <code>intsetLen</code> 函数，返回整数集合的元素数量，这个数量即集合的元素数量。</td>
+<td>调用 <code>dictSize</code> 函数，返回字典的键值对数量，这个数量即集合的元素数量。</td>
+</tr>
+<tr>
+<td><code>SISMEMBER</code></td>
+<td>调用 <code>intsetFind</code> 函数，在整数集合中查找给定元素，存在返回1，不存在返回0。</td>
+<td>调用 <code>dictFind</code> 函数，在字典中查找给定元素，存在返回1，不存在返回0。</td>
+</tr>
+<tr>
+<td><code>SMEMBERS</code></td>
+<td>遍历整数集合，使用 <code>intsetGet</code> 函数返回所有的元素。</td>
+<td>遍历字典，使用 <code>dictGetKey</code> 函数返回所有键作为集合元素。</td>
+</tr>
+<tr>
+<td><code>SRANDMEMBER</code></td>
+<td>调用 <code>intsetRandom</code> 函数，从整数集合中随机返回一个元素。</td>
+<td>调用 <code>dictGetRandomKey</code> 函数，从字典中随机返回一个键。</td>
+</tr>
+<tr>
+<td><code>SPOP</code></td>
+<td>调用 <code>intsetRandom</code> 函数，随机返回整数集合中的一个元素，然后从集合中删除。</td>
+<td>调用 <code>dictGetRandomKey</code> 函数，随机返回字典中的一个键，然后从字典中删除。</td>
+</tr>
+<tr>
+<td><code>SREM</code></td>
+<td>调用 <code>intsetRemove</code> 函数，从整数集合中删除所有给定元素。</td>
+<td>调用 <code>dictDelete</code> 函数，从字典中删除所有键为给定元素的键值对。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="有序集合对象">有序集合对象<a hidden class="anchor" aria-hidden="true" href="#有序集合对象">#</a></h2>
+<ul>
+<li>编码格式：<code>ziplist</code>、<code>skiplist</code></li>
+</ul>
+<h3 id="ziplist-2"><code>ziplist</code><a hidden class="anchor" aria-hidden="true" href="#ziplist-2">#</a></h3>
+<ul>
+<li>条件：<font color="red">同时满足</font>有序集合对象保存的元素<font color="red">小于128</font>个，有序集合对象保存的所有元素长度<font color="red">小于64</font>字节。</li>
+<li>底层实现：压缩列表</li>
+<li>转化过程：<code>ptr</code>指向压缩列表，集合元素按从小到大排序，小的在表头，大的在表尾。
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>redis&gt; ZADD price 8.5 apple 5.0 banana 6.0 cherry
+</span></span><span style="display:flex;"><span>(integer) 3
+</span></span></code></pre></div><img loading="lazy" src="%e6%9c%89%e5%ba%8f%e9%9b%86%e5%90%88%e5%8e%8b%e7%bc%a9%e5%88%97%e8%a1%a81.png" alt="有序集合压缩列表1"  />
+
+<img loading="lazy" src="%e6%9c%89%e5%ba%8f%e9%9b%86%e5%90%88%e5%8e%8b%e7%bc%a9%e5%88%97%e8%a1%a82.png" alt="有序集合压缩列表2"  />
+</li>
+</ul>
+<h3 id="skiplist"><code>skiplist</code><a hidden class="anchor" aria-hidden="true" href="#skiplist">#</a></h3>
+<ul>
+<li>底层实现：<code>zset</code>结构作为底层实现，包含跳跃表和字典。
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>typedef struct zset {
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>zskiplist *zsl;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>dict *dict;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>} zset;
+</span></span></code></pre></div></li>
+<li>为什么同时使用跳跃表和字典来保存有序集合对象
+<ul>
+<li>跳跃表是一种有序的数据结构，支持范围查找，提高了有序集合在范围操作上的性能。</li>
+<li>字典对单条数据可以快速的查找和更新，并且字典是无序的。</li>
+<li>要注意，跳跃表和字典共享元素的成员和分量。所以性能不会差。</li>
+<li>结构图
+<img loading="lazy" src="%e6%9c%89%e5%ba%8f%e9%9b%86%e5%90%88skiplist1.png" alt="有序集合skiplist1"  />
+
+<img loading="lazy" src="%e6%9c%89%e5%ba%8f%e9%9b%86%e5%90%88skiplist2.png" alt="有序集合skiplist2"  />
+
+注意：图中的StringObject是共享的图中为了方便给分开了。</li>
+</ul>
+</li>
+</ul>
+<h3 id="编码转换-3">编码转换<a hidden class="anchor" aria-hidden="true" href="#编码转换-3">#</a></h3>
+<ul>
+<li>有序集合对象内的元素同时满足元素个数小于<code>128</code>个，所有元素的长度小于<code>64</code>字节；使用<code>ziplist</code>，否则使用<code>skiplist</code>。</li>
+<li>示例：<br>
+元素过多导致编码转换。
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span># 对象包含了 128 个元素
+</span></span><span style="display:flex;"><span>redis&gt; EVAL &#34;for i=1, 128 do redis.call(&#39;ZADD&#39;, KEYS[1], i, i) end&#34; 1 numbers
+</span></span><span style="display:flex;"><span>(nil)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; ZCARD numbers
+</span></span><span style="display:flex;"><span>(integer) 128
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; OBJECT ENCODING numbers
+</span></span><span style="display:flex;"><span>&#34;ziplist&#34;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span># 再添加一个新元素
+</span></span><span style="display:flex;"><span>redis&gt; ZADD numbers 3.14 pi
+</span></span><span style="display:flex;"><span>(integer) 1
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span># 对象包含的元素数量变为 129 个
+</span></span><span style="display:flex;"><span>redis&gt; ZCARD numbers
+</span></span><span style="display:flex;"><span>(integer) 129
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span># 编码已改变
+</span></span><span style="display:flex;"><span>redis&gt; OBJECT ENCODING numbers
+</span></span><span style="display:flex;"><span>&#34;skiplist&#34;
+</span></span></code></pre></div>元素过长导致编码转换
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span># 向有序集合添加一个成员只有三字节长的元素
+</span></span><span style="display:flex;"><span>redis&gt; ZADD blah 1.0 www
+</span></span><span style="display:flex;"><span>(integer) 1
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; OBJECT ENCODING blah
+</span></span><span style="display:flex;"><span>&#34;ziplist&#34;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span># 向有序集合添加一个成员为 66 字节长的元素
+</span></span><span style="display:flex;"><span>redis&gt; ZADD blah 2.0 oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+</span></span><span style="display:flex;"><span>(integer) 1
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span># 编码已改变
+</span></span><span style="display:flex;"><span>redis&gt; OBJECT ENCODING blah
+</span></span><span style="display:flex;"><span>&#34;skiplist&#34;
+</span></span></code></pre></div></li>
+</ul>
+<h3 id="有序集合对象的命令实现">有序集合对象的命令实现<a hidden class="anchor" aria-hidden="true" href="#有序集合对象的命令实现">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>ziplist 编码的实现方法</th>
+<th>zset 编码的实现方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ZADD</code></td>
+<td>调用 <code>ziplistInsert</code> 函数，将成员和分值作为两个节点插入到压缩列表。</td>
+<td>先调用 <code>zslInsert</code> 函数，将新元素添加到跳跃表，然后调用 <code>dictAdd</code> 函数，将新元素关联到字典。</td>
+</tr>
+<tr>
+<td><code>ZCARD</code></td>
+<td>调用 <code>ziplistLen</code> 函数，获取压缩列表的节点数量，除以 2 得出集合元素数量。</td>
+<td>访问跳跃表数据结构的 length 属性，直接返回集合元素数量。</td>
+</tr>
+<tr>
+<td><code>ZCOUNT</code></td>
+<td>遍历压缩列表，统计分值在给定范围内的节点数量。</td>
+<td>遍历跳跃表，统计分值在给定范围内的节点数量。</td>
+</tr>
+<tr>
+<td><code>ZRANGE</code></td>
+<td>从表头向表尾遍历压缩列表，返回给定索引范围内的所有元素。</td>
+<td>从表头向表尾遍历跳跃表，返回给定索引范围内的所有元素。</td>
+</tr>
+<tr>
+<td><code>ZREVRANGE</code></td>
+<td>从表尾向表头遍历压缩列表，返回给定索引范围内的所有元素。</td>
+<td>从表尾向表头遍历跳跃表，返回给定索引范围内的所有元素。</td>
+</tr>
+<tr>
+<td><code>ZRANK</code></td>
+<td>从表头向表尾遍历压缩列表，查找给定成员，记录经过节点数量，找到成员后的节点数量即排名。</td>
+<td>从表头向表尾遍历跳跃表，查找给定成员，记录经过节点数量，找到成员后的节点数量即排名。</td>
+</tr>
+<tr>
+<td><code>ZREVRANK</code></td>
+<td>从表尾向表头遍历压缩列表，查找给定成员，记录经过节点数量，找到成员后的节点数量即排名。</td>
+<td>从表尾向表头遍历跳跃表，查找给定成员，记录经过节点数量，找到成员后的节点数量即排名。</td>
+</tr>
+<tr>
+<td><code>ZREM</code></td>
+<td>遍历压缩列表，删除所有包含给定成员的节点，及其分值节点。</td>
+<td>遍历跳跃表，删除所有包含给定成员的节点，解除字典中成员与分值的关联。</td>
+</tr>
+<tr>
+<td><code>ZSCORE</code></td>
+<td>遍历压缩列表，查找给定成员的节点，取出分值节点保存的分值。</td>
+<td>直接从字典中取出给定成员的分值。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="类型检查和命令多态">类型检查和命令多态<a hidden class="anchor" aria-hidden="true" href="#类型检查和命令多态">#</a></h2>
+<h3 id="类型检查">类型检查<a hidden class="anchor" aria-hidden="true" href="#类型检查">#</a></h3>
+<ul>
+<li>Redis用于操作键的命令包括两种，公共命令和特定命令。</li>
+<li>功共命令：可以对所有类型键执行，如：DEL 命令、 EXPIRE 命令、 RENAME 命令、 TYPE 命令、 OBJECT 命令。</li>
+<li>特定命令：只对特定类型的键执行
+<ul>
+<li>SET 、 GET 、 APPEND 、 STRLEN 等命令只能对字符串键执行；</li>
+<li>HDEL 、 HSET 、 HGET 、 HLEN 等命令只能对哈希键执行；</li>
+<li>RPUSH 、 LPOP 、 LINSERT 、 LLEN 等命令只能对列表键执行；</li>
+<li>SADD 、 SPOP 、 SINTER 、 SCARD 等命令只能对集合键执行；</li>
+<li>ZADD 、 ZCARD 、 ZRANK 、 ZSCORE 等命令只能对有序集合键执行；</li>
+</ul>
+</li>
+<li>底层实现：底层通过redisObject里的type属性来进行判断。</li>
+<li>示例：
+<ul>
+<li>执行LLEN命令，先检查redisObject里的type属性是否是REDIS_LIST。</li>
+<li>是则执行相应函数，否则服务器拒接执行命令并返回类型错误。
+<img loading="lazy" src="%e7%b1%bb%e5%9e%8b%e6%a3%80%e6%9f%a5.png" alt="类型检查"  />
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="命令多态">命令多态<a hidden class="anchor" aria-hidden="true" href="#命令多态">#</a></h3>
+<ul>
+<li>Redis会根据编码的不同执行不同的函数。</li>
+<li>示例：
+<ul>
+<li>列表对象有<code>ziplist</code>和<code>linkdelist</code>两种编码格式</li>
+<li>执行LLEN命令：
+<ul>
+<li><code>ziplist</code>程序执行<code>ziplistLen</code>函数来返回列表长度</li>
+<li><code>linkedlist</code>程序执行<code>listLength</code>函数返回双端链表的长度<br>
+<img loading="lazy" src="%e5%91%bd%e4%bb%a4%e5%a4%9a%e6%80%81.png" alt="命令多态"  />
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>以上示例说明，命令存在多态，相同的命令不同编码都可以执行，执行的函数不相同。</li>
+<li>同时我们也可以将公共命令作为多态命令。前者为对类型的多态，后者为对编码的多态。</li>
+</ul>
+<h2 id="内存回收">内存回收<a hidden class="anchor" aria-hidden="true" href="#内存回收">#</a></h2>
+<ul>
+<li>C语言中没有内置内存回收机制，所以Redis构建了一个引用计数技术实现内存回收机制</li>
+<li>通过该机制，程序通过跟踪对象引用计数信息，在适当的时候释放对象并进行内存回收。</li>
+<li>引用计数信息在<code>redisObject</code>中的<code>refcount</code>属性中。
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>typedef struct redisObject {
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>// ...
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>// 引用计数
+</span></span><span style="display:flex;"><span>int refcount;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>// ...
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>} robj;
+</span></span></code></pre></div></li>
+</ul>
+<h3 id="引用计数信息变化规则">引用计数信息变化规则<a hidden class="anchor" aria-hidden="true" href="#引用计数信息变化规则">#</a></h3>
+<ul>
+<li>创建新对象，引用计数值初始化为<code>1</code></li>
+<li>对象被新程序引用，引用计数器<code>+1</code></li>
+<li>对象不再被一个程序使用，引用计数<code>-1</code></li>
+<li>引用计数值<code>=0</code>，对象占用的内存释放。</li>
+</ul>
+<h3 id="对引用计数值操作的api">对引用计数值操作的API<a hidden class="anchor" aria-hidden="true" href="#对引用计数值操作的api">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>函数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>incrRefCount</code></td>
+<td>将对象的引用计数值增一。</td>
+</tr>
+<tr>
+<td><code>decrRefCount</code></td>
+<td>将对象的引用计数值减一，当引用计数值为 0 时，释放对象。</td>
+</tr>
+<tr>
+<td><code>resetRefCount</code></td>
+<td>将对象的引用计数值设置为 0 ，但不释放对象。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="对象的生命周期">对象的生命周期<a hidden class="anchor" aria-hidden="true" href="#对象的生命周期">#</a></h3>
+<p>创建对象、操作对象、释放对象</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>// 创建一个字符串对象 s ，对象的引用计数为 1
+</span></span><span style="display:flex;"><span>robj *s = createStringObject(...)
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>// 对象 s 执行各种操作 ...
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>// 将对象 s 的引用计数减一，使得对象的引用计数变为 0
+</span></span><span style="display:flex;"><span>// 导致对象 s 被释放
+</span></span><span style="display:flex;"><span>decrRefCount(s)
+</span></span></code></pre></div><h2 id="对象共享">对象共享<a hidden class="anchor" aria-hidden="true" href="#对象共享">#</a></h2>
+<ul>
+<li>基于引用计数计数的对象共享</li>
+<li>只对基于整数的字符串进行共享。因为对于字符串来说，对象共享进行比较的时间复杂度可能会很高，消耗性能。</li>
+<li>示例：
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>redis&gt; SET A 100
+</span></span><span style="display:flex;"><span>OK
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; OBJECT REFCOUNT A
+</span></span><span style="display:flex;"><span>(integer) 2
+</span></span></code></pre></div><img loading="lazy" src="%e5%af%b9%e8%b1%a1%e5%85%b1%e4%ba%ab1.png" alt="对象共享1"  />
+
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>redis&gt; SET B 100
+</span></span><span style="display:flex;"><span>OK
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; OBJECT REFCOUNT A
+</span></span><span style="display:flex;"><span>(integer) 3
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>redis&gt; OBJECT REFCOUNT B
+</span></span><span style="display:flex;"><span>(integer) 3
+</span></span></code></pre></div><img loading="lazy" src="%e5%af%b9%e8%b1%a1%e5%85%b1%e4%ba%ab2.png" alt="对象共享2"  />
+</li>
+<li>适用于字符串和数据结构中嵌套了字符串对象的对象，如<code>linklist</code>编码的列表对象、<code>hashtable</code>编码的哈希对象、<code>hashtable</code>编码的集合对象、<code>zset</code>编码的有序集合对象。</li>
+</ul>
+<h2 id="对象的空转时长">对象的空转时长<a hidden class="anchor" aria-hidden="true" href="#对象的空转时长">#</a></h2>
+<ul>
+<li><code>redisObject</code>中的<code>lru</code>属性记录了对象最后一次被程序访问的时间。</li>
+<li>我们通过<code>OBJECT IDLETIME</code>命令打印出给定键的空转时长，<code>空转时长</code>=<code>当前时间</code>-<code>lru</code>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-r" data-lang="r"><span style="display:flex;"><span>redis<span style="color:#f92672">&gt;</span> SET msg <span style="color:#e6db74">&#34;hello world&#34;</span>
+</span></span><span style="display:flex;"><span>OK
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 等待一小段时间</span>
+</span></span><span style="display:flex;"><span>redis<span style="color:#f92672">&gt;</span> OBJECT IDLETIME <span style="color:#a6e22e">msg
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e"></span>(integer) <span style="color:#ae81ff">20</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 等待一阵子</span>
+</span></span><span style="display:flex;"><span>redis<span style="color:#f92672">&gt;</span> OBJECT IDLETIME <span style="color:#a6e22e">msg
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e"></span>(integer) <span style="color:#ae81ff">180</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 访问 msg 键的值</span>
+</span></span><span style="display:flex;"><span>redis<span style="color:#f92672">&gt;</span> GET msg
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;hello world&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 键处于活跃状态，空转时长为 0</span>
+</span></span><span style="display:flex;"><span>redis<span style="color:#f92672">&gt;</span> OBJECT IDLETIME <span style="color:#a6e22e">msg
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e"></span>(integer) <span style="color:#ae81ff">0</span>
+</span></span></code></pre></div></li>
+<li>注意<code>OBJECT IDLETIME</code>命令是特殊的，不算访问键的值对象。不会修改<code>lru</code>的值。</li>
+<li>当服务器打开的<code>maxmemory</code>选项，并且服务器用于内存回收的算法为<code>volatile-lru</code>或者<code>allkey-lru</code>，那么当服务器占用内存超过了<code>maxmemory</code>选项上设置的限值，空转较高的那部分键会优先被释放，并且回收内存。</li>
+</ul>
+<h2 id="重点回顾-3">重点回顾<a hidden class="anchor" aria-hidden="true" href="#重点回顾-3">#</a></h2>
+<ul>
+<li>Redis中的每个键和值都是一个<code>redisObject</code>对象</li>
+<li>Redis中有五大对象：字符串对象、列表对象、哈希对象、集合对象、有序集合对象。每个对象都有两种以上的编码格式，不同的编码格式可以应对不同的场景，提高对象效率。</li>
+<li>服务器在执行命令的时候，会先检查键的类型是否可以执行。</li>
+<li>Redis自己构建了基于引用计数计数的内存回收机制，当对象不再被使用的时候，释放回收内存。</li>
+<li>Redis会共享<code>0-9999</code>的字符串对象</li>
+<li>对象会记录最后一次被程序访问的时间，用于计算空转时长</li>
+</ul>
+
+
+        </div>
+
+        <footer class="post-footer">
+            
+<nav class="paginav">
+  <a class="prev" href="https://zhoujze.github.io/en/posts/tech/redis-02-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/">
+    <span class="title">« 上一页</span>
+    <br>
+    <span>Redis 02-单机数据库的实现</span>
+  </a>
+  <a class="next" href="https://zhoujze.github.io/en/posts/tech/java/">
+    <span class="title">下一页 »</span>
+    <br>
+    <span>Java</span>
+  </a>
+</nav>
+
+
+<div class="share-buttons">
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Redis 01-数据结构与对象 on twitter"
+       href="https://twitter.com/intent/tweet/?text=Redis%2001-%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%e4%b8%8e%e5%af%b9%e8%b1%a1&amp;url=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fredis-01-%25E6%2595%25B0%25E6%258D%25AE%25E7%25BB%2593%25E6%259E%2584%25E4%25B8%258E%25E5%25AF%25B9%25E8%25B1%25A1%2f&amp;hashtags=Redis%2cRedis%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84">
+    <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-253.927,424.544c135.939,0 210.268,-112.643 210.268,-210.268c0,-3.218 0,-6.437 -0.153,-9.502c14.406,-10.421 26.973,-23.448 36.935,-38.314c-13.18,5.824 -27.433,9.809 -42.452,11.648c15.326,-9.196 26.973,-23.602 32.49,-40.92c-14.252,8.429 -30.038,14.56 -46.896,17.931c-13.487,-14.406 -32.644,-23.295 -53.946,-23.295c-40.767,0 -73.87,33.104 -73.87,73.87c0,5.824 0.613,11.494 1.992,16.858c-61.456,-3.065 -115.862,-32.49 -152.337,-77.241c-6.284,10.881 -9.962,23.601 -9.962,37.088c0,25.594 13.027,48.276 32.95,61.456c-12.107,-0.307 -23.448,-3.678 -33.41,-9.196l0,0.92c0,35.862 25.441,65.594 59.311,72.49c-6.13,1.686 -12.72,2.606 -19.464,2.606c-4.751,0 -9.348,-0.46 -13.946,-1.38c9.349,29.426 36.628,50.728 68.965,51.341c-25.287,19.771 -57.164,31.571 -91.8,31.571c-5.977,0 -11.801,-0.306 -17.625,-1.073c32.337,21.15 71.264,33.41 112.95,33.41Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Redis 01-数据结构与对象 on linkedin"
+       href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fredis-01-%25E6%2595%25B0%25E6%258D%25AE%25E7%25BB%2593%25E6%259E%2584%25E4%25B8%258E%25E5%25AF%25B9%25E8%25B1%25A1%2f&amp;title=Redis%2001-%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%e4%b8%8e%e5%af%b9%e8%b1%a1&amp;summary=Redis%2001-%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%e4%b8%8e%e5%af%b9%e8%b1%a1&amp;source=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fredis-01-%25E6%2595%25B0%25E6%258D%25AE%25E7%25BB%2593%25E6%259E%2584%25E4%25B8%258E%25E5%25AF%25B9%25E8%25B1%25A1%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Redis 01-数据结构与对象 on reddit"
+       href="https://reddit.com/submit?url=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fredis-01-%25E6%2595%25B0%25E6%258D%25AE%25E7%25BB%2593%25E6%259E%2584%25E4%25B8%258E%25E5%25AF%25B9%25E8%25B1%25A1%2f&title=Redis%2001-%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%e4%b8%8e%e5%af%b9%e8%b1%a1">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Redis 01-数据结构与对象 on facebook"
+       href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fredis-01-%25E6%2595%25B0%25E6%258D%25AE%25E7%25BB%2593%25E6%259E%2584%25E4%25B8%258E%25E5%25AF%25B9%25E8%25B1%25A1%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Redis 01-数据结构与对象 on whatsapp"
+       href="https://api.whatsapp.com/send?text=Redis%2001-%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%e4%b8%8e%e5%af%b9%e8%b1%a1%20-%20https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fredis-01-%25E6%2595%25B0%25E6%258D%25AE%25E7%25BB%2593%25E6%259E%2584%25E4%25B8%258E%25E5%25AF%25B9%25E8%25B1%25A1%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Redis 01-数据结构与对象 on telegram"
+       href="https://telegram.me/share/url?text=Redis%2001-%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%e4%b8%8e%e5%af%b9%e8%b1%a1&amp;url=https%3a%2f%2fzhoujze.github.io%2fen%2fposts%2ftech%2fredis-01-%25E6%2595%25B0%25E6%258D%25AE%25E7%25BB%2593%25E6%259E%2584%25E4%25B8%258E%25E5%25AF%25B9%25E8%25B1%25A1%2f">
+        <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28">
+            <path
+                    d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+        </svg>
+    </a>
+</div>
+
+        </footer>
+    </div>
+
+<style>
+    .comments_details summary::marker {
+        font-size: 20px;
+        content: '👉展开评论';
+        color: var(--content);
+    }
+    .comments_details[open] summary::marker{
+        font-size: 20px;
+        content: '👇关闭评论';
+        color: var(--content);
+    }
+</style>
+
+
+<div>
+    
+    <script src="https://cdn.staticfile.org/twikoo/1.4.11/twikoo.all.min.js">
+    </script>
+    <script>
+        twikoo.init({
+            envId:  null ,
+        el: "#tcomment",
+            lang: 'zh-CN',
+            region:  null ,
+        path: window.TWIKOO_MAGIC_PATH||window.location.pathname,
+        })
+    </script>
+</div>
+</article>
+</main>
+
+<footer class="footer">
+    <span>
+        Copyright
+        &copy;
+        2023-2023
+        <a href="https://zhoujze.github.io/en/" style="color:#939393;">ZhouJz&#39;s blog</a>
+        All Rights Reserved
+    </span>
+    <a href="https://beian.miit.gov.cn/" target="_blank" style="color:#939393;"></a>&nbsp;
+    <span>
+        <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=null"
+           style="display:inline-block;text-decoration:none;height:20px;color:#939393;">
+            <img src="" style="float:left;margin: 0px 5px 0px 0px;"/>
+            
+        </a>
+    </span>
+    <span id="busuanzi_container">
+        <span class="fa fa-user"></span> <span id="busuanzi_value_site_uv"></span>
+        <span class="fa fa-eye"></span> <span id="busuanzi_value_site_pv"></span>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <span class="topInner">
+        <svg class="topSvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+            <path d="M12 6H0l6-6z"/>
+        </svg>
+        <span id="read_progress"></span>
+    </span>
+</a>
+
+<script>
+    document.addEventListener('scroll', function (e) {
+        const readProgress = document.getElementById("read_progress");
+        const scrollHeight = document.documentElement.scrollHeight;
+        const clientHeight = document.documentElement.clientHeight;
+        const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        readProgress.innerText = ((scrollTop / (scrollHeight - clientHeight)).toFixed(2) * 100).toFixed(0);
+    })
+</script>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+</script>
+<script>
+    let mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        (function() {
+            document.cookie = "change-themes" + "="+ escape ("false");
+        })()
+
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    });
+</script>
+
+<script>
+    document.body.addEventListener('copy', function (e) {
+        if (window.getSelection().toString() && window.getSelection().toString().length > 50) {
+            let clipboardData = e.clipboardData || window.clipboardData;
+            if (clipboardData) {
+                e.preventDefault();
+                let htmlData = window.getSelection().toString() +
+                    '\r\n\n————————————————\r\n' +
+                    '版权声明：本文为「'+"ZhouJz's blog"+'」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。' +
+                '\r\n原文链接：' + location.href;
+                let textData = window.getSelection().toString() +
+                    '\r\n\n————————————————\r\n' +
+                    '版权声明：本文为「'+"ZhouJz's blog"+'」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。' +
+                '\r\n原文链接：' + location.href;
+                clipboardData.setData('text/html', htmlData);
+                clipboardData.setData('text/plain', textData);
+            }
+        }
+    });
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerText = '📄复制';
+
+        function copyingDone() {
+            copybutton.innerText = '👌🏻已复制!';
+            setTimeout(() => {
+                copybutton.innerText = '📄复制';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                let text = codeblock.textContent +
+                    '\r\n————————————————\r\n' +
+                    '版权声明：本文为「'+"ZhouJz's blog"+'」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。' +
+                '\r\n原文链接：' + location.href;
+                navigator.clipboard.writeText(text);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) {}
+            selection.removeRange(range);
+        });
+
+        let language = codeblock.className.replaceAll("language-", "")
+        let macTool = document.createElement("div")
+        let macTool1 = document.createElement("div")
+        let macTool2 = document.createElement("div")
+        let macTool3 = document.createElement("div")
+        let languageType = document.createElement("div")
+        languageType.innerText = language
+        macTool.setAttribute('class', 'mac-tool')
+        macTool1.setAttribute('class', 'mac bb1')
+        macTool2.setAttribute('class', 'mac bb2')
+        macTool3.setAttribute('class', 'mac bb3')
+        languageType.setAttribute('class', 'language-type')
+        macTool.appendChild(macTool1)
+        macTool.appendChild(macTool2)
+        macTool.appendChild(macTool3)
+        macTool.appendChild(languageType)
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+            container.appendChild(macTool)
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+            container.appendChild(macTool)
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+            container.appendChild(macTool)
+        }
+    });
+</script>
+</body>
+
+</html>

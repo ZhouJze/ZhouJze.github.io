@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>📚文章 on ZhouJz&#39;s blog</title>
+    <link>https://zhoujze.github.io/en/posts/</link>
+    <description>Recent content in 📚文章 on ZhouJz&#39;s blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    <lastBuildDate>Sun, 17 Sep 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://zhoujze.github.io/en/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title></title>
+      <link>https://zhoujze.github.io/en/posts/mysql/01-mysql%E6%9E%B6%E6%9E%84%E7%AF%87/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://zhoujze.github.io/en/posts/mysql/01-mysql%E6%9E%B6%E6%9E%84%E7%AF%87/</guid>
+      <description>1. Linux环境安装MySQL 略&amp;hellip; 2. MySQL数据目录 举例：数据库A，表a 如果表a采用InnoDB，data\A中会产生一个或两个文件 a.frm(5.7特有)：描述表结构，字段长度等 如果采用系统表空间模式，数据信息和索引信息储存在ibdata1中 如果采用独立表空间模</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://zhoujze.github.io/en/posts/mysql/02-mysql%E7%B4%A2%E5%BC%95%E8%B0%83%E4%BC%98%E7%AF%87/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://zhoujze.github.io/en/posts/mysql/02-mysql%E7%B4%A2%E5%BC%95%E8%B0%83%E4%BC%98%E7%AF%87/</guid>
+      <description>1. 索引的数据结构 为什么使用索引 索引时一种快速找到数据记录的数据结构，类比书的目录。 顺序查找磁盘I/O次数较多。 搜索树，减少了磁盘I/O次数。 索引优缺点 索引是什么 帮助MySQL高效获取数据的数据结构 索引在储存引擎中实现，不同的储存索引不一定完全一样。 优点 提高数据检索效率，降低数据I</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://zhoujze.github.io/en/posts/mysql/03-mysql%E4%BA%8B%E5%8A%A1%E7%AF%87/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://zhoujze.github.io/en/posts/mysql/03-mysql%E4%BA%8B%E5%8A%A1%E7%AF%87/</guid>
+      <description>1. 事物基础知识 2. MySQL事物日志 3. 锁 4. 多版本并发控制MVCC</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://zhoujze.github.io/en/posts/mysql/04-mysql%E6%97%A5%E5%BF%97%E4%B8%8E%E5%A4%87%E4%BB%BD%E7%AF%87/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://zhoujze.github.io/en/posts/mysql/04-mysql%E6%97%A5%E5%BF%97%E4%B8%8E%E5%A4%87%E4%BB%BD%E7%AF%87/</guid>
+      <description>1. 其他数据库日志 2. 主从复制 3. 数据备份与恢复</description>
+    </item>
+    
+  </channel>
+</rss>

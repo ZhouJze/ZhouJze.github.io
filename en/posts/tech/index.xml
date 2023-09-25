@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>👨🏻‍💻 技术 on ZhouJz&#39;s blog</title>
+    <link>https://zhoujze.github.io/en/posts/tech/</link>
+    <description>Recent content in 👨🏻‍💻 技术 on ZhouJz&#39;s blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    <lastBuildDate>Sun, 17 Sep 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://zhoujze.github.io/en/posts/tech/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Kafka</title>
+      <link>https://zhoujze.github.io/en/posts/tech/kafka/</link>
+      <pubDate>Sun, 17 Sep 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://zhoujze.github.io/en/posts/tech/kafka/</guid>
+      <description>Kafka基础入门</description>
+    </item>
+    
+    <item>
+      <title>计算机网络</title>
+      <link>https://zhoujze.github.io/en/posts/tech/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E8%B7%AF/</link>
+      <pubDate>Fri, 01 Sep 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://zhoujze.github.io/en/posts/tech/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E8%B7%AF/</guid>
+      <description>计算机网络基础速通</description>
+    </item>
+    
+    <item>
+      <title>Spring基础总结</title>
+      <link>https://zhoujze.github.io/en/posts/tech/spring/</link>
+      <pubDate>Sun, 27 Aug 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://zhoujze.github.io/en/posts/tech/spring/</guid>
+      <description>Spring源码剖析、基础讲解。</description>
+    </item>
+    
+    <item>
+      <title>Redis 05-缓存设计</title>
+      <link>https://zhoujze.github.io/en/posts/tech/redis-05-%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1/</link>
+      <pubDate>Mon, 21 Aug 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://zhoujze.github.io/en/posts/tech/redis-05-%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1/</guid>
+      <description>Redis问题解决</description>
+    </item>
+    
+    <item>
+      <title>Redis 04-独立功能实现</title>
+      <link>https://zhoujze.github.io/en/posts/tech/redis-04-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E5%AE%9E%E7%8E%B0/</link>
+      <pubDate>Sat, 19 Aug 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://zhoujze.github.io/en/posts/tech/redis-04-%E7%8B%AC%E7%AB%8B%E5%8A%9F%E8%83%BD%E5%AE%9E%E7%8E%B0/</guid>
+      <description>Redis事务、频道</description>
+    </item>
+    
+    <item>
+      <title>Redis 03-多机数据库的实现</title>
+      <link>https://zhoujze.github.io/en/posts/tech/redis-03-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/</link>
+      <pubDate>Thu, 17 Aug 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://zhoujze.github.io/en/posts/tech/redis-03-%E5%A4%9A%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/</guid>
+      <description>Redis主从复制、集群、哨兵</description>
+    </item>
+    
+    <item>
+      <title>Redis 02-单机数据库的实现</title>
+      <link>https://zhoujze.github.io/en/posts/tech/redis-02-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/</link>
+      <pubDate>Tue, 15 Aug 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://zhoujze.github.io/en/posts/tech/redis-02-%E5%8D%95%E6%9C%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0/</guid>
+      <description>Redis单机数据库的具体实现</description>
+    </item>
+    
+    <item>
+      <title>Redis 01-数据结构与对象</title>
+      <link>https://zhoujze.github.io/en/posts/tech/redis-01-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/</link>
+      <pubDate>Sun, 13 Aug 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://zhoujze.github.io/en/posts/tech/redis-01-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/</guid>
+      <description>Redis基本数据结构与对象</description>
+    </item>
+    
+    <item>
+      <title>Java</title>
+      <link>https://zhoujze.github.io/en/posts/tech/java/</link>
+      <pubDate>Mon, 07 Aug 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://zhoujze.github.io/en/posts/tech/java/</guid>
+      <description>Java基础入门</description>
+    </item>
+    
+  </channel>
+</rss>
